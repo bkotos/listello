@@ -1,0 +1,14 @@
+{
+  "name": "listello",
+  "private": true,
+  "scripts": {
+    "engine:run": "cd engine && go run ./cmd/engine",
+    "engine:test": "cd engine && go test ./...",
+    "engine:version": "cd engine && go run ./cmd/engine -- --version",
+    "spec:test": "npm --prefix engine-spec test",
+    "spec:test:watch": "npm --prefix engine-spec run test:watch",
+    "spec:typecheck": "npm --prefix engine-spec run typecheck",
+    "test": "npm run engine:test && npm run spec:typecheck && npm run spec:test"
+  }
+}
+
