@@ -19,15 +19,21 @@ export async function runEngineCli(
   opts?: { cwd?: string; env?: NodeJS.ProcessEnv; timeoutMs?: number },
 ): Promise<EngineRunResult> {
   const repoRoot = repoRootFromHere();
-  const cwd = opts?.cwd ?? path.join(repoRoot, "engine");
+  const engineRoot = path.join(repoRoot, "engine");
+  /** Process working directory (e.g. where `create` writes); Go module root is always `engineRoot` via `-C`. */
+  const spawnCwd = opts?.cwd ?? engineRoot;
   const timeoutMs = opts?.timeoutMs ?? 30_000;
 
   return new Promise((resolve, reject) => {
-    const child = spawn("go", ["run", "./cmd/engine", "--", ...args], {
-      cwd,
-      env: { ...process.env, ...opts?.env },
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+    const child = spawn(
+      "go",
+      ["run", "-C", engineRoot, "./cmd/engine", "--", ...args],
+      {
+        cwd: spawnCwd,
+        env: { ...process.env, ...opts?.env },
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
 
     let stdout = "";
     let stderr = "";
