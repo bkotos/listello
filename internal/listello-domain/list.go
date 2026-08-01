@@ -2,7 +2,7 @@ package domain
 
 import "fmt"
 
-// List is a named collection of items.
+// List is a named list.
 type List struct {
 	name string
 }

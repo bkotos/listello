@@ -8,7 +8,6 @@ Feature: Create and complete a list item
     Then a "List created" event should have occurred
     And the list "Next actions" should exist
 
-  @wip
   Scenario: Defining an item on a list
     Given a list named "Next actions" exists
     When the user defines an item titled "Buy milk" on the list "Next actions"

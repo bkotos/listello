@@ -8,4 +8,5 @@ type Event struct {
 // Domain event names (match event-storming language).
 const (
 	EventListCreated = "List created"
+	EventItemDefined = "Item defined"
 )

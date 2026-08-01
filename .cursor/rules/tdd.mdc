@@ -11,6 +11,7 @@ When adding or changing behavior, follow this loop. Do not skip steps.
 
 - Write the failing test/spec before production code.
 - In `internal/listello-domain`, prefer Gherkin (`.feature`) + godog steps; elsewhere use Go tests.
+- Wire steps/tests to call the real domain API under test (not a no-op). Production may be a stub that fails (`not implemented`, etc.) so the failure is visible in that code path.
 - Run the relevant tests and confirm they fail for the right reason (missing behavior, not a broken harness).
 
 ## 2. Stop for review

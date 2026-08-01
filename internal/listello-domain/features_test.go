@@ -32,12 +32,16 @@ func init() {
 type suiteState struct {
 	placeholder *domain.Placeholder
 	lists       map[string]domain.List
+	items       map[string]domain.Item
+	itemLists   map[string]string // item title -> list name
 	events      []domain.Event
 }
 
 func (s *suiteState) reset() {
 	s.placeholder = nil
 	s.lists = make(map[string]domain.List)
+	s.items = make(map[string]domain.Item)
+	s.itemLists = make(map[string]string)
 	s.events = nil
 }
 
@@ -82,6 +86,48 @@ func (s *suiteState) theListShouldExist(name string) error {
 	return nil
 }
 
+func (s *suiteState) aListNamedExists(name string) error {
+	return s.theUserCreatesAListNamed(name)
+}
+
+func (s *suiteState) theUserDefinesAnItemTitledOnTheList(title, listName string) error {
+	if _, ok := s.lists[listName]; !ok {
+		return fmt.Errorf("list %q does not exist", listName)
+	}
+	item, event, err := domain.DefineItem(title)
+	if err != nil {
+		return err
+	}
+	s.items[item.Title()] = item
+	s.itemLists[item.Title()] = listName
+	s.record(event)
+	return nil
+}
+
+func (s *suiteState) theItemShouldBeOnTheList(title, listName string) error {
+	if _, ok := s.lists[listName]; !ok {
+		return fmt.Errorf("expected list %q to exist", listName)
+	}
+	if _, ok := s.items[title]; !ok {
+		return fmt.Errorf("expected item %q to exist", title)
+	}
+	if got := s.itemLists[title]; got != listName {
+		return fmt.Errorf("expected item %q on list %q; was on %q", title, listName, got)
+	}
+	return nil
+}
+
+func (s *suiteState) theItemShouldBeOutstanding(title string) error {
+	item, ok := s.items[title]
+	if !ok {
+		return fmt.Errorf("expected item %q to exist", title)
+	}
+	if !item.Outstanding() {
+		return fmt.Errorf("expected item %q to be outstanding", title)
+	}
+	return nil
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
@@ -103,6 +149,10 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the user creates a list named "([^"]*)"$`, s.theUserCreatesAListNamed)
 	ctx.Step(`^a "([^"]*)" event should have occurred$`, s.aEventShouldHaveOccurred)
 	ctx.Step(`^the list "([^"]*)" should exist$`, s.theListShouldExist)
+	ctx.Step(`^a list named "([^"]*)" exists$`, s.aListNamedExists)
+	ctx.Step(`^the user defines an item titled "([^"]*)" on the list "([^"]*)"$`, s.theUserDefinesAnItemTitledOnTheList)
+	ctx.Step(`^the item "([^"]*)" should be on the list "([^"]*)"$`, s.theItemShouldBeOnTheList)
+	ctx.Step(`^the item "([^"]*)" should be outstanding$`, s.theItemShouldBeOutstanding)
 }
 
 func TestFeatures(t *testing.T) {
