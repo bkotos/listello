@@ -14,11 +14,11 @@ Feature: Create and complete a list item
     When the user defines an item titled "Buy milk" on the list "Next actions"
     Then a "Item defined" event should have occurred
     And the item "Buy milk" should be on the list "Next actions"
-    And the item "Buy milk" should be incomplete
+    And the item "Buy milk" should be outstanding
 
   Scenario: Completing an item
     Given a list named "Next actions" exists
-    And an incomplete item titled "Buy milk" exists on the list "Next actions"
+    And an outstanding item titled "Buy milk" exists on the list "Next actions"
     When the owner completes the item "Buy milk"
     Then a "Item completed" event should have occurred
     And the item "Buy milk" should be complete
