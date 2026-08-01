@@ -3,7 +3,9 @@ package domain_test
 import (
 	"context"
 	"embed"
+	"flag"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/cucumber/godog"
@@ -13,6 +15,16 @@ import (
 
 //go:embed features/*.feature
 var featuresFS embed.FS
+
+var opts = godog.Options{
+	Format: "pretty",
+	Paths:  []string{"features"},
+	FS:     featuresFS,
+}
+
+func init() {
+	godog.BindFlags("godog.", flag.CommandLine, &opts)
+}
 
 type placeholderSuite struct {
 	placeholder *domain.Placeholder
@@ -42,17 +54,24 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 }
 
 func TestFeatures(t *testing.T) {
-	suite := godog.TestSuite{
-		ScenarioInitializer: InitializeScenario,
-		Options: &godog.Options{
-			Format:   "pretty",
-			Paths:    []string{"features"},
-			FS:       featuresFS,
-			TestingT: t,
-		},
+	o := opts
+	o.TestingT = t
+	o.FS = featuresFS
+	if o.Output == nil {
+		o.Output = os.Stdout
 	}
 
-	if suite.Run() != 0 {
+	suite := godog.TestSuite{
+		Name:                "listello-domain",
+		ScenarioInitializer: InitializeScenario,
+		Options:             &o,
+	}
+
+	status := suite.Run()
+	if o.ShowStepDefinitions {
+		return
+	}
+	if status != 0 {
 		t.Fatal("non-zero status returned, failed to run feature tests")
 	}
 }
