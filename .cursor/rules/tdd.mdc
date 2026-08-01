@@ -1,0 +1,31 @@
+---
+description: TDD workflow — red spec, user review, then implement
+alwaysApply: true
+---
+
+# Test-Driven Development
+
+When adding or changing behavior, follow this loop. Do not skip steps.
+
+## 1. Spec first (red)
+
+- Write the failing test/spec before production code.
+- In `internal/listello-domain`, prefer Gherkin (`.feature`) + godog steps; elsewhere use Go tests.
+- Run the relevant tests and confirm they fail for the right reason (missing behavior, not a broken harness).
+
+## 2. Stop for review
+
+- After red is confirmed, **stop**.
+- Summarize the new/changed spec and the failure.
+- **Do not implement** until the user explicitly approves the test/spec.
+
+## 3. Implement (green)
+
+- Only after approval: write the minimum production code to make the spec pass.
+- Re-run tests and confirm green.
+- Refactor only while staying green.
+
+## Do not
+
+- Implement production code in the same turn as writing a new failing spec.
+- Mark scenarios done or remove `@wip` before the user has approved the red spec (unless they already approved that scenario).
