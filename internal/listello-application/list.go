@@ -11,12 +11,12 @@ type ListRepository interface {
 
 // ListService coordinates list aggregate commands and persistence.
 type ListService struct {
-	lists ListRepository
+	listRepository ListRepository
 }
 
 // NewListService returns a ListService backed by the given repository.
-func NewListService(lists ListRepository) *ListService {
-	return &ListService{lists: lists}
+func NewListService(listRepository ListRepository) *ListService {
+	return &ListService{listRepository: listRepository}
 }
 
 // CreateList creates a list via the domain and persists it.
@@ -25,7 +25,7 @@ func (s *ListService) CreateList(name string) (domain.List, error) {
 	if err != nil {
 		return domain.List{}, err
 	}
-	if err := s.lists.Save(list); err != nil {
+	if err := s.listRepository.Save(list); err != nil {
 		return domain.List{}, err
 	}
 	return list, nil
