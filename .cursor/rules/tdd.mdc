@@ -22,11 +22,13 @@ When adding or changing behavior, follow this loop. Do not skip steps.
 
 ## 3. Implement (green)
 
-- Only after approval: write the minimum production code to make the spec pass.
+- Only after approval: implement the **bare minimum** production code to make the failing spec pass — nothing more.
+- No speculative validation, guards, edge cases, or abstractions that the current spec does not require.
 - Re-run tests and confirm green.
-- Refactor only while staying green.
+- Refactor only while staying green, and still keep the change set minimal.
 
 ## Do not
 
 - Implement production code in the same turn as writing a new failing spec.
 - Mark scenarios done or remove `@wip` before the user has approved the red spec (unless they already approved that scenario).
+- Over-implement in green (e.g. extra checks “for later” that no test asserts).
