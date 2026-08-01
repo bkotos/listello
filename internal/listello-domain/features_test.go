@@ -122,8 +122,8 @@ func (s *suiteState) theItemShouldBeOutstanding(title string) error {
 	if !ok {
 		return fmt.Errorf("expected item %q to exist", title)
 	}
-	if !item.Outstanding() {
-		return fmt.Errorf("expected item %q to be outstanding", title)
+	if !item.IsOutstanding() {
+		return fmt.Errorf("expected item %q to be outstanding; got %q", title, item.State())
 	}
 	return nil
 }
@@ -151,8 +151,8 @@ func (s *suiteState) theItemShouldBeComplete(title string) error {
 	if !ok {
 		return fmt.Errorf("expected item %q to exist", title)
 	}
-	if item.Outstanding() {
-		return fmt.Errorf("expected item %q to be complete", title)
+	if !item.IsComplete() {
+		return fmt.Errorf("expected item %q to be complete; got %q", title, item.State())
 	}
 	return nil
 }
