@@ -2,3 +2,8 @@ package domain
 
 // Placeholder marks this package for future Listello domain types and logic.
 type Placeholder struct{}
+
+// NewPlaceholder returns a new domain Placeholder.
+func NewPlaceholder() *Placeholder {
+	return &Placeholder{}
+}
