@@ -25,3 +25,9 @@ func DefineItem(title string) (Item, Event, error) {
 	}
 	return Item{title: title, outstanding: true}, Event{Name: EventItemDefined}, nil
 }
+
+// CompleteItem completes an item and raises an Item completed event.
+func CompleteItem(item Item) (Item, Event, error) {
+	item.outstanding = false
+	return item, Event{Name: EventItemCompleted}, nil
+}

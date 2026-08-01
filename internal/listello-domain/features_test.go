@@ -128,6 +128,35 @@ func (s *suiteState) theItemShouldBeOutstanding(title string) error {
 	return nil
 }
 
+func (s *suiteState) anOutstandingItemTitledExistsOnTheList(title, listName string) error {
+	return s.theUserDefinesAnItemTitledOnTheList(title, listName)
+}
+
+func (s *suiteState) theOwnerCompletesTheItem(title string) error {
+	item, ok := s.items[title]
+	if !ok {
+		return fmt.Errorf("item %q does not exist", title)
+	}
+	item, event, err := domain.CompleteItem(item)
+	if err != nil {
+		return err
+	}
+	s.items[item.Title()] = item
+	s.record(event)
+	return nil
+}
+
+func (s *suiteState) theItemShouldBeComplete(title string) error {
+	item, ok := s.items[title]
+	if !ok {
+		return fmt.Errorf("expected item %q to exist", title)
+	}
+	if item.Outstanding() {
+		return fmt.Errorf("expected item %q to be complete", title)
+	}
+	return nil
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
@@ -153,6 +182,9 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the user defines an item titled "([^"]*)" on the list "([^"]*)"$`, s.theUserDefinesAnItemTitledOnTheList)
 	ctx.Step(`^the item "([^"]*)" should be on the list "([^"]*)"$`, s.theItemShouldBeOnTheList)
 	ctx.Step(`^the item "([^"]*)" should be outstanding$`, s.theItemShouldBeOutstanding)
+	ctx.Step(`^an outstanding item titled "([^"]*)" exists on the list "([^"]*)"$`, s.anOutstandingItemTitledExistsOnTheList)
+	ctx.Step(`^the owner completes the item "([^"]*)"$`, s.theOwnerCompletesTheItem)
+	ctx.Step(`^the item "([^"]*)" should be complete$`, s.theItemShouldBeComplete)
 }
 
 func TestFeatures(t *testing.T) {

@@ -15,7 +15,6 @@ Feature: Create and complete a list item
     And the item "Buy milk" should be on the list "Next actions"
     And the item "Buy milk" should be outstanding
 
-  @wip
   Scenario: Completing an item
     Given a list named "Next actions" exists
     And an outstanding item titled "Buy milk" exists on the list "Next actions"
