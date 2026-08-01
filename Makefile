@@ -9,7 +9,7 @@ list:
 	@echo "Available targets:"
 	@echo "  make list         Show this list of targets"
 	@echo "  make test         Run all Go tests"
-	@echo "  make run          Run the listello command"
+	@echo "  make run          Create a list via cmd/listello (optional: NAME=\"Someday\")"
 	@echo "  make bdd-report   Run implemented BDD features + write Cucumber JSON"
 	@echo "  make bdd-gaps     Run all BDD features including @wip (shows undefined steps)"
 	@echo "  make bdd-steps    List registered BDD step definitions"
@@ -18,7 +18,7 @@ test:
 	go test ./...
 
 run:
-	go run ./cmd/listello
+	go run ./cmd/listello $(NAME)
 
 # Run implemented domain Gherkin suite (excludes @wip) + Cucumber JSON report.
 bdd-report:

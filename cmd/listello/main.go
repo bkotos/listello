@@ -1,7 +1,28 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+
+	adapter "github.com/bkotos/listello/internal/listello-adapter"
+	application "github.com/bkotos/listello/internal/listello-application"
+)
 
 func main() {
-	fmt.Println("hello world")
+	name := "Next actions"
+	if len(os.Args) > 1 {
+		name = os.Args[1]
+	}
+
+	lists := adapter.NewStubListRepository()
+	events := adapter.NewLoggingEventPublisher()
+	svc := application.NewListService(lists, events)
+
+	list, err := svc.CreateList(name)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "create list: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("created list %q (%s)\n", list.Name(), list.ID())
 }
