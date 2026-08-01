@@ -22,7 +22,6 @@ Feature: Create and complete a list item
     Then a "Item completed" event should have occurred
     And the item "Buy milk" should be complete
 
-  @wip
   Scenario: Completing work from a new list through to done
     When the user creates a list named "Next actions"
     And the user defines an item titled "Buy milk" on the list "Next actions"
