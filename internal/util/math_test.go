@@ -1,10 +1,12 @@
 package util
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestAdd(t *testing.T) {
 	got := Add(2, 3)
-	if got != 5 {
-		t.Errorf("Add(2, 3) = %d; want 5", got)
-	}
+	assert.Equal(t, 5, got)
 }

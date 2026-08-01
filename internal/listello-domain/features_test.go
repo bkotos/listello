@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/cucumber/godog"
+	"github.com/stretchr/testify/require"
 
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
@@ -54,191 +55,130 @@ func (s *suiteState) iCreateADomainPlaceholder() {
 	s.placeholder = domain.NewPlaceholder()
 }
 
-func (s *suiteState) thePlaceholderShouldExist() error {
-	if s.placeholder == nil {
-		return fmt.Errorf("expected placeholder to exist, got nil")
-	}
-	return nil
+func (s *suiteState) thePlaceholderShouldExist(ctx context.Context) {
+	require.NotNil(godog.T(ctx), s.placeholder)
 }
 
-func (s *suiteState) theUserCreatesAListNamed(name string) error {
+func (s *suiteState) theUserCreatesAListNamed(ctx context.Context, name string) {
 	list, event, err := domain.CreateList(name)
-	if err != nil {
-		return err
-	}
+	require.NoError(godog.T(ctx), err)
 	s.lists[list.Name()] = list
 	s.record(event)
-	return nil
 }
 
-func (s *suiteState) aEventShouldHaveOccurred(eventName string) error {
-	if slices.ContainsFunc(s.events, func(e domain.Event) bool {
-		return e.Name == eventName
-	}) {
-		return nil
-	}
-	return fmt.Errorf("expected event %q to have occurred; got %v", eventName, eventNames(s.events))
+func (s *suiteState) aEventShouldHaveOccurred(ctx context.Context, eventName string) {
+	require.Truef(
+		godog.T(ctx),
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			return e.Name == eventName
+		}),
+		"expected event %q to have occurred; got %v", eventName, eventNames(s.events),
+	)
 }
 
-func (s *suiteState) theListShouldExist(name string) error {
-	if _, ok := s.lists[name]; !ok {
-		return fmt.Errorf("expected list %q to exist", name)
-	}
-	return nil
+func (s *suiteState) theListShouldExist(ctx context.Context, name string) {
+	require.Contains(godog.T(ctx), s.lists, name)
 }
 
-func (s *suiteState) aListNamedExists(name string) error {
-	return s.theUserCreatesAListNamed(name)
+func (s *suiteState) aListNamedExists(ctx context.Context, name string) {
+	s.theUserCreatesAListNamed(ctx, name)
 }
 
-func (s *suiteState) theUserDefinesAnItemTitledOnTheList(title, listName string) error {
-	if _, ok := s.lists[listName]; !ok {
-		return fmt.Errorf("list %q does not exist", listName)
-	}
+func (s *suiteState) theUserDefinesAnItemTitledOnTheList(ctx context.Context, title, listName string) {
+	require.Contains(godog.T(ctx), s.lists, listName)
 	item, event, err := domain.DefineItem(title)
-	if err != nil {
-		return err
-	}
+	require.NoError(godog.T(ctx), err)
 	s.items[item.Title()] = item
 	s.itemLists[item.Title()] = listName
 	s.record(event)
-	return nil
 }
 
-func (s *suiteState) theItemShouldBeOnTheList(title, listName string) error {
-	if _, ok := s.lists[listName]; !ok {
-		return fmt.Errorf("expected list %q to exist", listName)
-	}
-	if _, ok := s.items[title]; !ok {
-		return fmt.Errorf("expected item %q to exist", title)
-	}
-	if got := s.itemLists[title]; got != listName {
-		return fmt.Errorf("expected item %q on list %q; was on %q", title, listName, got)
-	}
-	return nil
+func (s *suiteState) theItemShouldBeOnTheList(ctx context.Context, title, listName string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.lists, listName)
+	require.Contains(t, s.items, title)
+	require.Equal(t, listName, s.itemLists[title])
 }
 
-func (s *suiteState) theItemShouldBeOutstanding(title string) error {
-	item, ok := s.items[title]
-	if !ok {
-		return fmt.Errorf("expected item %q to exist", title)
-	}
-	if !item.IsOutstanding() {
-		return fmt.Errorf("expected item %q to be outstanding; got %q", title, item.State())
-	}
-	return nil
+func (s *suiteState) theItemShouldBeOutstanding(ctx context.Context, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.Truef(t, s.items[title].IsOutstanding(), "expected item %q to be outstanding; got %q", title, s.items[title].State())
 }
 
-func (s *suiteState) anOutstandingItemTitledExistsOnTheList(title, listName string) error {
-	return s.theUserDefinesAnItemTitledOnTheList(title, listName)
+func (s *suiteState) anOutstandingItemTitledExistsOnTheList(ctx context.Context, title, listName string) {
+	s.theUserDefinesAnItemTitledOnTheList(ctx, title, listName)
 }
 
-func (s *suiteState) theOwnerCompletesTheItem(title string) error {
-	item, ok := s.items[title]
-	if !ok {
-		return fmt.Errorf("item %q does not exist", title)
-	}
-	item, event, err := domain.CompleteItem(item)
-	if err != nil {
-		return err
-	}
+func (s *suiteState) theOwnerCompletesTheItem(ctx context.Context, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	item, event, err := domain.CompleteItem(s.items[title])
+	require.NoError(t, err)
 	s.items[item.Title()] = item
 	s.record(event)
-	return nil
 }
 
-func (s *suiteState) theItemShouldBeComplete(title string) error {
-	item, ok := s.items[title]
-	if !ok {
-		return fmt.Errorf("expected item %q to exist", title)
-	}
-	if !item.IsComplete() {
-		return fmt.Errorf("expected item %q to be complete; got %q", title, item.State())
-	}
-	return nil
+func (s *suiteState) theItemShouldBeComplete(ctx context.Context, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.Truef(t, s.items[title].IsComplete(), "expected item %q to be complete; got %q", title, s.items[title].State())
 }
 
-func (s *suiteState) theListShouldHaveAnIDPrefixedWith(name, prefix string) error {
-	list, ok := s.lists[name]
-	if !ok {
-		return fmt.Errorf("expected list %q to exist", name)
-	}
-	if !strings.HasPrefix(list.ID(), prefix) {
-		return fmt.Errorf("expected list %q ID to start with %q; got %q", name, prefix, list.ID())
-	}
-	return nil
+func (s *suiteState) theListShouldHaveAnIDPrefixedWith(ctx context.Context, name, prefix string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.lists, name)
+	require.Truef(t, strings.HasPrefix(s.lists[name].ID(), prefix), "expected list %q ID to start with %q; got %q", name, prefix, s.lists[name].ID())
 }
 
-func (s *suiteState) theItemShouldHaveAnIDPrefixedWith(title, prefix string) error {
-	item, ok := s.items[title]
-	if !ok {
-		return fmt.Errorf("expected item %q to exist", title)
-	}
-	if !strings.HasPrefix(item.ID(), prefix) {
-		return fmt.Errorf("expected item %q ID to start with %q; got %q", title, prefix, item.ID())
-	}
-	return nil
+func (s *suiteState) theItemShouldHaveAnIDPrefixedWith(ctx context.Context, title, prefix string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.Truef(t, strings.HasPrefix(s.items[title].ID(), prefix), "expected item %q ID to start with %q; got %q", title, prefix, s.items[title].ID())
 }
 
-func (s *suiteState) theListsShouldHaveDifferentIDs(nameA, nameB string) error {
-	listA, ok := s.lists[nameA]
-	if !ok {
-		return fmt.Errorf("expected list %q to exist", nameA)
-	}
-	listB, ok := s.lists[nameB]
-	if !ok {
-		return fmt.Errorf("expected list %q to exist", nameB)
-	}
-	if listA.ID() == "" || listB.ID() == "" {
-		return fmt.Errorf("expected both lists to have IDs; got %q and %q", listA.ID(), listB.ID())
-	}
-	if listA.ID() == listB.ID() {
-		return fmt.Errorf("expected lists %q and %q to have different IDs; both were %q", nameA, nameB, listA.ID())
-	}
-	return nil
+func (s *suiteState) theListsShouldHaveDifferentIDs(ctx context.Context, nameA, nameB string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.lists, nameA)
+	require.Contains(t, s.lists, nameB)
+	idA := s.lists[nameA].ID()
+	idB := s.lists[nameB].ID()
+	require.NotEmpty(t, idA)
+	require.NotEmpty(t, idB)
+	require.NotEqual(t, idA, idB)
 }
 
-func (s *suiteState) theItemsShouldHaveDifferentIDs(titleA, titleB string) error {
-	itemA, ok := s.items[titleA]
-	if !ok {
-		return fmt.Errorf("expected item %q to exist", titleA)
-	}
-	itemB, ok := s.items[titleB]
-	if !ok {
-		return fmt.Errorf("expected item %q to exist", titleB)
-	}
-	if itemA.ID() == "" || itemB.ID() == "" {
-		return fmt.Errorf("expected both items to have IDs; got %q and %q", itemA.ID(), itemB.ID())
-	}
-	if itemA.ID() == itemB.ID() {
-		return fmt.Errorf("expected items %q and %q to have different IDs; both were %q", titleA, titleB, itemA.ID())
-	}
-	return nil
+func (s *suiteState) theItemsShouldHaveDifferentIDs(ctx context.Context, titleA, titleB string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, titleA)
+	require.Contains(t, s.items, titleB)
+	idA := s.items[titleA].ID()
+	idB := s.items[titleB].ID()
+	require.NotEmpty(t, idA)
+	require.NotEmpty(t, idB)
+	require.NotEqual(t, idA, idB)
 }
 
-func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfList(eventName, listName string) error {
-	list, ok := s.lists[listName]
-	if !ok {
-		return fmt.Errorf("expected list %q to exist", listName)
-	}
-	return s.eventOccurredWithID(eventName, list.ID())
+func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfList(ctx context.Context, eventName, listName string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.lists, listName)
+	s.eventOccurredWithID(ctx, eventName, s.lists[listName].ID())
 }
 
-func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfItem(eventName, title string) error {
-	item, ok := s.items[title]
-	if !ok {
-		return fmt.Errorf("expected item %q to exist", title)
-	}
-	return s.eventOccurredWithID(eventName, item.ID())
+func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfItem(ctx context.Context, eventName, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	s.eventOccurredWithID(ctx, eventName, s.items[title].ID())
 }
 
-func (s *suiteState) eventOccurredWithID(eventName, id string) error {
-	for _, e := range s.events {
-		if e.Name == eventName && e.ID == id {
-			return nil
-		}
-	}
-	return fmt.Errorf("expected event %q with ID %q; got %v", eventName, id, eventSummaries(s.events))
+func (s *suiteState) eventOccurredWithID(ctx context.Context, eventName, id string) {
+	require.Truef(
+		godog.T(ctx),
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			return e.Name == eventName && e.ID == id
+		}),
+		"expected event %q with ID %q; got %v", eventName, id, eventSummaries(s.events),
+	)
 }
 
 func eventNames(events []domain.Event) []string {
@@ -303,7 +243,5 @@ func TestFeatures(t *testing.T) {
 	if o.ShowStepDefinitions {
 		return
 	}
-	if status != 0 {
-		t.Fatal("non-zero status returned, failed to run feature tests")
-	}
+	require.Zero(t, status, "non-zero status returned, failed to run feature tests")
 }
