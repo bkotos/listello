@@ -20,6 +20,8 @@ var opts = godog.Options{
 	Format: "pretty",
 	Paths:  []string{"features"},
 	FS:     featuresFS,
+	// @wip marks scenarios that are specified but not yet implemented.
+	Tags: "~@wip",
 }
 
 func init() {
