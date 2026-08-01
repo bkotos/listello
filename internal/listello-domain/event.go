@@ -3,6 +3,7 @@ package domain
 // Event is a domain event raised by a command.
 type Event struct {
 	Name string
+	ID   string
 }
 
 // Domain event names (match event-storming language).

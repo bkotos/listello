@@ -216,12 +216,45 @@ func (s *suiteState) theItemsShouldHaveDifferentIDs(titleA, titleB string) error
 	return nil
 }
 
+func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfList(eventName, listName string) error {
+	list, ok := s.lists[listName]
+	if !ok {
+		return fmt.Errorf("expected list %q to exist", listName)
+	}
+	return s.eventOccurredWithID(eventName, list.ID())
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfItem(eventName, title string) error {
+	item, ok := s.items[title]
+	if !ok {
+		return fmt.Errorf("expected item %q to exist", title)
+	}
+	return s.eventOccurredWithID(eventName, item.ID())
+}
+
+func (s *suiteState) eventOccurredWithID(eventName, id string) error {
+	for _, e := range s.events {
+		if e.Name == eventName && e.ID == id {
+			return nil
+		}
+	}
+	return fmt.Errorf("expected event %q with ID %q; got %v", eventName, id, eventSummaries(s.events))
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
 		names[i] = e.Name
 	}
 	return names
+}
+
+func eventSummaries(events []domain.Event) []string {
+	summaries := make([]string, len(events))
+	for i, e := range events {
+		summaries[i] = fmt.Sprintf("%s(%s)", e.Name, e.ID)
+	}
+	return summaries
 }
 
 func InitializeScenario(ctx *godog.ScenarioContext) {
@@ -248,6 +281,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theItemShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the lists "([^"]*)" and "([^"]*)" should have different IDs$`, s.theListsShouldHaveDifferentIDs)
 	ctx.Step(`^the items "([^"]*)" and "([^"]*)" should have different IDs$`, s.theItemsShouldHaveDifferentIDs)
+	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfList)
+	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfItem)
 }
 
 func TestFeatures(t *testing.T) {
