@@ -12,7 +12,7 @@ Feature: Create and complete a list item
   Scenario: Defining an item on a list
     Given a list named "Next actions" exists
     When the user defines an item titled "Buy milk" on the list "Next actions"
-    Then a "Defined item created" event should have occurred
+    Then a "Item defined" event should have occurred
     And the item "Buy milk" should be on the list "Next actions"
     And the item "Buy milk" should be incomplete
 
@@ -28,7 +28,7 @@ Feature: Create and complete a list item
     And the user defines an item titled "Buy milk" on the list "Next actions"
     And the owner completes the item "Buy milk"
     Then a "List created" event should have occurred
-    And a "Defined item created" event should have occurred
+    And a "Item defined" event should have occurred
     And a "Item completed" event should have occurred
     And the list "Next actions" should exist
     And the item "Buy milk" should be on the list "Next actions"

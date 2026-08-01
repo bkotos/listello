@@ -75,7 +75,7 @@ This document organizes the Listello event storming board by aggregate and maps:
 | Actor | Command | Domain Event |
 |---|---|---|
 | User | Capture inbox item | Item captured |
-| User | Define item | Defined item created |
+| User | Define item | Item defined |
 
 ## Item Details
 
@@ -155,7 +155,7 @@ User
   ├─ Capture inbox item
   │    └─ Item captured
   ├─ Define item
-  │    └─ Defined item created
+  │    └─ Item defined
   ├─ Comment
   │    └─ Item commented on
   └─ Delete comment
