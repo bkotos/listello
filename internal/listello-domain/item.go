@@ -47,11 +47,12 @@ func DefineItem(title string) (Item, Event, error) {
 	if title == "" {
 		return Item{}, Event{}, fmt.Errorf("item title is required")
 	}
-	return Item{id: newID("IT_"), title: title, state: ItemOutstanding}, Event{Name: EventItemDefined}, nil
+	item := Item{id: newID("IT_"), title: title, state: ItemOutstanding}
+	return item, Event{Name: EventItemDefined, ID: item.id}, nil
 }
 
 // CompleteItem completes an item and raises an Item completed event.
 func CompleteItem(item Item) (Item, Event, error) {
 	item.state = ItemComplete
-	return item, Event{Name: EventItemCompleted}, nil
+	return item, Event{Name: EventItemCompleted, ID: item.id}, nil
 }

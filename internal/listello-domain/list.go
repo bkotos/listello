@@ -23,5 +23,6 @@ func CreateList(name string) (List, Event, error) {
 	if name == "" {
 		return List{}, Event{}, fmt.Errorf("list name is required")
 	}
-	return List{id: newID("LS_"), name: name}, Event{Name: EventListCreated}, nil
+	list := List{id: newID("LS_"), name: name}
+	return list, Event{Name: EventListCreated, ID: list.id}, nil
 }
