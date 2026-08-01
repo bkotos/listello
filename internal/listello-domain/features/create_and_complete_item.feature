@@ -1,4 +1,3 @@
-@wip
 Feature: Create and complete a list item
   As a user
   I want to create a list, define an item on it, and complete that item
@@ -9,6 +8,7 @@ Feature: Create and complete a list item
     Then a "List created" event should have occurred
     And the list "Next actions" should exist
 
+  @wip
   Scenario: Defining an item on a list
     Given a list named "Next actions" exists
     When the user defines an item titled "Buy milk" on the list "Next actions"
@@ -16,6 +16,7 @@ Feature: Create and complete a list item
     And the item "Buy milk" should be on the list "Next actions"
     And the item "Buy milk" should be outstanding
 
+  @wip
   Scenario: Completing an item
     Given a list named "Next actions" exists
     And an outstanding item titled "Buy milk" exists on the list "Next actions"
@@ -23,6 +24,7 @@ Feature: Create and complete a list item
     Then a "Item completed" event should have occurred
     And the item "Buy milk" should be complete
 
+  @wip
   Scenario: Completing work from a new list through to done
     When the user creates a list named "Next actions"
     And the user defines an item titled "Buy milk" on the list "Next actions"
