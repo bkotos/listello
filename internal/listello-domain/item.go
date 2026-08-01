@@ -18,7 +18,10 @@ func (i Item) Outstanding() bool {
 	return i.outstanding
 }
 
-// DefineItem creates a new item and raises an Item defined event.
+// DefineItem creates a new outstanding item and raises an Item defined event.
 func DefineItem(title string) (Item, Event, error) {
-	return Item{}, Event{}, fmt.Errorf("not implemented")
+	if title == "" {
+		return Item{}, Event{}, fmt.Errorf("item title is required")
+	}
+	return Item{title: title, outstanding: true}, Event{Name: EventItemDefined}, nil
 }
