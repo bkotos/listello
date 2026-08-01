@@ -12,8 +12,14 @@ const (
 
 // Item is a unit of work.
 type Item struct {
+	id    string
 	title string
 	state ItemState
+}
+
+// ID returns the item ID.
+func (i Item) ID() string {
+	return i.id
 }
 
 // Title returns the item title.
@@ -41,7 +47,7 @@ func DefineItem(title string) (Item, Event, error) {
 	if title == "" {
 		return Item{}, Event{}, fmt.Errorf("item title is required")
 	}
-	return Item{title: title, state: ItemOutstanding}, Event{Name: EventItemDefined}, nil
+	return Item{id: newID("IT_"), title: title, state: ItemOutstanding}, Event{Name: EventItemDefined}, nil
 }
 
 // CompleteItem completes an item and raises an Item completed event.

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/cucumber/godog"
@@ -157,6 +158,64 @@ func (s *suiteState) theItemShouldBeComplete(title string) error {
 	return nil
 }
 
+func (s *suiteState) theListShouldHaveAnIDPrefixedWith(name, prefix string) error {
+	list, ok := s.lists[name]
+	if !ok {
+		return fmt.Errorf("expected list %q to exist", name)
+	}
+	if !strings.HasPrefix(list.ID(), prefix) {
+		return fmt.Errorf("expected list %q ID to start with %q; got %q", name, prefix, list.ID())
+	}
+	return nil
+}
+
+func (s *suiteState) theItemShouldHaveAnIDPrefixedWith(title, prefix string) error {
+	item, ok := s.items[title]
+	if !ok {
+		return fmt.Errorf("expected item %q to exist", title)
+	}
+	if !strings.HasPrefix(item.ID(), prefix) {
+		return fmt.Errorf("expected item %q ID to start with %q; got %q", title, prefix, item.ID())
+	}
+	return nil
+}
+
+func (s *suiteState) theListsShouldHaveDifferentIDs(nameA, nameB string) error {
+	listA, ok := s.lists[nameA]
+	if !ok {
+		return fmt.Errorf("expected list %q to exist", nameA)
+	}
+	listB, ok := s.lists[nameB]
+	if !ok {
+		return fmt.Errorf("expected list %q to exist", nameB)
+	}
+	if listA.ID() == "" || listB.ID() == "" {
+		return fmt.Errorf("expected both lists to have IDs; got %q and %q", listA.ID(), listB.ID())
+	}
+	if listA.ID() == listB.ID() {
+		return fmt.Errorf("expected lists %q and %q to have different IDs; both were %q", nameA, nameB, listA.ID())
+	}
+	return nil
+}
+
+func (s *suiteState) theItemsShouldHaveDifferentIDs(titleA, titleB string) error {
+	itemA, ok := s.items[titleA]
+	if !ok {
+		return fmt.Errorf("expected item %q to exist", titleA)
+	}
+	itemB, ok := s.items[titleB]
+	if !ok {
+		return fmt.Errorf("expected item %q to exist", titleB)
+	}
+	if itemA.ID() == "" || itemB.ID() == "" {
+		return fmt.Errorf("expected both items to have IDs; got %q and %q", itemA.ID(), itemB.ID())
+	}
+	if itemA.ID() == itemB.ID() {
+		return fmt.Errorf("expected items %q and %q to have different IDs; both were %q", titleA, titleB, itemA.ID())
+	}
+	return nil
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
@@ -185,6 +244,10 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^an outstanding item titled "([^"]*)" exists on the list "([^"]*)"$`, s.anOutstandingItemTitledExistsOnTheList)
 	ctx.Step(`^the owner completes the item "([^"]*)"$`, s.theOwnerCompletesTheItem)
 	ctx.Step(`^the item "([^"]*)" should be complete$`, s.theItemShouldBeComplete)
+	ctx.Step(`^the list "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theListShouldHaveAnIDPrefixedWith)
+	ctx.Step(`^the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theItemShouldHaveAnIDPrefixedWith)
+	ctx.Step(`^the lists "([^"]*)" and "([^"]*)" should have different IDs$`, s.theListsShouldHaveDifferentIDs)
+	ctx.Step(`^the items "([^"]*)" and "([^"]*)" should have different IDs$`, s.theItemsShouldHaveDifferentIDs)
 }
 
 func TestFeatures(t *testing.T) {

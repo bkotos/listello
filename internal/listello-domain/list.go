@@ -4,7 +4,13 @@ import "fmt"
 
 // List is a named list.
 type List struct {
+	id   string
 	name string
+}
+
+// ID returns the list ID.
+func (l List) ID() string {
+	return l.id
 }
 
 // Name returns the list name.
@@ -17,5 +23,5 @@ func CreateList(name string) (List, Event, error) {
 	if name == "" {
 		return List{}, Event{}, fmt.Errorf("list name is required")
 	}
-	return List{name: name}, Event{Name: EventListCreated}, nil
+	return List{id: newID("LS_"), name: name}, Event{Name: EventListCreated}, nil
 }
