@@ -111,6 +111,18 @@ func (i *Item) Tag(tag string) (Event, error) {
 	return NewEvent(EventTagAddedToItem, EventMetadataTagAddedToItem{ID: i.ID, Tag: tag}, 1), nil
 }
 
+// Untag removes a tag from the item and raises a TagRemovedFromItem event.
+func (i *Item) Untag(tag string) (Event, error) {
+	tags := make([]string, 0, len(i.Tags))
+	for _, t := range i.Tags {
+		if t != tag {
+			tags = append(tags, t)
+		}
+	}
+	i.Tags = tags
+	return NewEvent(EventTagRemovedFromItem, EventMetadataTagRemovedFromItem{ID: i.ID, Tag: tag}, 1), nil
+}
+
 // ChangePriority changes the item's priority and raises a SubtaskPriorityChanged event.
 func (i *Item) ChangePriority(priority ItemPriority) (Event, error) {
 	i.Priority = priority

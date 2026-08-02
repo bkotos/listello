@@ -81,6 +81,13 @@ Feature: Capture and refine an inbox item
     And a "TagAddedToItem" event should have occurred with tag "health"
     And the item "Schedule dentist" should be tagged with "health"
 
+  Scenario: Untagging a captured item
+    Given a captured item "Schedule dentist" exists
+    And the owner tags the item "Schedule dentist" with "health"
+    When the owner untags the item "Schedule dentist" with "health"
+    Then a "TagRemovedFromItem" event should have occurred with the ID of item "Schedule dentist"
+    And the item "Schedule dentist" should not be tagged with "health"
+
   Scenario Outline: Changing the priority of a captured item
     Given a captured item "Schedule dentist" exists
     When the owner changes the priority of the item "Schedule dentist" to "<priority>"

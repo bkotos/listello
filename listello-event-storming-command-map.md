@@ -86,7 +86,7 @@ This document organizes the Listello event storming board by aggregate and maps:
 | Requester or Owner | Modify due date | Due date added to item | ✅ |
 | Requester or Owner | Remove due date | Due date removed from item | ✅ |
 | Owner | Tag item | Tag added to item | ✅ |
-| Owner | Untag item | Tag removed from item | |
+| Owner | Untag item | Tag removed from item | ✅ |
 | Owner | Link as child | Item linked as child of item | |
 | Owner | Prioritize subtask | Subtask priority changed | ✅ |
 

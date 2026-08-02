@@ -246,6 +246,20 @@ func (s *suiteState) theItemShouldBeTaggedWith(ctx context.Context, title, tag s
 	require.Contains(t, s.items[title].Tags, tag)
 }
 
+func (s *suiteState) theOwnerUntagsTheItemWith(ctx context.Context, title, tag string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	event, err := s.items[title].Untag(tag)
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theItemShouldNotBeTaggedWith(ctx context.Context, title, tag string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.NotContains(t, s.items[title].Tags, tag)
+}
+
 func (s *suiteState) theOwnerChangesThePriorityOfTheItemTo(ctx context.Context, title, priority string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
@@ -413,6 +427,8 @@ func eventEntityID(e domain.Event) string {
 		return meta.ID
 	case domain.EventMetadataTagAddedToItem:
 		return meta.ID
+	case domain.EventMetadataTagRemovedFromItem:
+		return meta.ID
 	case domain.EventMetadataSubtaskPriorityChanged:
 		return meta.ID
 	case domain.EventMetadataItemMovedToOtherList:
@@ -489,6 +505,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the item "([^"]*)" should have no due date$`, s.theItemShouldHaveNoDueDate)
 	ctx.Step(`^the owner tags the item "([^"]*)" with "([^"]*)"$`, s.theOwnerTagsTheItemWith)
 	ctx.Step(`^the item "([^"]*)" should be tagged with "([^"]*)"$`, s.theItemShouldBeTaggedWith)
+	ctx.Step(`^the owner untags the item "([^"]*)" with "([^"]*)"$`, s.theOwnerUntagsTheItemWith)
+	ctx.Step(`^the item "([^"]*)" should not be tagged with "([^"]*)"$`, s.theItemShouldNotBeTaggedWith)
 	ctx.Step(`^the owner changes the priority of the item "([^"]*)" to "([^"]*)"$`, s.theOwnerChangesThePriorityOfTheItemTo)
 	ctx.Step(`^the item "([^"]*)" should have priority "([^"]*)"$`, s.theItemShouldHavePriority)
 	ctx.Step(`^the owner moves the item "([^"]*)" to the list "([^"]*)"$`, s.theOwnerMovesTheItemToTheList)

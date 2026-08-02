@@ -15,6 +15,7 @@ const (
 	EventDueDateAddedToItem     EventName = "DueDateAddedToItem"
 	EventDueDateRemovedFromItem EventName = "DueDateRemovedFromItem"
 	EventTagAddedToItem         EventName = "TagAddedToItem"
+	EventTagRemovedFromItem     EventName = "TagRemovedFromItem"
 	EventSubtaskPriorityChanged EventName = "SubtaskPriorityChanged"
 	EventItemMovedToOtherList   EventName = "ItemMovedToOtherList"
 )
@@ -84,6 +85,12 @@ type EventMetadataDueDateRemovedFromItem struct {
 
 // EventMetadataTagAddedToItem is the payload for a TagAddedToItem event.
 type EventMetadataTagAddedToItem struct {
+	ID  string
+	Tag string
+}
+
+// EventMetadataTagRemovedFromItem is the payload for a TagRemovedFromItem event.
+type EventMetadataTagRemovedFromItem struct {
 	ID  string
 	Tag string
 }
