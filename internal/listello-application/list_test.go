@@ -14,13 +14,14 @@ import (
 
 func TestListService_CreateList_PersistsList(t *testing.T) {
 	// Arrange
+	const listName = "Next actions"
 	repo := NewMockListRepository(t)
 	publisher := NewMockEventPublisher(t)
 	svc := application.NewListService(repo, publisher)
 
 	repo.EXPECT().
 		Save(mock.MatchedBy(func(list domain.List) bool {
-			return list.Name() == "Next actions" && strings.HasPrefix(list.ID(), "LS_")
+			return list.Name() == listName && strings.HasPrefix(list.ID(), "LS_")
 		})).
 		Return(nil)
 	publisher.EXPECT().
@@ -28,16 +29,17 @@ func TestListService_CreateList_PersistsList(t *testing.T) {
 		Return(nil)
 
 	// Act
-	list, err := svc.CreateList("Next actions")
+	list, err := svc.CreateList(listName)
 
 	// Assert
 	require.NoError(t, err)
-	assert.Equal(t, "Next actions", list.Name())
+	assert.Equal(t, listName, list.Name())
 	assert.True(t, strings.HasPrefix(list.ID(), "LS_"))
 }
 
 func TestListService_CreateList_PublishesEvent(t *testing.T) {
 	// Arrange
+	const listName = "Next actions"
 	repo := NewMockListRepository(t)
 	publisher := NewMockEventPublisher(t)
 	svc := application.NewListService(repo, publisher)
@@ -52,7 +54,7 @@ func TestListService_CreateList_PublishesEvent(t *testing.T) {
 		Return(nil)
 
 	// Act
-	list, err := svc.CreateList("Next actions")
+	list, err := svc.CreateList(listName)
 
 	// Assert
 	require.NoError(t, err)
