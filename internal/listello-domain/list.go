@@ -20,6 +20,9 @@ func CreateList(name string) (List, Event, error) {
 	if name == "" {
 		return List{}, Event{}, fmt.Errorf("list name is required")
 	}
+	if name == inboxListName {
+		return List{}, Event{}, fmt.Errorf("cannot create a list named Inbox")
+	}
 	list := List{ID: newID("LS_"), Name: name}
 	return list, Event{
 		Name:     EventListCreated,

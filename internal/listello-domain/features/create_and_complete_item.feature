@@ -3,10 +3,19 @@ Feature: Create and complete a list item
   I want to create a list, define an item on it, and complete that item
   So that I can track work from empty list through to done
 
+  Scenario: Creating a list named Inbox fails
+    When the user creates a list named "Inbox"
+    Then creating the list should fail with error "cannot create a list named Inbox"
+
   Scenario: Creating a list
     When the user creates a list named "Next actions"
     Then a "List created" event should have occurred
     And the list "Next actions" should exist
+
+  Scenario: Defining an item on the inbox fails
+    Given an inbox list exists
+    When the user defines an item titled "Buy milk" on the list "Inbox"
+    Then defining the item should fail with error "can only capture items on inbox lists, not define them"
 
   Scenario: Defining an item on a list
     Given a list named "Next actions" exists

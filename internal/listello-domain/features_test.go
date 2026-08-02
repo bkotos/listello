@@ -61,7 +61,10 @@ func (s *suiteState) thePlaceholderShouldExist(ctx context.Context) {
 
 func (s *suiteState) theUserCreatesAListNamed(ctx context.Context, name string) {
 	list, event, err := domain.CreateList(name)
-	require.NoError(godog.T(ctx), err)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
 	s.lists[list.Name] = list
 	s.record(event)
 }
@@ -88,7 +91,10 @@ func (s *suiteState) theUserDefinesAnItemTitledOnTheList(ctx context.Context, ti
 	t := godog.T(ctx)
 	require.Contains(t, s.lists, listName)
 	item, event, err := domain.DefineItem(s.lists[listName], title)
-	require.NoError(t, err)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
 	s.items[item.Title] = &item
 	s.record(event)
 }
@@ -125,13 +131,19 @@ func (s *suiteState) theItemShouldBeComplete(ctx context.Context, title string) 
 	require.Truef(t, s.items[title].IsComplete(), "expected item %q to be complete; got %q", title, s.items[title].State)
 }
 
+func (s *suiteState) anInboxListExists(ctx context.Context) {
+	s.inboxList(ctx)
+}
+
 func (s *suiteState) inboxList(ctx context.Context) domain.List {
 	const inboxName = "Inbox"
 	if list, ok := s.lists[inboxName]; ok {
 		return list
 	}
-	s.theUserCreatesAListNamed(ctx, inboxName)
-	return s.lists[inboxName]
+	// Inbox is not created via CreateList; seed it for capture/define scenarios.
+	list := domain.List{ID: "LS_inbox", Name: inboxName}
+	s.lists[inboxName] = list
+	return list
 }
 
 func (s *suiteState) theUserCapturesAnInboxItem(ctx context.Context, title string) {
@@ -149,6 +161,10 @@ func (s *suiteState) theUserCapturesAnInboxItemOnTheList(ctx context.Context, ti
 }
 
 func (s *suiteState) theCaptureShouldFailWithError(ctx context.Context, message string) {
+	s.theOperationShouldFailWithError(ctx, message)
+}
+
+func (s *suiteState) theOperationShouldFailWithError(ctx context.Context, message string) {
 	require.EqualError(godog.T(ctx), s.lastErr, message)
 }
 
@@ -349,12 +365,15 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred$`, s.aEventShouldHaveOccurred)
 	ctx.Step(`^the list "([^"]*)" should exist$`, s.theListShouldExist)
 	ctx.Step(`^a list named "([^"]*)" exists$`, s.aListNamedExists)
+	ctx.Step(`^an inbox list exists$`, s.anInboxListExists)
 	ctx.Step(`^the user defines an item titled "([^"]*)" on the list "([^"]*)"$`, s.theUserDefinesAnItemTitledOnTheList)
 	ctx.Step(`^the item "([^"]*)" should be on the list "([^"]*)"$`, s.theItemShouldBeOnTheList)
 	ctx.Step(`^the item "([^"]*)" should be outstanding$`, s.theItemShouldBeOutstanding)
 	ctx.Step(`^an outstanding item titled "([^"]*)" exists on the list "([^"]*)"$`, s.anOutstandingItemTitledExistsOnTheList)
 	ctx.Step(`^the owner completes the item "([^"]*)"$`, s.theOwnerCompletesTheItem)
 	ctx.Step(`^the item "([^"]*)" should be complete$`, s.theItemShouldBeComplete)
+	ctx.Step(`^creating the list should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
+	ctx.Step(`^defining the item should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^the user captures an inbox item "([^"]*)"$`, s.theUserCapturesAnInboxItem)
 	ctx.Step(`^the user captures an inbox item "([^"]*)" on the list "([^"]*)"$`, s.theUserCapturesAnInboxItemOnTheList)
 	ctx.Step(`^the capture should fail with error "([^"]*)"$`, s.theCaptureShouldFailWithError)

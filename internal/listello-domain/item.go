@@ -44,6 +44,9 @@ func (i Item) IsComplete() bool {
 
 // DefineItem creates a new outstanding item on a list and raises an Item defined event.
 func DefineItem(list List, title string) (Item, Event, error) {
+	if list.IsInbox() {
+		return Item{}, Event{}, fmt.Errorf("can only capture items on inbox lists, not define them")
+	}
 	item := Item{ID: newID("IT_"), ListID: list.ID, Title: title, State: ItemOutstanding}
 	return item, Event{
 		Name:     EventItemDefined,
