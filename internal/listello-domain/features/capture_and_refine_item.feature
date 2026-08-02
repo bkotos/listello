@@ -1,4 +1,3 @@
-@wip
 Feature: Capture and refine an inbox item
   As a user
   I want to capture an inbox item and refine its details before placing it on a list
@@ -29,9 +28,9 @@ Feature: Capture and refine an inbox item
 
   Scenario: Modifying the due date of a captured item
     Given a captured item "Schedule dentist" exists
-    When the owner modifies the due date of the item "Schedule dentist" to "2026-08-03"
+    When the owner modifies the due date of the item "Schedule dentist" to "2026-08-03T00:00:00Z"
     Then a "Due date added to item" event should have occurred
-    And the item "Schedule dentist" should be due on "2026-08-03"
+    And the item "Schedule dentist" should be due on "2026-08-03T00:00:00Z"
 
   Scenario: Tagging a captured item
     Given a captured item "Schedule dentist" exists
@@ -70,7 +69,7 @@ Feature: Capture and refine an inbox item
     When the user captures an inbox item "dentist"
     And the owner modifies the title of the item "dentist" to "Schedule dentist"
     And the owner modifies the description of the item "Schedule dentist" to "Call the clinic on Monday"
-    And the owner modifies the due date of the item "Schedule dentist" to "2026-08-03"
+    And the owner modifies the due date of the item "Schedule dentist" to "2026-08-03T00:00:00Z"
     And the owner tags the item "Schedule dentist" with "health"
     And the owner changes the priority of the item "Schedule dentist" to "high"
     And the owner moves the item "Schedule dentist" to the list "Next actions"
@@ -82,7 +81,7 @@ Feature: Capture and refine an inbox item
     And a "Subtask priority changed" event should have occurred
     And a "Item moved to other list" event should have occurred
     And the item "Schedule dentist" should have description "Call the clinic on Monday"
-    And the item "Schedule dentist" should be due on "2026-08-03"
+    And the item "Schedule dentist" should be due on "2026-08-03T00:00:00Z"
     And the item "Schedule dentist" should be tagged with "health"
     And the item "Schedule dentist" should have priority "high"
     And the item "Schedule dentist" should be on the list "Next actions"

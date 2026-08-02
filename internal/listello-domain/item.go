@@ -1,5 +1,9 @@
 package domain
 
+import "fmt"
+
+const inboxListName = "Inbox"
+
 // ItemState is the lifecycle state of an item.
 type ItemState string
 
@@ -8,12 +12,26 @@ const (
 	ItemComplete    ItemState = "complete"
 )
 
+// ItemPriority is the priority level of an item.
+type ItemPriority string
+
+const (
+	PriorityNone   ItemPriority = "no priority"
+	PriorityLow    ItemPriority = "low"
+	PriorityMedium ItemPriority = "medium"
+	PriorityHigh   ItemPriority = "high"
+)
+
 // Item is a unit of work.
 type Item struct {
-	ID     string
-	ListID string
-	Title  string
-	State  ItemState
+	ID          string
+	ListID      string
+	Title       string
+	Description string
+	DueDate     string
+	Tags        []string
+	Priority    ItemPriority
+	State       ItemState
 }
 
 // IsOutstanding reports whether the item is outstanding.
@@ -35,6 +53,24 @@ func DefineItem(list List, title string) (Item, Event, error) {
 	}, nil
 }
 
+// CaptureItem captures an item onto a list and raises an Item captured event.
+// Only the inbox list is valid; capturing onto any other list fails.
+func CaptureItem(list List, title string) (Item, Event, error) {
+	if list.Name != inboxListName {
+		return Item{}, Event{}, fmt.Errorf("can only capture items to the inbox")
+	}
+	item := Item{
+		ID:       newID("IT_"),
+		ListID:   list.ID,
+		Title:    title,
+		Priority: PriorityNone,
+		State:    ItemOutstanding,
+	}
+	return item, Event{Name: EventItemCaptured}, nil
+}
+
+// TODO: convert existing package funcs (e.g. CompleteItem, DefineItem) to Item methods.
+
 // CompleteItem completes an item and raises an Item completed event.
 func CompleteItem(item Item) (Item, Event, error) {
 	item.State = ItemComplete
@@ -42,4 +78,40 @@ func CompleteItem(item Item) (Item, Event, error) {
 		Name:     EventItemCompleted,
 		Metadata: ItemCompletedMetadata{ID: item.ID},
 	}, nil
+}
+
+// ModifyTitle changes the item's title and raises an Item title changed event.
+func (i *Item) ModifyTitle(title string) (Event, error) {
+	i.Title = title
+	return Event{Name: EventItemTitleChanged}, nil
+}
+
+// ModifyDescription changes the item's description and raises an Item description changed event.
+func (i *Item) ModifyDescription(description string) (Event, error) {
+	i.Description = description
+	return Event{Name: EventItemDescriptionChanged}, nil
+}
+
+// ModifyDueDate sets the item's due date and raises a Due date added to item event.
+func (i *Item) ModifyDueDate(dueDate string) (Event, error) {
+	i.DueDate = dueDate
+	return Event{Name: EventDueDateAddedToItem}, nil
+}
+
+// Tag adds a tag to the item and raises a Tag added to item event.
+func (i *Item) Tag(tag string) (Event, error) {
+	i.Tags = append(i.Tags, tag)
+	return Event{Name: EventTagAddedToItem}, nil
+}
+
+// ChangePriority changes the item's priority and raises a Subtask priority changed event.
+func (i *Item) ChangePriority(priority ItemPriority) (Event, error) {
+	i.Priority = priority
+	return Event{Name: EventSubtaskPriorityChanged}, nil
+}
+
+// Move moves the item to another list and raises an Item moved to other list event.
+func (i *Item) Move(list List) (Event, error) {
+	i.ListID = list.ID
+	return Event{Name: EventItemMovedToOtherList}, nil
 }

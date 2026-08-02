@@ -24,7 +24,14 @@ type ItemCompletedMetadata struct {
 
 // Domain event names (match event-storming language).
 const (
-	EventListCreated   = "List created"
-	EventItemDefined   = "Item defined"
-	EventItemCompleted = "Item completed"
+	EventListCreated            = "List created"
+	EventItemDefined            = "Item defined"
+	EventItemCompleted          = "Item completed"
+	EventItemCaptured           = "Item captured"
+	EventItemTitleChanged       = "Item title changed"
+	EventItemDescriptionChanged = "Item description changed"
+	EventDueDateAddedToItem     = "Due date added to item"
+	EventTagAddedToItem         = "Tag added to item"
+	EventSubtaskPriorityChanged = "Subtask priority changed"
+	EventItemMovedToOtherList   = "Item moved to other list"
 )

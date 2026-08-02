@@ -34,15 +34,17 @@ func init() {
 type suiteState struct {
 	placeholder *domain.Placeholder
 	lists       map[string]domain.List
-	items       map[string]domain.Item
+	items       map[string]*domain.Item
 	events      []domain.Event
+	lastErr     error
 }
 
 func (s *suiteState) reset() {
 	s.placeholder = nil
 	s.lists = make(map[string]domain.List)
-	s.items = make(map[string]domain.Item)
+	s.items = make(map[string]*domain.Item)
 	s.events = nil
+	s.lastErr = nil
 }
 
 func (s *suiteState) record(event domain.Event) {
@@ -87,7 +89,7 @@ func (s *suiteState) theUserDefinesAnItemTitledOnTheList(ctx context.Context, ti
 	require.Contains(t, s.lists, listName)
 	item, event, err := domain.DefineItem(s.lists[listName], title)
 	require.NoError(t, err)
-	s.items[item.Title] = item
+	s.items[item.Title] = &item
 	s.record(event)
 }
 
@@ -111,9 +113,9 @@ func (s *suiteState) anOutstandingItemTitledExistsOnTheList(ctx context.Context,
 func (s *suiteState) theOwnerCompletesTheItem(ctx context.Context, title string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
-	item, event, err := domain.CompleteItem(s.items[title])
+	item, event, err := domain.CompleteItem(*s.items[title])
 	require.NoError(t, err)
-	s.items[item.Title] = item
+	s.items[item.Title] = &item
 	s.record(event)
 }
 
@@ -121,6 +123,117 @@ func (s *suiteState) theItemShouldBeComplete(ctx context.Context, title string) 
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
 	require.Truef(t, s.items[title].IsComplete(), "expected item %q to be complete; got %q", title, s.items[title].State)
+}
+
+func (s *suiteState) inboxList(ctx context.Context) domain.List {
+	const inboxName = "Inbox"
+	if list, ok := s.lists[inboxName]; ok {
+		return list
+	}
+	s.theUserCreatesAListNamed(ctx, inboxName)
+	return s.lists[inboxName]
+}
+
+func (s *suiteState) theUserCapturesAnInboxItem(ctx context.Context, title string) {
+	item, event, err := domain.CaptureItem(s.inboxList(ctx), title)
+	require.NoError(godog.T(ctx), err)
+	s.items[item.Title] = &item
+	s.record(event)
+}
+
+func (s *suiteState) theUserCapturesAnInboxItemOnTheList(ctx context.Context, title, listName string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.lists, listName)
+	_, _, err := domain.CaptureItem(s.lists[listName], title)
+	s.lastErr = err
+}
+
+func (s *suiteState) theCaptureShouldFailWithError(ctx context.Context, message string) {
+	require.EqualError(godog.T(ctx), s.lastErr, message)
+}
+
+func (s *suiteState) aCapturedItemExists(ctx context.Context, title string) {
+	s.theUserCapturesAnInboxItem(ctx, title)
+}
+
+func (s *suiteState) theOwnerModifiesTheTitleOfTheItemTo(ctx context.Context, title, newTitle string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	event, err := s.items[title].ModifyTitle(newTitle)
+	require.NoError(t, err)
+	item := s.items[title]
+	delete(s.items, title)
+	s.items[item.Title] = item
+	s.record(event)
+}
+
+func (s *suiteState) theItemShouldExist(ctx context.Context, title string) {
+	require.Contains(godog.T(ctx), s.items, title)
+}
+
+func (s *suiteState) theOwnerModifiesTheDescriptionOfTheItemTo(ctx context.Context, title, description string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	event, err := s.items[title].ModifyDescription(description)
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theItemShouldHaveDescription(ctx context.Context, title, description string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.Equal(t, description, s.items[title].Description)
+}
+
+func (s *suiteState) theOwnerModifiesTheDueDateOfTheItemTo(ctx context.Context, title, dueDate string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	event, err := s.items[title].ModifyDueDate(dueDate)
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theItemShouldBeDueOn(ctx context.Context, title, dueDate string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.Equal(t, dueDate, s.items[title].DueDate)
+}
+
+func (s *suiteState) theOwnerTagsTheItemWith(ctx context.Context, title, tag string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	event, err := s.items[title].Tag(tag)
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theItemShouldBeTaggedWith(ctx context.Context, title, tag string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.Contains(t, s.items[title].Tags, tag)
+}
+
+func (s *suiteState) theOwnerChangesThePriorityOfTheItemTo(ctx context.Context, title, priority string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	event, err := s.items[title].ChangePriority(domain.ItemPriority(priority))
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theItemShouldHavePriority(ctx context.Context, title, priority string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.Equal(t, domain.ItemPriority(priority), s.items[title].Priority)
+}
+
+func (s *suiteState) theOwnerMovesTheItemToTheList(ctx context.Context, title, listName string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.Contains(t, s.lists, listName)
+	event, err := s.items[title].Move(s.lists[listName])
+	require.NoError(t, err)
+	s.record(event)
 }
 
 func (s *suiteState) theListShouldHaveAnIDPrefixedWith(ctx context.Context, name, prefix string) {
@@ -242,6 +355,21 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^an outstanding item titled "([^"]*)" exists on the list "([^"]*)"$`, s.anOutstandingItemTitledExistsOnTheList)
 	ctx.Step(`^the owner completes the item "([^"]*)"$`, s.theOwnerCompletesTheItem)
 	ctx.Step(`^the item "([^"]*)" should be complete$`, s.theItemShouldBeComplete)
+	ctx.Step(`^the user captures an inbox item "([^"]*)"$`, s.theUserCapturesAnInboxItem)
+	ctx.Step(`^the user captures an inbox item "([^"]*)" on the list "([^"]*)"$`, s.theUserCapturesAnInboxItemOnTheList)
+	ctx.Step(`^the capture should fail with error "([^"]*)"$`, s.theCaptureShouldFailWithError)
+	ctx.Step(`^a captured item "([^"]*)" exists$`, s.aCapturedItemExists)
+	ctx.Step(`^the owner modifies the title of the item "([^"]*)" to "([^"]*)"$`, s.theOwnerModifiesTheTitleOfTheItemTo)
+	ctx.Step(`^the item "([^"]*)" should exist$`, s.theItemShouldExist)
+	ctx.Step(`^the owner modifies the description of the item "([^"]*)" to "([^"]*)"$`, s.theOwnerModifiesTheDescriptionOfTheItemTo)
+	ctx.Step(`^the item "([^"]*)" should have description "([^"]*)"$`, s.theItemShouldHaveDescription)
+	ctx.Step(`^the owner modifies the due date of the item "([^"]*)" to "([^"]*)"$`, s.theOwnerModifiesTheDueDateOfTheItemTo)
+	ctx.Step(`^the item "([^"]*)" should be due on "([^"]*)"$`, s.theItemShouldBeDueOn)
+	ctx.Step(`^the owner tags the item "([^"]*)" with "([^"]*)"$`, s.theOwnerTagsTheItemWith)
+	ctx.Step(`^the item "([^"]*)" should be tagged with "([^"]*)"$`, s.theItemShouldBeTaggedWith)
+	ctx.Step(`^the owner changes the priority of the item "([^"]*)" to "([^"]*)"$`, s.theOwnerChangesThePriorityOfTheItemTo)
+	ctx.Step(`^the item "([^"]*)" should have priority "([^"]*)"$`, s.theItemShouldHavePriority)
+	ctx.Step(`^the owner moves the item "([^"]*)" to the list "([^"]*)"$`, s.theOwnerMovesTheItemToTheList)
 	ctx.Step(`^the list "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theListShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theItemShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the lists "([^"]*)" and "([^"]*)" should have different IDs$`, s.theListsShouldHaveDifferentIDs)
