@@ -84,6 +84,12 @@ func CompleteItem(item Item) (Item, Event, error) {
 	return item, NewEvent(EventItemCompleted, EventMetadataItemCompleted{ID: item.ID}, 1), nil
 }
 
+// UncompleteItem uncompletes an item and raises an ItemUncompleted event.
+func UncompleteItem(item Item) (Item, Event, error) {
+	item.State = ItemOutstanding
+	return item, NewEvent(EventItemUncompleted, EventMetadataItemUncompleted{ID: item.ID}, 1), nil
+}
+
 // ModifyTitle changes the item's title and raises an ItemTitleChanged event.
 func (i *Item) ModifyTitle(title string) (Event, error) {
 	i.Title = title

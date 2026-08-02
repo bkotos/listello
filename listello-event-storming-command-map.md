@@ -117,7 +117,7 @@ This document organizes the Listello event storming board by aggregate and maps:
 | Actor | Command | Domain Event | Implemented |
 |---|---|---|---|
 | Requester or Owner | Complete item | Item completed | ✅ |
-| Requester or Owner | Uncomplete item | Item uncompleted | |
+| Requester or Owner | Uncomplete item | Item uncompleted | ✅ |
 | Requester or Owner | Delete item | Item deleted | |
 
 ---

@@ -132,6 +132,15 @@ func (s *suiteState) theItemShouldBeComplete(ctx context.Context, title string) 
 	require.Truef(t, s.items[title].IsComplete(), "expected item %q to be complete; got %q", title, s.items[title].State)
 }
 
+func (s *suiteState) theOwnerUncompletesTheItem(ctx context.Context, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	item, event, err := domain.UncompleteItem(*s.items[title])
+	require.NoError(t, err)
+	s.items[item.Title] = &item
+	s.record(event)
+}
+
 func (s *suiteState) anInboxListExists(ctx context.Context) {
 	s.inboxList(ctx)
 }
@@ -445,6 +454,7 @@ func eventEntityID(e domain.Event) string {
 	case domain.EventMetadataListCreated,
 		domain.EventMetadataItemDefined,
 		domain.EventMetadataItemCompleted,
+		domain.EventMetadataItemUncompleted,
 		domain.EventMetadataItemCaptured,
 		domain.EventMetadataItemTitleChanged,
 		domain.EventMetadataItemDescriptionChanged,
@@ -520,6 +530,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^an outstanding item titled "([^"]*)" exists on the list "([^"]*)"$`, s.anOutstandingItemTitledExistsOnTheList)
 	ctx.Step(`^the owner completes the item "([^"]*)"$`, s.theOwnerCompletesTheItem)
 	ctx.Step(`^the item "([^"]*)" should be complete$`, s.theItemShouldBeComplete)
+	ctx.Step(`^the owner uncompletes the item "([^"]*)"$`, s.theOwnerUncompletesTheItem)
 	ctx.Step(`^creating the list should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^defining the item should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^modifying the due date should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
