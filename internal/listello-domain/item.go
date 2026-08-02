@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 // ItemState is the lifecycle state of an item.
 type ItemState string
 
@@ -44,9 +42,6 @@ func (i Item) IsComplete() bool {
 
 // DefineItem creates a new outstanding item and raises an Item defined event.
 func DefineItem(title string) (Item, Event, error) {
-	if title == "" {
-		return Item{}, Event{}, fmt.Errorf("item title is required")
-	}
 	item := Item{id: newID("IT_"), title: title, state: ItemOutstanding}
 	return item, Event{Name: EventItemDefined, ID: item.id}, nil
 }
