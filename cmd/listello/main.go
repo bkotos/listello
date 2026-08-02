@@ -21,8 +21,15 @@ func main() {
 	}
 	defer db.Close()
 
+	eventLog, err := os.OpenFile("domain_events.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "open event log: %v\n", err)
+		os.Exit(1)
+	}
+	defer eventLog.Close()
+
 	lists := adapter.NewSQLiteListRepository(db)
-	events := adapter.NewLoggingEventPublisher()
+	events := adapter.NewLoggingEventPublisher(eventLog)
 	svc := application.NewListService(lists, events)
 
 	list, err := svc.CreateList(name)
