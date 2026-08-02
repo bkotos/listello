@@ -1,6 +1,7 @@
 package application_test
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -21,9 +22,17 @@ func (p *stubEventPublisher) Publish(event domain.Event) error {
 	return nil
 }
 
+func newTestListRepository(t *testing.T) *adapter.SQLiteListRepository {
+	t.Helper()
+	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "lists.db"))
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = db.Close() })
+	return adapter.NewSQLiteListRepository(db)
+}
+
 func TestListService_CreateList_PersistsList(t *testing.T) {
 	// Arrange
-	repo := adapter.NewStubListRepository()
+	repo := newTestListRepository(t)
 	publisher := &stubEventPublisher{}
 	svc := application.NewListService(repo, publisher)
 
@@ -43,7 +52,7 @@ func TestListService_CreateList_PersistsList(t *testing.T) {
 
 func TestListService_CreateList_PublishesEvent(t *testing.T) {
 	// Arrange
-	repo := adapter.NewStubListRepository()
+	repo := newTestListRepository(t)
 	publisher := &stubEventPublisher{}
 	svc := application.NewListService(repo, publisher)
 

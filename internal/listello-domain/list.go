@@ -18,6 +18,11 @@ func (l List) Name() string {
 	return l.name
 }
 
+// ReconstituteList rebuilds a list from persisted state.
+func ReconstituteList(id, name string) List {
+	return List{id: id, name: name}
+}
+
 // CreateList creates a new list and raises a List created event.
 func CreateList(name string) (List, Event, error) {
 	if name == "" {
