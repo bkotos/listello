@@ -6,19 +6,7 @@ Listello is a personal task-list system in the spirit of Getting Things Done: ca
 
 The codebase follows a hexagonal (ports & adapters) layout. Dependencies point inward toward the domain.
 
-```mermaid
-flowchart TB
-  CLI["cmd/listello<br/>composition root"]
-  APP["listello-application<br/>use cases + ports"]
-  DOM["listello-domain<br/>business logic + invariants"]
-  ADP["listello-adapter<br/>SQLite, event log, …"]
-
-  CLI --> APP
-  CLI --> ADP
-  APP --> DOM
-  ADP --> APP
-  ADP --> DOM
-```
+![Listello hexagonal architecture](hexagonal-architecture.png)
 
 ```
 cmd/listello          → composition root (wires adapters into application services)
