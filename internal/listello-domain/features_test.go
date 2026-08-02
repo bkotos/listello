@@ -122,9 +122,8 @@ func (s *suiteState) anOutstandingItemTitledExistsOnTheList(ctx context.Context,
 func (s *suiteState) theOwnerCompletesTheItem(ctx context.Context, title string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
-	item, event, err := domain.CompleteItem(*s.items[title])
+	event, err := s.items[title].Complete()
 	require.NoError(t, err)
-	s.items[item.Title] = &item
 	s.record(event)
 }
 
@@ -137,16 +136,15 @@ func (s *suiteState) theItemShouldBeComplete(ctx context.Context, title string) 
 func (s *suiteState) theOwnerUncompletesTheItem(ctx context.Context, title string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
-	item, event, err := domain.UncompleteItem(*s.items[title])
+	event, err := s.items[title].Uncomplete()
 	require.NoError(t, err)
-	s.items[item.Title] = &item
 	s.record(event)
 }
 
 func (s *suiteState) theOwnerDeletesTheItem(ctx context.Context, title string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
-	event, err := domain.DeleteItem(*s.items[title])
+	event, err := s.items[title].Delete()
 	require.NoError(t, err)
 	s.record(event)
 	s.deletedItems[title] = *s.items[title]

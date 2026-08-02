@@ -76,23 +76,21 @@ func CaptureItem(list List, title string) (Item, Event, error) {
 	return item, NewEvent(EventItemCaptured, EventMetadataItemCaptured{ID: item.ID, ListID: list.ID}, 1), nil
 }
 
-// TODO: convert existing package funcs (e.g. CompleteItem, DefineItem) to Item methods.
-
-// CompleteItem completes an item and raises an ItemCompleted event.
-func CompleteItem(item Item) (Item, Event, error) {
-	item.State = ItemComplete
-	return item, NewEvent(EventItemCompleted, EventMetadataItemCompleted{ID: item.ID}, 1), nil
+// Complete completes the item and raises an ItemCompleted event.
+func (i *Item) Complete() (Event, error) {
+	i.State = ItemComplete
+	return NewEvent(EventItemCompleted, EventMetadataItemCompleted{ID: i.ID}, 1), nil
 }
 
-// UncompleteItem uncompletes an item and raises an ItemUncompleted event.
-func UncompleteItem(item Item) (Item, Event, error) {
-	item.State = ItemOutstanding
-	return item, NewEvent(EventItemUncompleted, EventMetadataItemUncompleted{ID: item.ID}, 1), nil
+// Uncomplete uncompletes the item and raises an ItemUncompleted event.
+func (i *Item) Uncomplete() (Event, error) {
+	i.State = ItemOutstanding
+	return NewEvent(EventItemUncompleted, EventMetadataItemUncompleted{ID: i.ID}, 1), nil
 }
 
-// DeleteItem deletes an item and raises an ItemDeleted event.
-func DeleteItem(item Item) (Event, error) {
-	return NewEvent(EventItemDeleted, EventMetadataItemDeleted{Item: item}, 1), nil
+// Delete deletes the item and raises an ItemDeleted event.
+func (i *Item) Delete() (Event, error) {
+	return NewEvent(EventItemDeleted, EventMetadataItemDeleted{Item: *i}, 1), nil
 }
 
 // ModifyTitle changes the item's title and raises an ItemTitleChanged event.
