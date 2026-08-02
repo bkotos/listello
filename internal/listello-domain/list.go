@@ -2,10 +2,17 @@ package domain
 
 import "fmt"
 
+const inboxListName = "Inbox"
+
 // List is a named list.
 type List struct {
 	ID   string
 	Name string
+}
+
+// IsInbox reports whether this list is the inbox.
+func (l List) IsInbox() bool {
+	return l.Name == inboxListName
 }
 
 // CreateList creates a new list and raises a List created event.

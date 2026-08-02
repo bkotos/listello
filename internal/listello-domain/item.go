@@ -2,8 +2,6 @@ package domain
 
 import "fmt"
 
-const inboxListName = "Inbox"
-
 // ItemState is the lifecycle state of an item.
 type ItemState string
 
@@ -56,7 +54,7 @@ func DefineItem(list List, title string) (Item, Event, error) {
 // CaptureItem captures an item onto a list and raises an Item captured event.
 // Only the inbox list is valid; capturing onto any other list fails.
 func CaptureItem(list List, title string) (Item, Event, error) {
-	if list.Name != inboxListName {
+	if !list.IsInbox() {
 		return Item{}, Event{}, fmt.Errorf("can only capture items to the inbox")
 	}
 	item := Item{
