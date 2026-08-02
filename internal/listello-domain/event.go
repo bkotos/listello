@@ -2,16 +2,32 @@ package domain
 
 import "time"
 
+// EventName is the name of a domain event.
+type EventName string
+
+const (
+	EventListCreated            EventName = "ListCreated"
+	EventItemDefined            EventName = "ItemDefined"
+	EventItemCompleted          EventName = "ItemCompleted"
+	EventItemCaptured           EventName = "ItemCaptured"
+	EventItemTitleChanged       EventName = "ItemTitleChanged"
+	EventItemDescriptionChanged EventName = "ItemDescriptionChanged"
+	EventDueDateAddedToItem     EventName = "DueDateAddedToItem"
+	EventTagAddedToItem         EventName = "TagAddedToItem"
+	EventSubtaskPriorityChanged EventName = "SubtaskPriorityChanged"
+	EventItemMovedToOtherList   EventName = "ItemMovedToOtherList"
+)
+
 // Event is a domain event raised by a command.
 type Event struct {
-	Name      string
+	Name      EventName
 	Metadata  any
 	Timestamp string
 	Version   int
 }
 
 // NewEvent constructs a domain event.
-func NewEvent(name string, metadata any, version int) Event {
+func NewEvent(name EventName, metadata any, version int) Event {
 	return Event{
 		Name:      name,
 		Metadata:  metadata,
@@ -35,17 +51,3 @@ type ItemDefinedMetadata struct {
 type ItemCompletedMetadata struct {
 	ID string
 }
-
-// Domain event names (PascalCase).
-const (
-	EventListCreated            = "ListCreated"
-	EventItemDefined            = "ItemDefined"
-	EventItemCompleted          = "ItemCompleted"
-	EventItemCaptured           = "ItemCaptured"
-	EventItemTitleChanged       = "ItemTitleChanged"
-	EventItemDescriptionChanged = "ItemDescriptionChanged"
-	EventDueDateAddedToItem     = "DueDateAddedToItem"
-	EventTagAddedToItem         = "TagAddedToItem"
-	EventSubtaskPriorityChanged = "SubtaskPriorityChanged"
-	EventItemMovedToOtherList   = "ItemMovedToOtherList"
-)

@@ -73,7 +73,7 @@ func (s *suiteState) aEventShouldHaveOccurred(ctx context.Context, eventName str
 	require.Truef(
 		godog.T(ctx),
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			return e.Name == eventName
+			return e.Name == domain.EventName(eventName)
 		}),
 		"expected event %q to have occurred; got %v", eventName, eventNames(s.events),
 	)
@@ -309,7 +309,7 @@ func (s *suiteState) aEventShouldHaveOccurredWithTheListIDOfList(ctx context.Con
 		t,
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
 			meta, ok := e.Metadata.(domain.ItemDefinedMetadata)
-			return e.Name == eventName && ok && meta.ListID == listID
+			return e.Name == domain.EventName(eventName) && ok && meta.ListID == listID
 		}),
 		"expected event %q with list ID %q; got %v", eventName, listID, eventSummaries(s.events),
 	)
@@ -319,7 +319,7 @@ func (s *suiteState) eventOccurredWithID(ctx context.Context, eventName, id stri
 	require.Truef(
 		godog.T(ctx),
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			return e.Name == eventName && eventEntityID(e) == id
+			return e.Name == domain.EventName(eventName) && eventEntityID(e) == id
 		}),
 		"expected event %q with ID %q; got %v", eventName, id, eventSummaries(s.events),
 	)
@@ -341,7 +341,7 @@ func eventEntityID(e domain.Event) string {
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
-		names[i] = e.Name
+		names[i] = string(e.Name)
 	}
 	return names
 }
