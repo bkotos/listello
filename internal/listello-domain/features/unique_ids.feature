@@ -27,10 +27,11 @@ Feature: Unique IDs for lists and items
     When the user creates a list named "Next actions"
     Then a "List created" event should have occurred with the ID of list "Next actions"
 
-  Scenario: Item defined event includes the item ID
+  Scenario: Item defined event is raised with item and list IDs
     Given a list named "Next actions" exists
     When the user defines an item titled "Buy milk" on the list "Next actions"
     Then a "Item defined" event should have occurred with the ID of item "Buy milk"
+    And a "Item defined" event should have occurred with the list ID of list "Next actions"
 
   Scenario: Item completed event includes the item ID
     Given a list named "Next actions" exists

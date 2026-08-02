@@ -169,6 +169,19 @@ func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfItem(ctx context.Context
 	s.eventOccurredWithID(ctx, eventName, s.items[title].ID)
 }
 
+func (s *suiteState) aEventShouldHaveOccurredWithTheListIDOfList(ctx context.Context, eventName, listName string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.lists, listName)
+	listID := s.lists[listName].ID
+	require.Truef(
+		t,
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			return e.Name == eventName && e.ListID == listID
+		}),
+		"expected event %q with list ID %q; got %v", eventName, listID, eventSummaries(s.events),
+	)
+}
+
 func (s *suiteState) eventOccurredWithID(ctx context.Context, eventName, id string) {
 	require.Truef(
 		godog.T(ctx),
@@ -221,6 +234,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the items "([^"]*)" and "([^"]*)" should have different IDs$`, s.theItemsShouldHaveDifferentIDs)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfList)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfItem)
+	ctx.Step(`^a "([^"]*)" event should have occurred with the list ID of list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheListIDOfList)
 }
 
 func TestFeatures(t *testing.T) {
