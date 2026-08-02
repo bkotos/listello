@@ -33,17 +33,19 @@ func init() {
 }
 
 type suiteState struct {
-	placeholder *domain.Placeholder
-	lists       map[string]domain.List
-	items       map[string]*domain.Item
-	events      []domain.Event
-	lastErr     error
+	placeholder  *domain.Placeholder
+	lists        map[string]domain.List
+	items        map[string]*domain.Item
+	deletedItems map[string]domain.Item
+	events       []domain.Event
+	lastErr      error
 }
 
 func (s *suiteState) reset() {
 	s.placeholder = nil
 	s.lists = make(map[string]domain.List)
 	s.items = make(map[string]*domain.Item)
+	s.deletedItems = make(map[string]domain.Item)
 	s.events = nil
 	s.lastErr = nil
 }
@@ -139,6 +141,20 @@ func (s *suiteState) theOwnerUncompletesTheItem(ctx context.Context, title strin
 	require.NoError(t, err)
 	s.items[item.Title] = &item
 	s.record(event)
+}
+
+func (s *suiteState) theOwnerDeletesTheItem(ctx context.Context, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	event, err := domain.DeleteItem(*s.items[title])
+	require.NoError(t, err)
+	s.record(event)
+	s.deletedItems[title] = *s.items[title]
+	delete(s.items, title)
+}
+
+func (s *suiteState) theItemShouldNotExist(ctx context.Context, title string) {
+	require.NotContains(godog.T(ctx), s.items, title)
 }
 
 func (s *suiteState) anInboxListExists(ctx context.Context) {
@@ -354,8 +370,17 @@ func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfList(ctx context.Context
 
 func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfItem(ctx context.Context, eventName, title string) {
 	t := godog.T(ctx)
-	require.Contains(t, s.items, title)
-	s.eventOccurredWithID(ctx, eventName, s.items[title].ID)
+	id, ok := s.itemID(title)
+	require.Truef(t, ok, "unknown item %q", title)
+	s.eventOccurredWithID(ctx, eventName, id)
+}
+
+func (s *suiteState) itemID(title string) (string, bool) {
+	if item, ok := s.items[title]; ok {
+		return item.ID, true
+	}
+	item, ok := s.deletedItems[title]
+	return item.ID, ok
 }
 
 func (s *suiteState) aEventShouldHaveOccurredWithTheListIDOfList(ctx context.Context, eventName, listName string) {
@@ -439,6 +464,23 @@ func (s *suiteState) aEventShouldHaveOccurredWithPriority(ctx context.Context, e
 	)
 }
 
+func (s *suiteState) aEventShouldHaveOccurredWithTheItem(ctx context.Context, eventName, title string) {
+	t := godog.T(ctx)
+	item, ok := s.deletedItems[title]
+	if !ok {
+		require.Contains(t, s.items, title)
+		item = *s.items[title]
+	}
+	require.Truef(
+		t,
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			meta, ok := e.Metadata.(domain.EventMetadataItemDeleted)
+			return e.Name == domain.EventName(eventName) && ok && reflect.DeepEqual(meta.Item, item)
+		}),
+		"expected event %q with item %+v; got %v", eventName, item, eventSummaries(s.events),
+	)
+}
+
 func (s *suiteState) eventOccurredWithID(ctx context.Context, eventName, id string) {
 	require.Truef(
 		godog.T(ctx),
@@ -450,7 +492,9 @@ func (s *suiteState) eventOccurredWithID(ctx context.Context, eventName, id stri
 }
 
 func eventEntityID(e domain.Event) string {
-	switch e.Metadata.(type) {
+	switch meta := e.Metadata.(type) {
+	case domain.EventMetadataItemDeleted:
+		return meta.Item.ID
 	case domain.EventMetadataListCreated,
 		domain.EventMetadataItemDefined,
 		domain.EventMetadataItemCompleted,
@@ -531,6 +575,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the owner completes the item "([^"]*)"$`, s.theOwnerCompletesTheItem)
 	ctx.Step(`^the item "([^"]*)" should be complete$`, s.theItemShouldBeComplete)
 	ctx.Step(`^the owner uncompletes the item "([^"]*)"$`, s.theOwnerUncompletesTheItem)
+	ctx.Step(`^the owner deletes the item "([^"]*)"$`, s.theOwnerDeletesTheItem)
+	ctx.Step(`^the item "([^"]*)" should not exist$`, s.theItemShouldNotExist)
 	ctx.Step(`^creating the list should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^defining the item should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^modifying the due date should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
@@ -569,6 +615,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred with due date "([^"]*)"$`, s.aEventShouldHaveOccurredWithDueDate)
 	ctx.Step(`^a "([^"]*)" event should have occurred with tag "([^"]*)"$`, s.aEventShouldHaveOccurredWithTag)
 	ctx.Step(`^a "([^"]*)" event should have occurred with priority "([^"]*)"$`, s.aEventShouldHaveOccurredWithPriority)
+	ctx.Step(`^a "([^"]*)" event should have occurred with the item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheItem)
 }
 
 func TestFeatures(t *testing.T) {

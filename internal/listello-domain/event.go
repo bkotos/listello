@@ -10,6 +10,7 @@ const (
 	EventItemDefined             EventName = "ItemDefined"
 	EventItemCompleted           EventName = "ItemCompleted"
 	EventItemUncompleted         EventName = "ItemUncompleted"
+	EventItemDeleted             EventName = "ItemDeleted"
 	EventItemCaptured            EventName = "ItemCaptured"
 	EventItemTitleChanged        EventName = "ItemTitleChanged"
 	EventItemDescriptionChanged  EventName = "ItemDescriptionChanged"
@@ -59,6 +60,11 @@ type EventMetadataItemCompleted struct {
 // EventMetadataItemUncompleted is the payload for an ItemUncompleted event.
 type EventMetadataItemUncompleted struct {
 	ID string
+}
+
+// EventMetadataItemDeleted is the payload for an ItemDeleted event.
+type EventMetadataItemDeleted struct {
+	Item Item
 }
 
 // EventMetadataItemCaptured is the payload for an ItemCaptured event.

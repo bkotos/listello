@@ -39,6 +39,14 @@ Feature: Define and complete a list item
     Then a "ItemUncompleted" event should have occurred with the ID of item "Buy milk"
     And the item "Buy milk" should be outstanding
 
+  Scenario: Deleting an item
+    Given a list named "Next actions" exists
+    And an outstanding item titled "Buy milk" exists on the list "Next actions"
+    When the owner deletes the item "Buy milk"
+    Then a "ItemDeleted" event should have occurred with the ID of item "Buy milk"
+    And a "ItemDeleted" event should have occurred with the item "Buy milk"
+    And the item "Buy milk" should not exist
+
   Scenario: Completing work from a new list through to done
     When the user creates a list named "Next actions"
     And the user defines an item titled "Buy milk" on the list "Next actions"

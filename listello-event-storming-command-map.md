@@ -118,7 +118,7 @@ This document organizes the Listello event storming board by aggregate and maps:
 |---|---|---|---|
 | Requester or Owner | Complete item | Item completed | ✅ |
 | Requester or Owner | Uncomplete item | Item uncompleted | ✅ |
-| Requester or Owner | Delete item | Item deleted | |
+| Requester or Owner | Delete item | Item deleted | ✅ |
 
 ---
 
