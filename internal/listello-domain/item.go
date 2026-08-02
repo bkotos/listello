@@ -46,6 +46,11 @@ func (i Item) IsComplete() bool {
 	return i.State == ItemComplete
 }
 
+// IsChild reports whether the item is linked as a child of another item.
+func (i Item) IsChild() bool {
+	return i.ParentID != ""
+}
+
 // DefineItem creates a new outstanding item on a list and raises an ItemDefined event.
 func DefineItem(list List, title string) (Item, Event, error) {
 	if list.IsInbox() {
@@ -126,6 +131,9 @@ func (i *Item) Untag(tag string) (Event, error) {
 
 // LinkAsChild links the item as a child of the parent and raises an ItemLinkedAsChildOfItem event.
 func (i *Item) LinkAsChild(parent Item) (Event, error) {
+	if parent.IsChild() {
+		return Event{}, fmt.Errorf("cannot link as child of an item that already has a parent")
+	}
 	i.ParentID = parent.ID
 	return NewEvent(EventItemLinkedAsChildOfItem, EventMetadataItemLinkedAsChildOfItem{ID: i.ID, ParentID: parent.ID}, 1), nil
 }
