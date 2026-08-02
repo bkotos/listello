@@ -27,6 +27,7 @@ const (
 type Item struct {
 	ID          string
 	ListID      string
+	ParentID    string
 	Title       string
 	Description string
 	DueDate     string
@@ -121,6 +122,12 @@ func (i *Item) Untag(tag string) (Event, error) {
 	}
 	i.Tags = tags
 	return NewEvent(EventTagRemovedFromItem, EventMetadataTagRemovedFromItem{ID: i.ID, Tag: tag}, 1), nil
+}
+
+// LinkAsChild links the item as a child of the parent and raises an ItemLinkedAsChildOfItem event.
+func (i *Item) LinkAsChild(parent Item) (Event, error) {
+	i.ParentID = parent.ID
+	return NewEvent(EventItemLinkedAsChildOfItem, EventMetadataItemLinkedAsChildOfItem{ID: i.ID, ParentID: parent.ID}, 1), nil
 }
 
 // ChangePriority changes the item's priority and raises a SubtaskPriorityChanged event.

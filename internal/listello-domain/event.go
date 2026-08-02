@@ -6,18 +6,19 @@ import "time"
 type EventName string
 
 const (
-	EventListCreated            EventName = "ListCreated"
-	EventItemDefined            EventName = "ItemDefined"
-	EventItemCompleted          EventName = "ItemCompleted"
-	EventItemCaptured           EventName = "ItemCaptured"
-	EventItemTitleChanged       EventName = "ItemTitleChanged"
-	EventItemDescriptionChanged EventName = "ItemDescriptionChanged"
-	EventDueDateAddedToItem     EventName = "DueDateAddedToItem"
-	EventDueDateRemovedFromItem EventName = "DueDateRemovedFromItem"
-	EventTagAddedToItem         EventName = "TagAddedToItem"
-	EventTagRemovedFromItem     EventName = "TagRemovedFromItem"
-	EventSubtaskPriorityChanged EventName = "SubtaskPriorityChanged"
-	EventItemMovedToOtherList   EventName = "ItemMovedToOtherList"
+	EventListCreated             EventName = "ListCreated"
+	EventItemDefined             EventName = "ItemDefined"
+	EventItemCompleted           EventName = "ItemCompleted"
+	EventItemCaptured            EventName = "ItemCaptured"
+	EventItemTitleChanged        EventName = "ItemTitleChanged"
+	EventItemDescriptionChanged  EventName = "ItemDescriptionChanged"
+	EventDueDateAddedToItem      EventName = "DueDateAddedToItem"
+	EventDueDateRemovedFromItem  EventName = "DueDateRemovedFromItem"
+	EventTagAddedToItem          EventName = "TagAddedToItem"
+	EventTagRemovedFromItem      EventName = "TagRemovedFromItem"
+	EventSubtaskPriorityChanged  EventName = "SubtaskPriorityChanged"
+	EventItemMovedToOtherList    EventName = "ItemMovedToOtherList"
+	EventItemLinkedAsChildOfItem EventName = "ItemLinkedAsChildOfItem"
 )
 
 // Event is a domain event raised by a command.
@@ -105,4 +106,10 @@ type EventMetadataSubtaskPriorityChanged struct {
 type EventMetadataItemMovedToOtherList struct {
 	ID     string
 	ListID string
+}
+
+// EventMetadataItemLinkedAsChildOfItem is the payload for an ItemLinkedAsChildOfItem event.
+type EventMetadataItemLinkedAsChildOfItem struct {
+	ID       string
+	ParentID string
 }

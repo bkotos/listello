@@ -261,6 +261,22 @@ func (s *suiteState) theItemShouldNotBeTaggedWith(ctx context.Context, title, ta
 	require.NotContains(t, s.items[title].Tags, tag)
 }
 
+func (s *suiteState) theOwnerLinksTheItemAsAChildOfTheItem(ctx context.Context, childTitle, parentTitle string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, childTitle)
+	require.Contains(t, s.items, parentTitle)
+	event, err := s.items[childTitle].LinkAsChild(*s.items[parentTitle])
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theItemShouldBeAChildOfTheItem(ctx context.Context, childTitle, parentTitle string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, childTitle)
+	require.Contains(t, s.items, parentTitle)
+	require.Equal(t, s.items[parentTitle].ID, s.items[childTitle].ParentID)
+}
+
 func (s *suiteState) theOwnerChangesThePriorityOfTheItemTo(ctx context.Context, title, priority string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
@@ -343,6 +359,19 @@ func (s *suiteState) aEventShouldHaveOccurredWithTheListIDOfList(ctx context.Con
 	)
 }
 
+func (s *suiteState) aEventShouldHaveOccurredWithTheParentIDOfItem(ctx context.Context, eventName, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	parentID := s.items[title].ID
+	require.Truef(
+		t,
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			return e.Name == domain.EventName(eventName) && eventParentID(e) == parentID
+		}),
+		"expected event %q with parent ID %q; got %v", eventName, parentID, eventSummaries(s.events),
+	)
+}
+
 func (s *suiteState) aEventShouldHaveOccurredWithTitle(ctx context.Context, eventName, title string) {
 	require.Truef(
 		godog.T(ctx),
@@ -421,7 +450,8 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataTagAddedToItem,
 		domain.EventMetadataTagRemovedFromItem,
 		domain.EventMetadataSubtaskPriorityChanged,
-		domain.EventMetadataItemMovedToOtherList:
+		domain.EventMetadataItemMovedToOtherList,
+		domain.EventMetadataItemLinkedAsChildOfItem:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
 	default:
 		return ""
@@ -436,6 +466,15 @@ func eventListID(e domain.Event) string {
 		return meta.ListID
 	case domain.EventMetadataItemMovedToOtherList:
 		return meta.ListID
+	default:
+		return ""
+	}
+}
+
+func eventParentID(e domain.Event) string {
+	switch meta := e.Metadata.(type) {
+	case domain.EventMetadataItemLinkedAsChildOfItem:
+		return meta.ParentID
 	default:
 		return ""
 	}
@@ -497,6 +536,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the item "([^"]*)" should be tagged with "([^"]*)"$`, s.theItemShouldBeTaggedWith)
 	ctx.Step(`^the owner untags the item "([^"]*)" with "([^"]*)"$`, s.theOwnerUntagsTheItemWith)
 	ctx.Step(`^the item "([^"]*)" should not be tagged with "([^"]*)"$`, s.theItemShouldNotBeTaggedWith)
+	ctx.Step(`^the owner links the item "([^"]*)" as a child of the item "([^"]*)"$`, s.theOwnerLinksTheItemAsAChildOfTheItem)
+	ctx.Step(`^the item "([^"]*)" should be a child of the item "([^"]*)"$`, s.theItemShouldBeAChildOfTheItem)
 	ctx.Step(`^the owner changes the priority of the item "([^"]*)" to "([^"]*)"$`, s.theOwnerChangesThePriorityOfTheItemTo)
 	ctx.Step(`^the item "([^"]*)" should have priority "([^"]*)"$`, s.theItemShouldHavePriority)
 	ctx.Step(`^the owner moves the item "([^"]*)" to the list "([^"]*)"$`, s.theOwnerMovesTheItemToTheList)
@@ -507,6 +548,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfList)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfItem)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the list ID of list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheListIDOfList)
+	ctx.Step(`^a "([^"]*)" event should have occurred with the parent ID of item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheParentIDOfItem)
 	ctx.Step(`^a "([^"]*)" event should have occurred with title "([^"]*)"$`, s.aEventShouldHaveOccurredWithTitle)
 	ctx.Step(`^a "([^"]*)" event should have occurred with description "([^"]*)"$`, s.aEventShouldHaveOccurredWithDescription)
 	ctx.Step(`^a "([^"]*)" event should have occurred with due date "([^"]*)"$`, s.aEventShouldHaveOccurredWithDueDate)
