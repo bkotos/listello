@@ -27,11 +27,11 @@ func (i Item) IsComplete() bool {
 }
 
 // DefineItem creates a new outstanding item on a list and raises an Item defined event.
-func DefineItem(listID, title string) (Item, Event, error) {
-	item := Item{ID: newID("IT_"), ListID: listID, Title: title, State: ItemOutstanding}
+func DefineItem(list List, title string) (Item, Event, error) {
+	item := Item{ID: newID("IT_"), ListID: list.ID, Title: title, State: ItemOutstanding}
 	return item, Event{
 		Name:     EventItemDefined,
-		Metadata: ItemDefinedMetadata{ID: item.ID, ListID: listID},
+		Metadata: ItemDefinedMetadata{ID: item.ID, ListID: list.ID},
 	}, nil
 }
 

@@ -85,7 +85,7 @@ func (s *suiteState) aListNamedExists(ctx context.Context, name string) {
 func (s *suiteState) theUserDefinesAnItemTitledOnTheList(ctx context.Context, title, listName string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.lists, listName)
-	item, event, err := domain.DefineItem(s.lists[listName].ID, title)
+	item, event, err := domain.DefineItem(s.lists[listName], title)
 	require.NoError(t, err)
 	s.items[item.Title] = item
 	s.record(event)
