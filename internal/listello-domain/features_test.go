@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -408,31 +409,20 @@ func (s *suiteState) eventOccurredWithID(ctx context.Context, eventName, id stri
 }
 
 func eventEntityID(e domain.Event) string {
-	switch meta := e.Metadata.(type) {
-	case domain.EventMetadataListCreated:
-		return meta.ID
-	case domain.EventMetadataItemDefined:
-		return meta.ID
-	case domain.EventMetadataItemCompleted:
-		return meta.ID
-	case domain.EventMetadataItemCaptured:
-		return meta.ID
-	case domain.EventMetadataItemTitleChanged:
-		return meta.ID
-	case domain.EventMetadataItemDescriptionChanged:
-		return meta.ID
-	case domain.EventMetadataDueDateAddedToItem:
-		return meta.ID
-	case domain.EventMetadataDueDateRemovedFromItem:
-		return meta.ID
-	case domain.EventMetadataTagAddedToItem:
-		return meta.ID
-	case domain.EventMetadataTagRemovedFromItem:
-		return meta.ID
-	case domain.EventMetadataSubtaskPriorityChanged:
-		return meta.ID
-	case domain.EventMetadataItemMovedToOtherList:
-		return meta.ID
+	switch e.Metadata.(type) {
+	case domain.EventMetadataListCreated,
+		domain.EventMetadataItemDefined,
+		domain.EventMetadataItemCompleted,
+		domain.EventMetadataItemCaptured,
+		domain.EventMetadataItemTitleChanged,
+		domain.EventMetadataItemDescriptionChanged,
+		domain.EventMetadataDueDateAddedToItem,
+		domain.EventMetadataDueDateRemovedFromItem,
+		domain.EventMetadataTagAddedToItem,
+		domain.EventMetadataTagRemovedFromItem,
+		domain.EventMetadataSubtaskPriorityChanged,
+		domain.EventMetadataItemMovedToOtherList:
+		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
 	default:
 		return ""
 	}
