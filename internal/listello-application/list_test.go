@@ -49,7 +49,8 @@ func TestListService_CreateList_PublishesEvent(t *testing.T) {
 		Return(nil)
 	publisher.EXPECT().
 		Publish(mock.MatchedBy(func(event domain.Event) bool {
-			return event.Name == domain.EventListCreated && strings.HasPrefix(event.ID, "LS_")
+			meta, ok := event.Metadata.(domain.ListCreatedMetadata)
+			return event.Name == domain.EventListCreated && ok && strings.HasPrefix(meta.ID, "LS_")
 		})).
 		Return(nil)
 
@@ -59,7 +60,7 @@ func TestListService_CreateList_PublishesEvent(t *testing.T) {
 	// Assert
 	require.NoError(t, err)
 	publisher.AssertCalled(t, "Publish", domain.Event{
-		Name: domain.EventListCreated,
-		ID:   list.ID,
+		Name:     domain.EventListCreated,
+		Metadata: domain.ListCreatedMetadata{ID: list.ID},
 	})
 }

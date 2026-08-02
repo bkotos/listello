@@ -176,7 +176,8 @@ func (s *suiteState) aEventShouldHaveOccurredWithTheListIDOfList(ctx context.Con
 	require.Truef(
 		t,
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			return e.Name == eventName && e.ListID == listID
+			meta, ok := e.Metadata.(domain.ItemDefinedMetadata)
+			return e.Name == eventName && ok && meta.ListID == listID
 		}),
 		"expected event %q with list ID %q; got %v", eventName, listID, eventSummaries(s.events),
 	)
@@ -186,10 +187,23 @@ func (s *suiteState) eventOccurredWithID(ctx context.Context, eventName, id stri
 	require.Truef(
 		godog.T(ctx),
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			return e.Name == eventName && e.ID == id
+			return e.Name == eventName && eventEntityID(e) == id
 		}),
 		"expected event %q with ID %q; got %v", eventName, id, eventSummaries(s.events),
 	)
+}
+
+func eventEntityID(e domain.Event) string {
+	switch meta := e.Metadata.(type) {
+	case domain.ListCreatedMetadata:
+		return meta.ID
+	case domain.ItemDefinedMetadata:
+		return meta.ID
+	case domain.ItemCompletedMetadata:
+		return meta.ID
+	default:
+		return ""
+	}
 }
 
 func eventNames(events []domain.Event) []string {
@@ -203,7 +217,7 @@ func eventNames(events []domain.Event) []string {
 func eventSummaries(events []domain.Event) []string {
 	summaries := make([]string, len(events))
 	for i, e := range events {
-		summaries[i] = fmt.Sprintf("%s(%s)", e.Name, e.ID)
+		summaries[i] = fmt.Sprintf("%s(%+v)", e.Name, e.Metadata)
 	}
 	return summaries
 }

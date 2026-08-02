@@ -14,5 +14,8 @@ func CreateList(name string) (List, Event, error) {
 		return List{}, Event{}, fmt.Errorf("list name is required")
 	}
 	list := List{ID: newID("LS_"), Name: name}
-	return list, Event{Name: EventListCreated, ID: list.ID}, nil
+	return list, Event{
+		Name:     EventListCreated,
+		Metadata: ListCreatedMetadata{ID: list.ID},
+	}, nil
 }

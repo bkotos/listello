@@ -16,6 +16,6 @@ func NewLoggingEventPublisher() *LoggingEventPublisher {
 
 // Publish logs the domain event to stdout.
 func (p *LoggingEventPublisher) Publish(event domain.Event) error {
-	log.Printf("event published: name=%q id=%q", event.Name, event.ID)
+	log.Printf("event published: name=%q metadata=%+v", event.Name, event.Metadata)
 	return nil
 }
