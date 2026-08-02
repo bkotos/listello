@@ -17,7 +17,7 @@ func TestLoggingEventPublisher_Publish_AppendsJSONLToWriter(t *testing.T) {
 	// Arrange
 	var buf bytes.Buffer
 	pub := adapter.NewLoggingEventPublisher(&buf)
-	event := domain.NewEvent(domain.EventListCreated, domain.ListCreatedMetadata{ID: "LS_test"}, 1)
+	event := domain.NewEvent(domain.EventListCreated, domain.EventMetadataListCreated{ID: "LS_test"}, 1)
 
 	// Act
 	err := pub.Publish(event)
@@ -41,8 +41,8 @@ func TestLoggingEventPublisher_Publish_AppendsMultipleEventsAsJSONL(t *testing.T
 	// Arrange
 	var buf bytes.Buffer
 	pub := adapter.NewLoggingEventPublisher(&buf)
-	first := domain.NewEvent(domain.EventListCreated, domain.ListCreatedMetadata{ID: "LS_1"}, 1)
-	second := domain.NewEvent(domain.EventItemDefined, domain.ItemDefinedMetadata{ID: "IT_1", ListID: "LS_1"}, 1)
+	first := domain.NewEvent(domain.EventListCreated, domain.EventMetadataListCreated{ID: "LS_1"}, 1)
+	second := domain.NewEvent(domain.EventItemDefined, domain.EventMetadataItemDefined{ID: "IT_1", ListID: "LS_1"}, 1)
 
 	// Act
 	require.NoError(t, pub.Publish(first))

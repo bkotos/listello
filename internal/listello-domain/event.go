@@ -36,18 +36,18 @@ func NewEvent(name EventName, metadata any, version int) Event {
 	}
 }
 
-// ListCreatedMetadata is the payload for a ListCreated event.
-type ListCreatedMetadata struct {
+// EventMetadataListCreated is the payload for a ListCreated event.
+type EventMetadataListCreated struct {
 	ID string
 }
 
-// ItemDefinedMetadata is the payload for an ItemDefined event.
-type ItemDefinedMetadata struct {
+// EventMetadataItemDefined is the payload for an ItemDefined event.
+type EventMetadataItemDefined struct {
 	ID     string
 	ListID string
 }
 
-// ItemCompletedMetadata is the payload for an ItemCompleted event.
-type ItemCompletedMetadata struct {
+// EventMetadataItemCompleted is the payload for an ItemCompleted event.
+type EventMetadataItemCompleted struct {
 	ID string
 }

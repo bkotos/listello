@@ -308,7 +308,7 @@ func (s *suiteState) aEventShouldHaveOccurredWithTheListIDOfList(ctx context.Con
 	require.Truef(
 		t,
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			meta, ok := e.Metadata.(domain.ItemDefinedMetadata)
+			meta, ok := e.Metadata.(domain.EventMetadataItemDefined)
 			return e.Name == domain.EventName(eventName) && ok && meta.ListID == listID
 		}),
 		"expected event %q with list ID %q; got %v", eventName, listID, eventSummaries(s.events),
@@ -327,11 +327,11 @@ func (s *suiteState) eventOccurredWithID(ctx context.Context, eventName, id stri
 
 func eventEntityID(e domain.Event) string {
 	switch meta := e.Metadata.(type) {
-	case domain.ListCreatedMetadata:
+	case domain.EventMetadataListCreated:
 		return meta.ID
-	case domain.ItemDefinedMetadata:
+	case domain.EventMetadataItemDefined:
 		return meta.ID
-	case domain.ItemCompletedMetadata:
+	case domain.EventMetadataItemCompleted:
 		return meta.ID
 	default:
 		return ""

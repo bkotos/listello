@@ -12,7 +12,7 @@ import (
 
 func TestNewEvent_ReturnsExpectedEventWithISOTimestamp(t *testing.T) {
 	// Arrange
-	metadata := domain.ListCreatedMetadata{ID: "LS_test"}
+	metadata := domain.EventMetadataListCreated{ID: "LS_test"}
 
 	// Act
 	event := domain.NewEvent(domain.EventListCreated, metadata, 1)
