@@ -3,7 +3,6 @@ package adapter
 import (
 	"encoding/json"
 	"io"
-	"log"
 
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
@@ -21,7 +20,6 @@ func NewLoggingEventPublisher(w io.Writer) *LoggingEventPublisher {
 
 // Publish logs the domain event to stdout and appends it as JSONL to w.
 func (p *LoggingEventPublisher) Publish(event domain.Event) error {
-	log.Printf("event published: name=%q metadata=%+v", event.Name, event.Metadata)
 	line, err := json.Marshal(event)
 	if err != nil {
 		return err

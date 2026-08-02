@@ -1,17 +1,19 @@
 .DEFAULT_GOAL := list
 
-.PHONY: list test mocks run bdd-report bdd-gaps bdd-steps
+.PHONY: list test mocks build run bdd-report bdd-gaps bdd-steps
 
 REPORTS_DIR := reports
 CUCUMBER_JSON := $(CURDIR)/$(REPORTS_DIR)/cucumber.json
 MOCKERY ?= $(shell go env GOPATH)/bin/mockery
+BIN := bin/listello
 
 list:
 	@echo "Available targets:"
 	@echo "  make list         Show this list of targets"
 	@echo "  make test         Run all Go tests"
 	@echo "  make mocks        Regenerate testify mocks (requires mockery v3)"
-	@echo "  make run          Create a list via cmd/listello (optional: NAME=\"Someday\")"
+	@echo "  make build        Compile CLI to $(BIN)"
+	@echo "  make run          Run CLI (pass args via ARGS=...)"
 	@echo "  make bdd-report   Run implemented BDD features + write Cucumber JSON"
 	@echo "  make bdd-gaps     Run all BDD features including @wip (shows undefined steps)"
 	@echo "  make bdd-steps    List registered BDD step definitions"
@@ -23,8 +25,12 @@ mocks:
 	@test -x "$(MOCKERY)" || { echo "mockery not found. Install with: go install github.com/vektra/mockery/v3@latest"; exit 1; }
 	"$(MOCKERY)"
 
-run:
-	go run ./cmd/listello $(NAME)
+build:
+	mkdir -p bin
+	go build -o $(BIN) ./cmd/listello
+
+run: build
+	./$(BIN) $(ARGS)
 
 # Run implemented domain Gherkin suite (excludes @wip) + Cucumber JSON report.
 bdd-report:

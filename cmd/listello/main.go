@@ -9,11 +9,6 @@ import (
 )
 
 func main() {
-	name := "Next actions"
-	if len(os.Args) > 1 {
-		name = os.Args[1]
-	}
-
 	db := openDB("listello.db")
 	defer db.Close()
 
@@ -21,15 +16,15 @@ func main() {
 	defer eventLog.Close()
 
 	listService := getListService(db, eventLog)
-
-	listService.CreateList(name)
+	if err := run(newRoot(listService)); err != nil {
+		os.Exit(1)
+	}
 }
 
 func getListService(db *adapter.SQLite, eventLog *os.File) *application.ListService {
 	lists := adapter.NewSQLiteListRepository(db)
 	events := adapter.NewLoggingEventPublisher(eventLog)
-	listService := application.NewListService(lists, events)
-	return listService
+	return application.NewListService(lists, events)
 }
 
 func openDB(path string) *adapter.SQLite {
