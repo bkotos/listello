@@ -10,50 +10,30 @@ const (
 
 // Item is a unit of work.
 type Item struct {
-	id     string
-	listID string
-	title  string
-	state  ItemState
-}
-
-// ID returns the item ID.
-func (i Item) ID() string {
-	return i.id
-}
-
-// ListID returns the ID of the list this item belongs to.
-func (i Item) ListID() string {
-	return i.listID
-}
-
-// Title returns the item title.
-func (i Item) Title() string {
-	return i.title
-}
-
-// State returns the item's lifecycle state.
-func (i Item) State() ItemState {
-	return i.state
+	ID     string
+	ListID string
+	Title  string
+	State  ItemState
 }
 
 // IsOutstanding reports whether the item is outstanding.
 func (i Item) IsOutstanding() bool {
-	return i.state == ItemOutstanding
+	return i.State == ItemOutstanding
 }
 
 // IsComplete reports whether the item is complete.
 func (i Item) IsComplete() bool {
-	return i.state == ItemComplete
+	return i.State == ItemComplete
 }
 
 // DefineItem creates a new outstanding item on a list and raises an Item defined event.
 func DefineItem(listID, title string) (Item, Event, error) {
-	item := Item{id: newID("IT_"), listID: listID, title: title, state: ItemOutstanding}
-	return item, Event{Name: EventItemDefined, ID: item.id}, nil
+	item := Item{ID: newID("IT_"), ListID: listID, Title: title, State: ItemOutstanding}
+	return item, Event{Name: EventItemDefined, ID: item.ID}, nil
 }
 
 // CompleteItem completes an item and raises an Item completed event.
 func CompleteItem(item Item) (Item, Event, error) {
-	item.state = ItemComplete
-	return item, Event{Name: EventItemCompleted, ID: item.id}, nil
+	item.State = ItemComplete
+	return item, Event{Name: EventItemCompleted, ID: item.ID}, nil
 }

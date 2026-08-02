@@ -87,7 +87,7 @@ func (s *suiteState) theUserDefinesAnItemTitledOnTheList(ctx context.Context, ti
 	require.Contains(t, s.lists, listName)
 	item, event, err := domain.DefineItem(s.lists[listName].ID, title)
 	require.NoError(t, err)
-	s.items[item.Title()] = item
+	s.items[item.Title] = item
 	s.record(event)
 }
 
@@ -95,13 +95,13 @@ func (s *suiteState) theItemShouldBeOnTheList(ctx context.Context, title, listNa
 	t := godog.T(ctx)
 	require.Contains(t, s.lists, listName)
 	require.Contains(t, s.items, title)
-	require.Equal(t, s.lists[listName].ID, s.items[title].ListID())
+	require.Equal(t, s.lists[listName].ID, s.items[title].ListID)
 }
 
 func (s *suiteState) theItemShouldBeOutstanding(ctx context.Context, title string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
-	require.Truef(t, s.items[title].IsOutstanding(), "expected item %q to be outstanding; got %q", title, s.items[title].State())
+	require.Truef(t, s.items[title].IsOutstanding(), "expected item %q to be outstanding; got %q", title, s.items[title].State)
 }
 
 func (s *suiteState) anOutstandingItemTitledExistsOnTheList(ctx context.Context, title, listName string) {
@@ -113,14 +113,14 @@ func (s *suiteState) theOwnerCompletesTheItem(ctx context.Context, title string)
 	require.Contains(t, s.items, title)
 	item, event, err := domain.CompleteItem(s.items[title])
 	require.NoError(t, err)
-	s.items[item.Title()] = item
+	s.items[item.Title] = item
 	s.record(event)
 }
 
 func (s *suiteState) theItemShouldBeComplete(ctx context.Context, title string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
-	require.Truef(t, s.items[title].IsComplete(), "expected item %q to be complete; got %q", title, s.items[title].State())
+	require.Truef(t, s.items[title].IsComplete(), "expected item %q to be complete; got %q", title, s.items[title].State)
 }
 
 func (s *suiteState) theListShouldHaveAnIDPrefixedWith(ctx context.Context, name, prefix string) {
@@ -132,7 +132,7 @@ func (s *suiteState) theListShouldHaveAnIDPrefixedWith(ctx context.Context, name
 func (s *suiteState) theItemShouldHaveAnIDPrefixedWith(ctx context.Context, title, prefix string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
-	require.Truef(t, strings.HasPrefix(s.items[title].ID(), prefix), "expected item %q ID to start with %q; got %q", title, prefix, s.items[title].ID())
+	require.Truef(t, strings.HasPrefix(s.items[title].ID, prefix), "expected item %q ID to start with %q; got %q", title, prefix, s.items[title].ID)
 }
 
 func (s *suiteState) theListsShouldHaveDifferentIDs(ctx context.Context, nameA, nameB string) {
@@ -150,8 +150,8 @@ func (s *suiteState) theItemsShouldHaveDifferentIDs(ctx context.Context, titleA,
 	t := godog.T(ctx)
 	require.Contains(t, s.items, titleA)
 	require.Contains(t, s.items, titleB)
-	idA := s.items[titleA].ID()
-	idB := s.items[titleB].ID()
+	idA := s.items[titleA].ID
+	idB := s.items[titleB].ID
 	require.NotEmpty(t, idA)
 	require.NotEmpty(t, idB)
 	require.NotEqual(t, idA, idB)
@@ -166,7 +166,7 @@ func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfList(ctx context.Context
 func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfItem(ctx context.Context, eventName, title string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
-	s.eventOccurredWithID(ctx, eventName, s.items[title].ID())
+	s.eventOccurredWithID(ctx, eventName, s.items[title].ID)
 }
 
 func (s *suiteState) eventOccurredWithID(ctx context.Context, eventName, id string) {
