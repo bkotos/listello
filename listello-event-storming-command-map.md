@@ -20,10 +20,10 @@ This document organizes the Listello event storming board by aggregate and maps:
 
 ## Actor, Command, and Domain Event Map
 
-| Actor | Command | Domain Event |
-|---|---|---|
-| Owner | Allow delegation | Delegation permission granted to other person |
-| Owner | Deny delegation | Delegation permission revoked from other person |
+| Actor | Command | Domain Event | Implemented |
+|---|---|---|---|
+| Owner | Allow delegation | Delegation permission granted to other person | |
+| Owner | Deny delegation | Delegation permission revoked from other person | |
 
 ---
 
@@ -37,11 +37,11 @@ This document organizes the Listello event storming board by aggregate and maps:
 
 ## Actor, Command, and Domain Event Map
 
-| Actor | Command | Domain Event |
-|---|---|---|
-| Owner | Delegate item | Item delegated |
-| Owner | Request clarification | Clarification requested |
-| Assignee | Provide clarification | Clarification provided |
+| Actor | Command | Domain Event | Implemented |
+|---|---|---|---|
+| Owner | Delegate item | Item delegated | |
+| Owner | Request clarification | Clarification requested | |
+| Assignee | Provide clarification | Clarification provided | |
 
 ---
 
@@ -54,10 +54,10 @@ This document organizes the Listello event storming board by aggregate and maps:
 
 ## Actor, Command, and Domain Event Map
 
-| Actor | Command | Domain Event |
-|---|---|---|
-| User | Create list | List created |
-| User | Delete list | List deleted |
+| Actor | Command | Domain Event | Implemented |
+|---|---|---|---|
+| User | Create list | List created | ✅ |
+| User | Delete list | List deleted | |
 
 ---
 
@@ -72,53 +72,53 @@ This document organizes the Listello event storming board by aggregate and maps:
 
 ## Item Creation
 
-| Actor | Command | Domain Event |
-|---|---|---|
-| User | Capture inbox item | Item captured |
-| User | Define item | Item defined |
+| Actor | Command | Domain Event | Implemented |
+|---|---|---|---|
+| User | Capture inbox item | Item captured | ✅ |
+| User | Define item | Item defined | ✅ |
 
 ## Item Details
 
-| Actor | Command | Domain Event |
-|---|---|---|
-| Owner | Modify item description | Item description changed |
-| Owner | Modify item title | Item title changed |
-| Requester or Owner | Modify due date | Due date added to item |
-| Requester or Owner | Remove due date | Due date removed from item |
-| Owner | Tag item | Tag added to item |
-| Owner | Untag item | Tag removed from item |
-| Owner | Link as child | Item linked as child of item |
-| Owner | Prioritize subtask | Subtask priority changed |
+| Actor | Command | Domain Event | Implemented |
+|---|---|---|---|
+| Owner | Modify item description | Item description changed | ✅ |
+| Owner | Modify item title | Item title changed | ✅ |
+| Requester or Owner | Modify due date | Due date added to item | ✅ |
+| Requester or Owner | Remove due date | Due date removed from item | |
+| Owner | Tag item | Tag added to item | ✅ |
+| Owner | Untag item | Tag removed from item | |
+| Owner | Link as child | Item linked as child of item | |
+| Owner | Prioritize subtask | Subtask priority changed | ✅ |
 
 ## List Membership
 
-| Actor | Command | Domain Event |
-|---|---|---|
-| Owner | Move item | Item moved to other list |
+| Actor | Command | Domain Event | Implemented |
+|---|---|---|---|
+| Owner | Move item | Item moved to other list | ✅ |
 
 ## Subtasks
 
-| Actor | Command | Domain Event |
-|---|---|---|
-| Owner | Add subtask | Subtask added to item |
-| Owner | Complete subtask | Subtask completed on item |
-| Owner | Uncomplete subtask | Subtask uncompleted |
-| Owner | Delete subtask | Subtask deleted on item |
+| Actor | Command | Domain Event | Implemented |
+|---|---|---|---|
+| Owner | Add subtask | Subtask added to item | |
+| Owner | Complete subtask | Subtask completed on item | |
+| Owner | Uncomplete subtask | Subtask uncompleted | |
+| Owner | Delete subtask | Subtask deleted on item | |
 
 ## Comments
 
-| Actor | Command | Domain Event |
-|---|---|---|
-| User | Comment | Item commented on |
-| User | Delete comment | Item comment deleted |
+| Actor | Command | Domain Event | Implemented |
+|---|---|---|---|
+| User | Comment | Item commented on | |
+| User | Delete comment | Item comment deleted | |
 
 ## Item Lifecycle
 
-| Actor | Command | Domain Event |
-|---|---|---|
-| Requester or Owner | Complete item | Item completed |
-| Requester or Owner | Uncomplete item | Item uncompleted |
-| Requester or Owner | Delete item | Item deleted |
+| Actor | Command | Domain Event | Implemented |
+|---|---|---|---|
+| Requester or Owner | Complete item | Item completed | ✅ |
+| Requester or Owner | Uncomplete item | Item uncompleted | |
+| Requester or Owner | Delete item | Item deleted | |
 
 ---
 
