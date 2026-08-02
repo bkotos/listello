@@ -1,14 +1,16 @@
 .DEFAULT_GOAL := list
 
-.PHONY: list test run bdd-report bdd-gaps bdd-steps
+.PHONY: list test mocks run bdd-report bdd-gaps bdd-steps
 
 REPORTS_DIR := reports
 CUCUMBER_JSON := $(CURDIR)/$(REPORTS_DIR)/cucumber.json
+MOCKERY ?= $(shell go env GOPATH)/bin/mockery
 
 list:
 	@echo "Available targets:"
 	@echo "  make list         Show this list of targets"
 	@echo "  make test         Run all Go tests"
+	@echo "  make mocks        Regenerate testify mocks (requires mockery v3)"
 	@echo "  make run          Create a list via cmd/listello (optional: NAME=\"Someday\")"
 	@echo "  make bdd-report   Run implemented BDD features + write Cucumber JSON"
 	@echo "  make bdd-gaps     Run all BDD features including @wip (shows undefined steps)"
@@ -16,6 +18,10 @@ list:
 
 test:
 	go test ./...
+
+mocks:
+	@test -x "$(MOCKERY)" || { echo "mockery not found. Install with: go install github.com/vektra/mockery/v3@latest"; exit 1; }
+	"$(MOCKERY)"
 
 run:
 	go run ./cmd/listello $(NAME)
