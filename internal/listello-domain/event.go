@@ -1,9 +1,21 @@
 package domain
 
+import "time"
+
 // Event is a domain event raised by a command.
 type Event struct {
-	Name     string
-	Metadata any
+	Name      string
+	Metadata  any
+	Timestamp string
+}
+
+// NewEvent constructs a domain event.
+func NewEvent(name string, metadata any) Event {
+	return Event{
+		Name:      name,
+		Metadata:  metadata,
+		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
+	}
 }
 
 // ListCreatedMetadata is the payload for a ListCreated event.
