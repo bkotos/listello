@@ -45,7 +45,7 @@ func (i Item) IsComplete() bool {
 	return i.State == ItemComplete
 }
 
-// DefineItem creates a new outstanding item on a list and raises an Item defined event.
+// DefineItem creates a new outstanding item on a list and raises an ItemDefined event.
 func DefineItem(list List, title string) (Item, Event, error) {
 	if list.IsInbox() {
 		return Item{}, Event{}, fmt.Errorf("can only capture items on inbox lists, not define them")
@@ -57,7 +57,7 @@ func DefineItem(list List, title string) (Item, Event, error) {
 	}, nil
 }
 
-// CaptureItem captures an item onto a list and raises an Item captured event.
+// CaptureItem captures an item onto a list and raises an ItemCaptured event.
 // Only the inbox list is valid; capturing onto any other list fails.
 func CaptureItem(list List, title string) (Item, Event, error) {
 	if !list.IsInbox() {
@@ -75,7 +75,7 @@ func CaptureItem(list List, title string) (Item, Event, error) {
 
 // TODO: convert existing package funcs (e.g. CompleteItem, DefineItem) to Item methods.
 
-// CompleteItem completes an item and raises an Item completed event.
+// CompleteItem completes an item and raises an ItemCompleted event.
 func CompleteItem(item Item) (Item, Event, error) {
 	item.State = ItemComplete
 	return item, Event{
@@ -84,19 +84,19 @@ func CompleteItem(item Item) (Item, Event, error) {
 	}, nil
 }
 
-// ModifyTitle changes the item's title and raises an Item title changed event.
+// ModifyTitle changes the item's title and raises an ItemTitleChanged event.
 func (i *Item) ModifyTitle(title string) (Event, error) {
 	i.Title = title
 	return Event{Name: EventItemTitleChanged}, nil
 }
 
-// ModifyDescription changes the item's description and raises an Item description changed event.
+// ModifyDescription changes the item's description and raises an ItemDescriptionChanged event.
 func (i *Item) ModifyDescription(description string) (Event, error) {
 	i.Description = description
 	return Event{Name: EventItemDescriptionChanged}, nil
 }
 
-// ModifyDueDate sets the item's due date and raises a Due date added to item event.
+// ModifyDueDate sets the item's due date and raises a DueDateAddedToItem event.
 func (i *Item) ModifyDueDate(dueDate string) (Event, error) {
 	if _, err := time.Parse(time.RFC3339Nano, dueDate); err != nil {
 		return Event{}, fmt.Errorf("due date must be ISO 8601 format")
@@ -105,19 +105,19 @@ func (i *Item) ModifyDueDate(dueDate string) (Event, error) {
 	return Event{Name: EventDueDateAddedToItem}, nil
 }
 
-// Tag adds a tag to the item and raises a Tag added to item event.
+// Tag adds a tag to the item and raises a TagAddedToItem event.
 func (i *Item) Tag(tag string) (Event, error) {
 	i.Tags = append(i.Tags, tag)
 	return Event{Name: EventTagAddedToItem}, nil
 }
 
-// ChangePriority changes the item's priority and raises a Subtask priority changed event.
+// ChangePriority changes the item's priority and raises a SubtaskPriorityChanged event.
 func (i *Item) ChangePriority(priority ItemPriority) (Event, error) {
 	i.Priority = priority
 	return Event{Name: EventSubtaskPriorityChanged}, nil
 }
 
-// Move moves the item to another list and raises an Item moved to other list event.
+// Move moves the item to another list and raises an ItemMovedToOtherList event.
 func (i *Item) Move(list List) (Event, error) {
 	i.ListID = list.ID
 	return Event{Name: EventItemMovedToOtherList}, nil

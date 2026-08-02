@@ -15,7 +15,7 @@ func (l List) IsInbox() bool {
 	return l.Name == inboxListName
 }
 
-// CreateList creates a new list and raises a List created event.
+// CreateList creates a new list and raises a ListCreated event.
 func CreateList(name string) (List, Event, error) {
 	if name == "" {
 		return List{}, Event{}, fmt.Errorf("list name is required")

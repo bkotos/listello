@@ -10,32 +10,32 @@ Feature: Capture and refine an inbox item
 
   Scenario: Capturing an inbox item
     When the user captures an inbox item "dentist"
-    Then a "Item captured" event should have occurred
+    Then a "ItemCaptured" event should have occurred
     And the item "dentist" should be outstanding
     And the item "dentist" should have priority "no priority"
 
   Scenario: Modifying the title of a captured item
     Given a captured item "dentist" exists
     When the owner modifies the title of the item "dentist" to "Schedule dentist"
-    Then a "Item title changed" event should have occurred
+    Then a "ItemTitleChanged" event should have occurred
     And the item "Schedule dentist" should exist
 
   Scenario: Modifying the description of a captured item
     Given a captured item "Schedule dentist" exists
     When the owner modifies the description of the item "Schedule dentist" to "Call the clinic on Monday"
-    Then a "Item description changed" event should have occurred
+    Then a "ItemDescriptionChanged" event should have occurred
     And the item "Schedule dentist" should have description "Call the clinic on Monday"
 
   Scenario: Modifying the due date of a captured item
     Given a captured item "Schedule dentist" exists
     When the owner modifies the due date of the item "Schedule dentist" to "2026-08-03T00:00:00Z"
-    Then a "Due date added to item" event should have occurred
+    Then a "DueDateAddedToItem" event should have occurred
     And the item "Schedule dentist" should be due on "2026-08-03T00:00:00Z"
 
   Scenario Outline: Accepting a valid ISO due date
     Given a captured item "Schedule dentist" exists
     When the owner modifies the due date of the item "Schedule dentist" to "<due_date>"
-    Then a "Due date added to item" event should have occurred
+    Then a "DueDateAddedToItem" event should have occurred
     And the item "Schedule dentist" should be due on "<due_date>"
 
     Examples:
@@ -61,13 +61,13 @@ Feature: Capture and refine an inbox item
   Scenario: Tagging a captured item
     Given a captured item "Schedule dentist" exists
     When the owner tags the item "Schedule dentist" with "health"
-    Then a "Tag added to item" event should have occurred
+    Then a "TagAddedToItem" event should have occurred
     And the item "Schedule dentist" should be tagged with "health"
 
   Scenario Outline: Changing the priority of a captured item
     Given a captured item "Schedule dentist" exists
     When the owner changes the priority of the item "Schedule dentist" to "<priority>"
-    Then a "Subtask priority changed" event should have occurred
+    Then a "SubtaskPriorityChanged" event should have occurred
     And the item "Schedule dentist" should have priority "<priority>"
 
     Examples:
@@ -80,14 +80,14 @@ Feature: Capture and refine an inbox item
     Given a captured item "Schedule dentist" exists
     When the owner changes the priority of the item "Schedule dentist" to "high"
     And the owner changes the priority of the item "Schedule dentist" to "no priority"
-    Then a "Subtask priority changed" event should have occurred
+    Then a "SubtaskPriorityChanged" event should have occurred
     And the item "Schedule dentist" should have priority "no priority"
 
   Scenario: Moving a captured item to a list
     Given a list named "Next actions" exists
     And a captured item "Schedule dentist" exists
     When the owner moves the item "Schedule dentist" to the list "Next actions"
-    Then a "Item moved to other list" event should have occurred
+    Then a "ItemMovedToOtherList" event should have occurred
     And the item "Schedule dentist" should be on the list "Next actions"
 
   Scenario: Capturing and refining an item through to a list
@@ -99,13 +99,13 @@ Feature: Capture and refine an inbox item
     And the owner tags the item "Schedule dentist" with "health"
     And the owner changes the priority of the item "Schedule dentist" to "high"
     And the owner moves the item "Schedule dentist" to the list "Next actions"
-    Then a "Item captured" event should have occurred
-    And a "Item title changed" event should have occurred
-    And a "Item description changed" event should have occurred
-    And a "Due date added to item" event should have occurred
-    And a "Tag added to item" event should have occurred
-    And a "Subtask priority changed" event should have occurred
-    And a "Item moved to other list" event should have occurred
+    Then a "ItemCaptured" event should have occurred
+    And a "ItemTitleChanged" event should have occurred
+    And a "ItemDescriptionChanged" event should have occurred
+    And a "DueDateAddedToItem" event should have occurred
+    And a "TagAddedToItem" event should have occurred
+    And a "SubtaskPriorityChanged" event should have occurred
+    And a "ItemMovedToOtherList" event should have occurred
     And the item "Schedule dentist" should have description "Call the clinic on Monday"
     And the item "Schedule dentist" should be due on "2026-08-03T00:00:00Z"
     And the item "Schedule dentist" should be tagged with "health"

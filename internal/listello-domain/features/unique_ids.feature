@@ -23,18 +23,18 @@ Feature: Unique IDs for lists and items
     And the user defines an item titled "Buy eggs" on the list "Next actions"
     Then the items "Buy milk" and "Buy eggs" should have different IDs
 
-  Scenario: List created event includes the list ID
+  Scenario: ListCreated event includes the list ID
     When the user creates a list named "Next actions"
-    Then a "List created" event should have occurred with the ID of list "Next actions"
+    Then a "ListCreated" event should have occurred with the ID of list "Next actions"
 
-  Scenario: Item defined event is raised with item and list IDs
+  Scenario: ItemDefined event is raised with item and list IDs
     Given a list named "Next actions" exists
     When the user defines an item titled "Buy milk" on the list "Next actions"
-    Then a "Item defined" event should have occurred with the ID of item "Buy milk"
-    And a "Item defined" event should have occurred with the list ID of list "Next actions"
+    Then a "ItemDefined" event should have occurred with the ID of item "Buy milk"
+    And a "ItemDefined" event should have occurred with the list ID of list "Next actions"
 
-  Scenario: Item completed event includes the item ID
+  Scenario: ItemCompleted event includes the item ID
     Given a list named "Next actions" exists
     And an outstanding item titled "Buy milk" exists on the list "Next actions"
     When the owner completes the item "Buy milk"
-    Then a "Item completed" event should have occurred with the ID of item "Buy milk"
+    Then a "ItemCompleted" event should have occurred with the ID of item "Buy milk"

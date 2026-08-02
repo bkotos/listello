@@ -6,32 +6,32 @@ type Event struct {
 	Metadata any
 }
 
-// ListCreatedMetadata is the payload for a List created event.
+// ListCreatedMetadata is the payload for a ListCreated event.
 type ListCreatedMetadata struct {
 	ID string
 }
 
-// ItemDefinedMetadata is the payload for an Item defined event.
+// ItemDefinedMetadata is the payload for an ItemDefined event.
 type ItemDefinedMetadata struct {
 	ID     string
 	ListID string
 }
 
-// ItemCompletedMetadata is the payload for an Item completed event.
+// ItemCompletedMetadata is the payload for an ItemCompleted event.
 type ItemCompletedMetadata struct {
 	ID string
 }
 
-// Domain event names (match event-storming language).
+// Domain event names (PascalCase).
 const (
-	EventListCreated            = "List created"
-	EventItemDefined            = "Item defined"
-	EventItemCompleted          = "Item completed"
-	EventItemCaptured           = "Item captured"
-	EventItemTitleChanged       = "Item title changed"
-	EventItemDescriptionChanged = "Item description changed"
-	EventDueDateAddedToItem     = "Due date added to item"
-	EventTagAddedToItem         = "Tag added to item"
-	EventSubtaskPriorityChanged = "Subtask priority changed"
-	EventItemMovedToOtherList   = "Item moved to other list"
+	EventListCreated            = "ListCreated"
+	EventItemDefined            = "ItemDefined"
+	EventItemCompleted          = "ItemCompleted"
+	EventItemCaptured           = "ItemCaptured"
+	EventItemTitleChanged       = "ItemTitleChanged"
+	EventItemDescriptionChanged = "ItemDescriptionChanged"
+	EventDueDateAddedToItem     = "DueDateAddedToItem"
+	EventTagAddedToItem         = "TagAddedToItem"
+	EventSubtaskPriorityChanged = "SubtaskPriorityChanged"
+	EventItemMovedToOtherList   = "ItemMovedToOtherList"
 )
