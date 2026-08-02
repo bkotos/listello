@@ -205,7 +205,10 @@ func (s *suiteState) theOwnerModifiesTheDueDateOfTheItemTo(ctx context.Context, 
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
 	event, err := s.items[title].ModifyDueDate(dueDate)
-	require.NoError(t, err)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
 	s.record(event)
 }
 
@@ -374,6 +377,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the item "([^"]*)" should be complete$`, s.theItemShouldBeComplete)
 	ctx.Step(`^creating the list should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^defining the item should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
+	ctx.Step(`^modifying the due date should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^the user captures an inbox item "([^"]*)"$`, s.theUserCapturesAnInboxItem)
 	ctx.Step(`^the user captures an inbox item "([^"]*)" on the list "([^"]*)"$`, s.theUserCapturesAnInboxItemOnTheList)
 	ctx.Step(`^the capture should fail with error "([^"]*)"$`, s.theCaptureShouldFailWithError)

@@ -32,6 +32,32 @@ Feature: Capture and refine an inbox item
     Then a "Due date added to item" event should have occurred
     And the item "Schedule dentist" should be due on "2026-08-03T00:00:00Z"
 
+  Scenario Outline: Accepting a valid ISO due date
+    Given a captured item "Schedule dentist" exists
+    When the owner modifies the due date of the item "Schedule dentist" to "<due_date>"
+    Then a "Due date added to item" event should have occurred
+    And the item "Schedule dentist" should be due on "<due_date>"
+
+    Examples:
+      | due_date                 |
+      | 2026-08-03T00:00:00Z     |
+      | 2026-08-03T15:30:00Z     |
+      | 2026-08-03T15:30:00.123Z |
+      | 2026-08-03T15:30:00+00:00 |
+
+  Scenario Outline: Rejecting a non-ISO due date
+    Given a captured item "Schedule dentist" exists
+    When the owner modifies the due date of the item "Schedule dentist" to "<due_date>"
+    Then modifying the due date should fail with error "due date must be ISO 8601 format"
+
+    Examples:
+      | due_date            |
+      | 2026-08-03          |
+      | 08/03/2026          |
+      | August 3, 2026      |
+      | 2026-08-03 00:00:00 |
+      | not-a-date          |
+
   Scenario: Tagging a captured item
     Given a captured item "Schedule dentist" exists
     When the owner tags the item "Schedule dentist" with "health"

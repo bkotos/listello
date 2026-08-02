@@ -1,6 +1,9 @@
 package domain
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // ItemState is the lifecycle state of an item.
 type ItemState string
@@ -95,6 +98,9 @@ func (i *Item) ModifyDescription(description string) (Event, error) {
 
 // ModifyDueDate sets the item's due date and raises a Due date added to item event.
 func (i *Item) ModifyDueDate(dueDate string) (Event, error) {
+	if _, err := time.Parse(time.RFC3339Nano, dueDate); err != nil {
+		return Event{}, fmt.Errorf("due date must be ISO 8601 format")
+	}
 	i.DueDate = dueDate
 	return Event{Name: EventDueDateAddedToItem}, nil
 }
