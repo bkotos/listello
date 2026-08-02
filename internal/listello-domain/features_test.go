@@ -308,10 +308,64 @@ func (s *suiteState) aEventShouldHaveOccurredWithTheListIDOfList(ctx context.Con
 	require.Truef(
 		t,
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			meta, ok := e.Metadata.(domain.EventMetadataItemDefined)
-			return e.Name == domain.EventName(eventName) && ok && meta.ListID == listID
+			return e.Name == domain.EventName(eventName) && eventListID(e) == listID
 		}),
 		"expected event %q with list ID %q; got %v", eventName, listID, eventSummaries(s.events),
+	)
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithTitle(ctx context.Context, eventName, title string) {
+	require.Truef(
+		godog.T(ctx),
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			meta, ok := e.Metadata.(domain.EventMetadataItemTitleChanged)
+			return e.Name == domain.EventName(eventName) && ok && meta.Title == title
+		}),
+		"expected event %q with title %q; got %v", eventName, title, eventSummaries(s.events),
+	)
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithDescription(ctx context.Context, eventName, description string) {
+	require.Truef(
+		godog.T(ctx),
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			meta, ok := e.Metadata.(domain.EventMetadataItemDescriptionChanged)
+			return e.Name == domain.EventName(eventName) && ok && meta.Description == description
+		}),
+		"expected event %q with description %q; got %v", eventName, description, eventSummaries(s.events),
+	)
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithDueDate(ctx context.Context, eventName, dueDate string) {
+	require.Truef(
+		godog.T(ctx),
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			meta, ok := e.Metadata.(domain.EventMetadataDueDateAddedToItem)
+			return e.Name == domain.EventName(eventName) && ok && meta.DueDate == dueDate
+		}),
+		"expected event %q with due date %q; got %v", eventName, dueDate, eventSummaries(s.events),
+	)
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithTag(ctx context.Context, eventName, tag string) {
+	require.Truef(
+		godog.T(ctx),
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			meta, ok := e.Metadata.(domain.EventMetadataTagAddedToItem)
+			return e.Name == domain.EventName(eventName) && ok && meta.Tag == tag
+		}),
+		"expected event %q with tag %q; got %v", eventName, tag, eventSummaries(s.events),
+	)
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithPriority(ctx context.Context, eventName, priority string) {
+	require.Truef(
+		godog.T(ctx),
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			meta, ok := e.Metadata.(domain.EventMetadataSubtaskPriorityChanged)
+			return e.Name == domain.EventName(eventName) && ok && meta.Priority == domain.ItemPriority(priority)
+		}),
+		"expected event %q with priority %q; got %v", eventName, priority, eventSummaries(s.events),
 	)
 }
 
@@ -333,6 +387,33 @@ func eventEntityID(e domain.Event) string {
 		return meta.ID
 	case domain.EventMetadataItemCompleted:
 		return meta.ID
+	case domain.EventMetadataItemCaptured:
+		return meta.ID
+	case domain.EventMetadataItemTitleChanged:
+		return meta.ID
+	case domain.EventMetadataItemDescriptionChanged:
+		return meta.ID
+	case domain.EventMetadataDueDateAddedToItem:
+		return meta.ID
+	case domain.EventMetadataTagAddedToItem:
+		return meta.ID
+	case domain.EventMetadataSubtaskPriorityChanged:
+		return meta.ID
+	case domain.EventMetadataItemMovedToOtherList:
+		return meta.ID
+	default:
+		return ""
+	}
+}
+
+func eventListID(e domain.Event) string {
+	switch meta := e.Metadata.(type) {
+	case domain.EventMetadataItemDefined:
+		return meta.ListID
+	case domain.EventMetadataItemCaptured:
+		return meta.ListID
+	case domain.EventMetadataItemMovedToOtherList:
+		return meta.ListID
 	default:
 		return ""
 	}
@@ -400,6 +481,11 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfList)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfItem)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the list ID of list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheListIDOfList)
+	ctx.Step(`^a "([^"]*)" event should have occurred with title "([^"]*)"$`, s.aEventShouldHaveOccurredWithTitle)
+	ctx.Step(`^a "([^"]*)" event should have occurred with description "([^"]*)"$`, s.aEventShouldHaveOccurredWithDescription)
+	ctx.Step(`^a "([^"]*)" event should have occurred with due date "([^"]*)"$`, s.aEventShouldHaveOccurredWithDueDate)
+	ctx.Step(`^a "([^"]*)" event should have occurred with tag "([^"]*)"$`, s.aEventShouldHaveOccurredWithTag)
+	ctx.Step(`^a "([^"]*)" event should have occurred with priority "([^"]*)"$`, s.aEventShouldHaveOccurredWithPriority)
 }
 
 func TestFeatures(t *testing.T) {

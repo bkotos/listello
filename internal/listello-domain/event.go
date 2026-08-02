@@ -51,3 +51,45 @@ type EventMetadataItemDefined struct {
 type EventMetadataItemCompleted struct {
 	ID string
 }
+
+// EventMetadataItemCaptured is the payload for an ItemCaptured event.
+type EventMetadataItemCaptured struct {
+	ID     string
+	ListID string
+}
+
+// EventMetadataItemTitleChanged is the payload for an ItemTitleChanged event.
+type EventMetadataItemTitleChanged struct {
+	ID    string
+	Title string
+}
+
+// EventMetadataItemDescriptionChanged is the payload for an ItemDescriptionChanged event.
+type EventMetadataItemDescriptionChanged struct {
+	ID          string
+	Description string
+}
+
+// EventMetadataDueDateAddedToItem is the payload for a DueDateAddedToItem event.
+type EventMetadataDueDateAddedToItem struct {
+	ID      string
+	DueDate string
+}
+
+// EventMetadataTagAddedToItem is the payload for a TagAddedToItem event.
+type EventMetadataTagAddedToItem struct {
+	ID  string
+	Tag string
+}
+
+// EventMetadataSubtaskPriorityChanged is the payload for a SubtaskPriorityChanged event.
+type EventMetadataSubtaskPriorityChanged struct {
+	ID       string
+	Priority ItemPriority
+}
+
+// EventMetadataItemMovedToOtherList is the payload for an ItemMovedToOtherList event.
+type EventMetadataItemMovedToOtherList struct {
+	ID     string
+	ListID string
+}
