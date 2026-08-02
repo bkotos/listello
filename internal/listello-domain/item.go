@@ -10,14 +10,20 @@ const (
 
 // Item is a unit of work.
 type Item struct {
-	id    string
-	title string
-	state ItemState
+	id     string
+	listID string
+	title  string
+	state  ItemState
 }
 
 // ID returns the item ID.
 func (i Item) ID() string {
 	return i.id
+}
+
+// ListID returns the ID of the list this item belongs to.
+func (i Item) ListID() string {
+	return i.listID
 }
 
 // Title returns the item title.
@@ -40,9 +46,9 @@ func (i Item) IsComplete() bool {
 	return i.state == ItemComplete
 }
 
-// DefineItem creates a new outstanding item and raises an Item defined event.
-func DefineItem(title string) (Item, Event, error) {
-	item := Item{id: newID("IT_"), title: title, state: ItemOutstanding}
+// DefineItem creates a new outstanding item on a list and raises an Item defined event.
+func DefineItem(listID, title string) (Item, Event, error) {
+	item := Item{id: newID("IT_"), listID: listID, title: title, state: ItemOutstanding}
 	return item, Event{Name: EventItemDefined, ID: item.id}, nil
 }
 

@@ -35,7 +35,6 @@ type suiteState struct {
 	placeholder *domain.Placeholder
 	lists       map[string]domain.List
 	items       map[string]domain.Item
-	itemLists   map[string]string // item title -> list name
 	events      []domain.Event
 }
 
@@ -43,7 +42,6 @@ func (s *suiteState) reset() {
 	s.placeholder = nil
 	s.lists = make(map[string]domain.List)
 	s.items = make(map[string]domain.Item)
-	s.itemLists = make(map[string]string)
 	s.events = nil
 }
 
@@ -85,11 +83,11 @@ func (s *suiteState) aListNamedExists(ctx context.Context, name string) {
 }
 
 func (s *suiteState) theUserDefinesAnItemTitledOnTheList(ctx context.Context, title, listName string) {
-	require.Contains(godog.T(ctx), s.lists, listName)
-	item, event, err := domain.DefineItem(title)
-	require.NoError(godog.T(ctx), err)
+	t := godog.T(ctx)
+	require.Contains(t, s.lists, listName)
+	item, event, err := domain.DefineItem(s.lists[listName].ID, title)
+	require.NoError(t, err)
 	s.items[item.Title()] = item
-	s.itemLists[item.Title()] = listName
 	s.record(event)
 }
 
@@ -97,7 +95,7 @@ func (s *suiteState) theItemShouldBeOnTheList(ctx context.Context, title, listNa
 	t := godog.T(ctx)
 	require.Contains(t, s.lists, listName)
 	require.Contains(t, s.items, title)
-	require.Equal(t, listName, s.itemLists[title])
+	require.Equal(t, s.lists[listName].ID, s.items[title].ListID())
 }
 
 func (s *suiteState) theItemShouldBeOutstanding(ctx context.Context, title string) {
