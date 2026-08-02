@@ -20,17 +20,16 @@ func main() {
 	eventLog := openEventLog("domain_events.log")
 	defer eventLog.Close()
 
+	listService := getListService(db, eventLog)
+
+	listService.CreateList(name)
+}
+
+func getListService(db *adapter.SQLite, eventLog *os.File) *application.ListService {
 	lists := adapter.NewSQLiteListRepository(db)
 	events := adapter.NewLoggingEventPublisher(eventLog)
-	svc := application.NewListService(lists, events)
-
-	list, err := svc.CreateList(name)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "create list: %v\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Printf("created list %q (%s)\n", list.Name, list.ID)
+	listService := application.NewListService(lists, events)
+	return listService
 }
 
 func openDB(path string) *adapter.SQLite {
