@@ -1,6 +1,6 @@
-Feature: Create and complete a list item
+Feature: Define and complete a list item
   As a user
-  I want to create a list, define an item on it, and complete that item
+  I want to define an item on a list and complete that item
   So that I can track work from empty list through to done
 
   Scenario: Creating a list named Inbox fails
