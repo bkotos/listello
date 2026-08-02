@@ -66,6 +66,13 @@ Feature: Capture and refine an inbox item
       | 2026-08-03 00:00:00 |
       | not-a-date          |
 
+  Scenario: Removing the due date of a captured item
+    Given a captured item "Schedule dentist" exists
+    And the owner modifies the due date of the item "Schedule dentist" to "2026-08-03T00:00:00Z"
+    When the owner removes the due date of the item "Schedule dentist"
+    Then a "DueDateRemovedFromItem" event should have occurred with the ID of item "Schedule dentist"
+    And the item "Schedule dentist" should have no due date
+
   Scenario: Tagging a captured item
     Given a captured item "Schedule dentist" exists
     When the owner tags the item "Schedule dentist" with "health"

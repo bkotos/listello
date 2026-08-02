@@ -218,6 +218,20 @@ func (s *suiteState) theItemShouldBeDueOn(ctx context.Context, title, dueDate st
 	require.Equal(t, dueDate, s.items[title].DueDate)
 }
 
+func (s *suiteState) theOwnerRemovesTheDueDateOfTheItem(ctx context.Context, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	event, err := s.items[title].RemoveDueDate()
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theItemShouldHaveNoDueDate(ctx context.Context, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.Empty(t, s.items[title].DueDate)
+}
+
 func (s *suiteState) theOwnerTagsTheItemWith(ctx context.Context, title, tag string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
@@ -395,6 +409,8 @@ func eventEntityID(e domain.Event) string {
 		return meta.ID
 	case domain.EventMetadataDueDateAddedToItem:
 		return meta.ID
+	case domain.EventMetadataDueDateRemovedFromItem:
+		return meta.ID
 	case domain.EventMetadataTagAddedToItem:
 		return meta.ID
 	case domain.EventMetadataSubtaskPriorityChanged:
@@ -469,6 +485,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the item "([^"]*)" should have description "([^"]*)"$`, s.theItemShouldHaveDescription)
 	ctx.Step(`^the owner modifies the due date of the item "([^"]*)" to "([^"]*)"$`, s.theOwnerModifiesTheDueDateOfTheItemTo)
 	ctx.Step(`^the item "([^"]*)" should be due on "([^"]*)"$`, s.theItemShouldBeDueOn)
+	ctx.Step(`^the owner removes the due date of the item "([^"]*)"$`, s.theOwnerRemovesTheDueDateOfTheItem)
+	ctx.Step(`^the item "([^"]*)" should have no due date$`, s.theItemShouldHaveNoDueDate)
 	ctx.Step(`^the owner tags the item "([^"]*)" with "([^"]*)"$`, s.theOwnerTagsTheItemWith)
 	ctx.Step(`^the item "([^"]*)" should be tagged with "([^"]*)"$`, s.theItemShouldBeTaggedWith)
 	ctx.Step(`^the owner changes the priority of the item "([^"]*)" to "([^"]*)"$`, s.theOwnerChangesThePriorityOfTheItemTo)

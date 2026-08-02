@@ -99,6 +99,12 @@ func (i *Item) ModifyDueDate(dueDate string) (Event, error) {
 	return NewEvent(EventDueDateAddedToItem, EventMetadataDueDateAddedToItem{ID: i.ID, DueDate: dueDate}, 1), nil
 }
 
+// RemoveDueDate removes the item's due date and raises a DueDateRemovedFromItem event.
+func (i *Item) RemoveDueDate() (Event, error) {
+	i.DueDate = ""
+	return NewEvent(EventDueDateRemovedFromItem, EventMetadataDueDateRemovedFromItem{ID: i.ID}, 1), nil
+}
+
 // Tag adds a tag to the item and raises a TagAddedToItem event.
 func (i *Item) Tag(tag string) (Event, error) {
 	i.Tags = append(i.Tags, tag)
