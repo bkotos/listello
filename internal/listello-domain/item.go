@@ -60,9 +60,9 @@ func DefineItem(list List, title string) (Item, Event, error) {
 	return item, NewEvent(EventItemDefined, EventMetadataItemDefined{ID: item.ID, ListID: list.ID}, 1), nil
 }
 
-// CaptureItem captures an item onto a list and raises an ItemCaptured event.
+// CaptureInboxItem captures an item onto the inbox and raises an ItemCaptured event.
 // Only the inbox list is valid; capturing onto any other list fails.
-func CaptureItem(list List, title string) (Item, Event, error) {
+func CaptureInboxItem(list List, title string) (Item, Event, error) {
 	if !list.IsInbox() {
 		return Item{}, Event{}, fmt.Errorf("can only capture items to the inbox")
 	}

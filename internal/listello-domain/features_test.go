@@ -171,7 +171,7 @@ func (s *suiteState) inboxList(ctx context.Context) domain.List {
 }
 
 func (s *suiteState) theUserCapturesAnInboxItem(ctx context.Context, title string) {
-	item, event, err := domain.CaptureItem(s.inboxList(ctx), title)
+	item, event, err := domain.CaptureInboxItem(s.inboxList(ctx), title)
 	require.NoError(godog.T(ctx), err)
 	s.items[item.Title] = &item
 	s.record(event)
@@ -180,7 +180,7 @@ func (s *suiteState) theUserCapturesAnInboxItem(ctx context.Context, title strin
 func (s *suiteState) theUserCapturesAnInboxItemOnTheList(ctx context.Context, title, listName string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.lists, listName)
-	_, _, err := domain.CaptureItem(s.lists[listName], title)
+	_, _, err := domain.CaptureInboxItem(s.lists[listName], title)
 	s.lastErr = err
 }
 
