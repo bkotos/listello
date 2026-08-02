@@ -20,6 +20,8 @@ Should have:
 - File and image upload
 - Link unfurling
 - Quick Inbox processing
+- Collection when offline, and when you load your todo list it checks in
+- paste events into CLI and apply them.
 
 Maybe have:
 - Note taking
