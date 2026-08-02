@@ -22,7 +22,7 @@ func (r *SQLiteListRepository) Save(list domain.List) error {
 	const q = `
 INSERT INTO lists (id, name) VALUES (?, ?)
 ON CONFLICT(id) DO UPDATE SET name = excluded.name;`
-	if _, err := r.db.Exec(q, list.ID(), list.Name()); err != nil {
+	if _, err := r.db.Exec(q, list.ID, list.Name); err != nil {
 		return fmt.Errorf("save list: %w", err)
 	}
 	return nil
@@ -39,5 +39,5 @@ func (r *SQLiteListRepository) FindByID(id string) (domain.List, error) {
 	if err != nil {
 		return domain.List{}, fmt.Errorf("find list: %w", err)
 	}
-	return domain.ReconstituteList(listID, name), nil
+	return domain.List{ID: listID, Name: name}, nil
 }

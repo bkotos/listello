@@ -23,10 +23,10 @@ func TestSQLiteListRepository_SaveAndFindByID(t *testing.T) {
 
 	// Act
 	require.NoError(t, repo.Save(list))
-	got, err := repo.FindByID(list.ID())
+	got, err := repo.FindByID(list.ID)
 
 	// Assert
 	require.NoError(t, err)
-	assert.Equal(t, list.ID(), got.ID())
-	assert.Equal(t, list.Name(), got.Name())
+	assert.Equal(t, list.ID, got.ID)
+	assert.Equal(t, list.Name, got.Name)
 }

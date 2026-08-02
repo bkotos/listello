@@ -62,7 +62,7 @@ func (s *suiteState) thePlaceholderShouldExist(ctx context.Context) {
 func (s *suiteState) theUserCreatesAListNamed(ctx context.Context, name string) {
 	list, event, err := domain.CreateList(name)
 	require.NoError(godog.T(ctx), err)
-	s.lists[list.Name()] = list
+	s.lists[list.Name] = list
 	s.record(event)
 }
 
@@ -128,7 +128,7 @@ func (s *suiteState) theItemShouldBeComplete(ctx context.Context, title string) 
 func (s *suiteState) theListShouldHaveAnIDPrefixedWith(ctx context.Context, name, prefix string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.lists, name)
-	require.Truef(t, strings.HasPrefix(s.lists[name].ID(), prefix), "expected list %q ID to start with %q; got %q", name, prefix, s.lists[name].ID())
+	require.Truef(t, strings.HasPrefix(s.lists[name].ID, prefix), "expected list %q ID to start with %q; got %q", name, prefix, s.lists[name].ID)
 }
 
 func (s *suiteState) theItemShouldHaveAnIDPrefixedWith(ctx context.Context, title, prefix string) {
@@ -141,8 +141,8 @@ func (s *suiteState) theListsShouldHaveDifferentIDs(ctx context.Context, nameA, 
 	t := godog.T(ctx)
 	require.Contains(t, s.lists, nameA)
 	require.Contains(t, s.lists, nameB)
-	idA := s.lists[nameA].ID()
-	idB := s.lists[nameB].ID()
+	idA := s.lists[nameA].ID
+	idB := s.lists[nameB].ID
 	require.NotEmpty(t, idA)
 	require.NotEmpty(t, idB)
 	require.NotEqual(t, idA, idB)
@@ -162,7 +162,7 @@ func (s *suiteState) theItemsShouldHaveDifferentIDs(ctx context.Context, titleA,
 func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfList(ctx context.Context, eventName, listName string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.lists, listName)
-	s.eventOccurredWithID(ctx, eventName, s.lists[listName].ID())
+	s.eventOccurredWithID(ctx, eventName, s.lists[listName].ID)
 }
 
 func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfItem(ctx context.Context, eventName, title string) {

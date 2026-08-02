@@ -21,7 +21,7 @@ func TestListService_CreateList_PersistsList(t *testing.T) {
 
 	repo.EXPECT().
 		Save(mock.MatchedBy(func(list domain.List) bool {
-			return list.Name() == listName && strings.HasPrefix(list.ID(), "LS_")
+			return list.Name == listName && strings.HasPrefix(list.ID, "LS_")
 		})).
 		Return(nil)
 	publisher.EXPECT().
@@ -33,8 +33,8 @@ func TestListService_CreateList_PersistsList(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
-	assert.Equal(t, listName, list.Name())
-	assert.True(t, strings.HasPrefix(list.ID(), "LS_"))
+	assert.Equal(t, listName, list.Name)
+	assert.True(t, strings.HasPrefix(list.ID, "LS_"))
 }
 
 func TestListService_CreateList_PublishesEvent(t *testing.T) {
@@ -60,6 +60,6 @@ func TestListService_CreateList_PublishesEvent(t *testing.T) {
 	require.NoError(t, err)
 	publisher.AssertCalled(t, "Publish", domain.Event{
 		Name: domain.EventListCreated,
-		ID:   list.ID(),
+		ID:   list.ID,
 	})
 }

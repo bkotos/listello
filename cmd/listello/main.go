@@ -31,5 +31,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("created list %q (%s)\n", list.Name(), list.ID())
+	fmt.Printf("created list %q (%s)\n", list.Name, list.ID)
 }

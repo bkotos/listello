@@ -4,23 +4,8 @@ import "fmt"
 
 // List is a named list.
 type List struct {
-	id   string
-	name string
-}
-
-// ID returns the list ID.
-func (l List) ID() string {
-	return l.id
-}
-
-// Name returns the list name.
-func (l List) Name() string {
-	return l.name
-}
-
-// ReconstituteList rebuilds a list from persisted state.
-func ReconstituteList(id, name string) List {
-	return List{id: id, name: name}
+	ID   string
+	Name string
 }
 
 // CreateList creates a new list and raises a List created event.
@@ -28,6 +13,6 @@ func CreateList(name string) (List, Event, error) {
 	if name == "" {
 		return List{}, Event{}, fmt.Errorf("list name is required")
 	}
-	list := List{id: newID("LS_"), name: name}
-	return list, Event{Name: EventListCreated, ID: list.id}, nil
+	list := List{ID: newID("LS_"), Name: name}
+	return list, Event{Name: EventListCreated, ID: list.ID}, nil
 }
