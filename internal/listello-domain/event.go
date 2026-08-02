@@ -7,14 +7,16 @@ type Event struct {
 	Name      string
 	Metadata  any
 	Timestamp string
+	Version   int
 }
 
 // NewEvent constructs a domain event.
-func NewEvent(name string, metadata any) Event {
+func NewEvent(name string, metadata any, version int) Event {
 	return Event{
 		Name:      name,
 		Metadata:  metadata,
 		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
+		Version:   version,
 	}
 }
 

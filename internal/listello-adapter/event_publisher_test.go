@@ -12,7 +12,7 @@ import (
 func TestLoggingEventPublisher_Publish(t *testing.T) {
 	// Arrange
 	pub := adapter.NewLoggingEventPublisher()
-	event := domain.NewEvent(domain.EventListCreated, domain.ListCreatedMetadata{ID: "LS_test"})
+	event := domain.NewEvent(domain.EventListCreated, domain.ListCreatedMetadata{ID: "LS_test"}, 1)
 
 	// Act
 	err := pub.Publish(event)

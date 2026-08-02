@@ -24,5 +24,5 @@ func CreateList(name string) (List, Event, error) {
 		return List{}, Event{}, fmt.Errorf("cannot create a list named Inbox")
 	}
 	list := List{ID: newID("LS_"), Name: name}
-	return list, NewEvent(EventListCreated, ListCreatedMetadata{ID: list.ID}), nil
+	return list, NewEvent(EventListCreated, ListCreatedMetadata{ID: list.ID}, 1), nil
 }
