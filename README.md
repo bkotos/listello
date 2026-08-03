@@ -24,6 +24,43 @@ internal/
 
 **Composition** lives in `cmd/listello`: open SQLite and the event log, construct adapter implementations, inject them into application services.
 
+### Command flow: `listello list create`
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant CLI as CLI<br/>(cmd/listello)
+    participant App as Application<br/>(ListService)
+    participant Domain as Domain<br/>(technology-free)
+    participant Repo as Adapter<br/>(SQLiteListRepository)
+    participant DB as SQLite
+    participant Pub as Adapter<br/>(LoggingEventPublisher)
+    participant Log as Event log
+
+    User->>CLI: listello list create "Next actions"
+    CLI->>App: CreateList("Next actions")
+
+    Note over App,Domain: Domain has no I/O — only rules and events
+    App->>Domain: CreateList(name)
+    Domain-->>App: list, ListCreated event
+
+    App->>Repo: Save(list)
+    Repo->>DB: INSERT INTO lists
+    DB-->>Repo: ok
+    Repo-->>App: ok
+
+    Note over App,Pub: App forwards the domain event to the port
+    App->>Pub: Publish(event)
+    Pub->>Log: append JSONL
+    Log-->>Pub: ok
+    Pub-->>App: ok
+
+    App-->>CLI: list
+    CLI-->>User: Created list "Next actions" (LS_…)
+```
+
+The domain never touches the database or the event log. It returns a value object plus a typed event; the application layer is responsible for persisting the aggregate through a repository port and publishing that event through `EventPublisher`. Only adapters know about SQLite and the file log.
+
 ## Testing
 
 - **Domain** — Gherkin features + Godog (`internal/listello-domain/features`), developed with TDD.
