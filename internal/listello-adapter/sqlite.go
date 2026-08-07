@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/ncruces/go-sqlite3/driver"
 )
 
 // SQLite manages a SQLite database connection and schema initialization.
@@ -14,7 +14,7 @@ type SQLite struct {
 
 // OpenSQLite opens (or creates) a SQLite database at path and runs migrations.
 func OpenSQLite(path string) (*SQLite, error) {
-	db, err := sql.Open("sqlite", path)
+	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite: %w", err)
 	}

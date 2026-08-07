@@ -1,11 +1,13 @@
 .DEFAULT_GOAL := list
 
-.PHONY: list test mocks build run bdd-report bdd-gaps bdd-steps
+.PHONY: list test mocks build run build-wasm run-wasm bdd-report bdd-gaps bdd-steps
 
 REPORTS_DIR := reports
 CUCUMBER_JSON := $(CURDIR)/$(REPORTS_DIR)/cucumber.json
 MOCKERY ?= $(shell go env GOPATH)/bin/mockery
 BIN := bin/listello
+BIN_WASM := bin/listello.wasm
+WASMTIME ?= wasmtime
 
 list:
 	@echo "Available targets:"
@@ -14,6 +16,8 @@ list:
 	@echo "  make mocks        Regenerate testify mocks (requires mockery v3)"
 	@echo "  make build        Compile CLI to $(BIN)"
 	@echo "  make run          Run CLI (pass args via ARGS=...)"
+	@echo "  make build-wasm   Compile CLI to WASI WASM ($(BIN_WASM))"
+	@echo "  make run-wasm     Run WASM CLI via wasmtime (pass args via ARGS=...)"
 	@echo "  make bdd-report   Run implemented BDD features + write Cucumber JSON"
 	@echo "  make bdd-gaps     Run all BDD features including @wip (shows undefined steps)"
 	@echo "  make bdd-steps    List registered BDD step definitions"
@@ -31,6 +35,14 @@ build:
 
 run: build
 	./$(BIN) $(ARGS)
+
+build-wasm:
+	mkdir -p bin
+	GOOS=wasip1 GOARCH=wasm go build -tags sqlite3_dotlk -o $(BIN_WASM) ./cmd/listello
+
+run-wasm: build-wasm
+	@command -v $(WASMTIME) >/dev/null || { echo "wasmtime not found. Install with: brew install wasmtime"; exit 1; }
+	$(WASMTIME) run --dir=.::/ $(BIN_WASM) $(ARGS)
 
 # Run implemented domain Gherkin suite (excludes @wip) + Cucumber JSON report.
 bdd-report:
