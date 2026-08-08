@@ -6,7 +6,7 @@ Listello is a personal task-list system in the spirit of Getting Things Done: ca
 
 The codebase follows a hexagonal (ports & adapters) layout. Dependencies point inward toward the domain.
 
-![Listello hexagonal architecture](hexagonal-architecture.png)
+![Listello hexagonal architecture](listello-lib-go/hexagonal-architecture.png)
 
 ```
 cmd/listello          → composition root (wires adapters into application services)

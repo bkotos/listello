@@ -1,4 +1,4 @@
-/reports/
-/bin/
+/listello-lib-go/reports/
+/listello-lib-go/bin/
 *.db
 *.log
