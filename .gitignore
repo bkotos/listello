@@ -2,3 +2,6 @@
 /listello-lib-go/bin/
 *.db
 *.log
+node_modules/
+listello-lib-node/dist/
+!listello-lib-node/dist/.gitkeep
