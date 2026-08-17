@@ -2,6 +2,7 @@
   "name": "listello",
   "private": true,
   "workspaces": [
-    "lib-node"
+    "lib-node",
+    "ui"
   ]
 }
