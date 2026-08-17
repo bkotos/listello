@@ -2,6 +2,6 @@
   "name": "listello",
   "private": true,
   "workspaces": [
-    "listello-lib-node"
+    "lib-node"
   ]
 }

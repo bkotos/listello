@@ -31,4 +31,4 @@ console.log(list.ID, list.Name);
 | `src/` | TypeScript loader + types |
 | `dist/` | Published outputs: `index.js`, `.d.ts`, `listello-js.wasm`, `wasm_exec.js` |
 
-The `.wasm` is produced by `make -C ../listello-lib-go build-js-wasm`.
+The `.wasm` is produced by `make -C ../lib-go build-js-wasm`.

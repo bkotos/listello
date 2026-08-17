@@ -8,7 +8,7 @@ MOCKERY ?= $(shell go env GOPATH)/bin/mockery
 BIN := bin/listello
 BIN_WASM := bin/listello.wasm
 WASMTIME ?= wasmtime
-JS_WASM_OUT := ../listello-lib-node/dist
+JS_WASM_OUT := ../lib-node/dist
 
 list:
 	@echo "Available targets:"
@@ -50,7 +50,7 @@ run-wasm: build-wasm
 	@command -v $(WASMTIME) >/dev/null || { echo "wasmtime not found. Install with: brew install wasmtime"; exit 1; }
 	$(WASMTIME) run --dir=.::/ $(BIN_WASM) $(ARGS)
 
-# Emit the Node SDK wasm + wasm_exec.js into listello-lib-node/dist.
+# Emit the Node SDK wasm + wasm_exec.js into lib-node/dist.
 build-js-wasm:
 	mkdir -p $(JS_WASM_OUT)
 	GOOS=js GOARCH=wasm go build -o $(JS_WASM_OUT)/listello-js.wasm ./cmd/listello-js

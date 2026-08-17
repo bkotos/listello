@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "build:wasm": "make -C ../listello-lib-go build-js-wasm",
+    "build:wasm": "make -C ../lib-go build-js-wasm",
     "build:all": "npm run build:wasm && npm run build"
   },
   "engines": {

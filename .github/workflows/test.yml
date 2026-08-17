@@ -9,13 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: listello-lib-go
+        working-directory: lib-go
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
-          go-version-file: listello-lib-go/go.mod
+          go-version-file: lib-go/go.mod
 
       - name: Test
         run: make test

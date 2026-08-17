@@ -1,7 +1,7 @@
-/listello-lib-go/reports/
-/listello-lib-go/bin/
+/lib-go/reports/
+/lib-go/bin/
 *.db
 *.log
 node_modules/
-listello-lib-node/dist/
-!listello-lib-node/dist/.gitkeep
+lib-node/dist/
+!lib-node/dist/.gitkeep
