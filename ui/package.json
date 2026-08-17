@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:server": "tsx watch src/server/index.ts",
     "dev:all": "run-p dev dev:server",
+    "start": "run-p dev dev:server",
     "server": "tsx src/server/index.ts",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

@@ -1,0 +1,24 @@
+@apiBase = http://localhost:3001
+@viteBase = http://localhost:5173
+
+### Health (direct to server)
+GET {{apiBase}}/health
+
+### Health (via Vite proxy)
+GET {{viteBase}}/health
+
+### Create list (direct to server)
+POST {{apiBase}}/api/lists
+Content-Type: application/json
+
+{
+  "name": "Next actions"
+}
+
+### Create list (via Vite proxy)
+POST {{viteBase}}/api/lists
+Content-Type: application/json
+
+{
+  "name": "Next actions"
+}
