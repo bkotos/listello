@@ -4,5 +4,8 @@
   "workspaces": [
     "lib-node",
     "ui"
-  ]
+  ],
+  "scripts": {
+    "start": "npm run start -w ui"
+  }
 }
