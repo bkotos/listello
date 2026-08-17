@@ -6,6 +6,7 @@
     "ui"
   ],
   "scripts": {
-    "start": "npm run start -w ui"
+    "start": "npm run start -w ui",
+    "test": "npm test --workspaces --if-present"
   }
 }
