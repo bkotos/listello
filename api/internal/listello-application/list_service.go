@@ -7,6 +7,7 @@ import (
 // ListRepository persists lists.
 type ListRepository interface {
 	Save(list domain.List) error
+	GetAll() ([]domain.List, error)
 }
 
 // ListService coordinates list aggregate commands and persistence.
@@ -36,4 +37,9 @@ func (s *ListService) CreateList(name string) (domain.List, error) {
 		return domain.List{}, err
 	}
 	return list, nil
+}
+
+// GetAll returns all lists from persistence.
+func (s *ListService) GetAll() ([]domain.List, error) {
+	return s.listRepository.GetAll()
 }

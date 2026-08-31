@@ -66,3 +66,25 @@ func TestListService_CreateList_PublishesEvent(t *testing.T) {
 	assert.Equal(t, list.ID, meta.ID)
 	assert.NotEmpty(t, published.Timestamp)
 }
+
+func TestListService_GetAll_ReturnsListsFromRepository(t *testing.T) {
+	// Arrange
+	expected := []domain.List{
+		{ID: "LS_1", Name: "Work"},
+		{ID: "LS_2", Name: "Personal"},
+	}
+	repo := NewMockListRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListService(repo, publisher)
+
+	repo.EXPECT().
+		GetAll().
+		Return(expected, nil)
+
+	// Act
+	received, err := svc.GetAll()
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, expected, received)
+}
