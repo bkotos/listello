@@ -42,8 +42,8 @@ func (r *SQLiteListRepository) FindByID(id string) (domain.List, error) {
 	return domain.List{ID: listID, Name: name}, nil
 }
 
-// List returns all lists in insertion order.
-func (r *SQLiteListRepository) List() ([]domain.List, error) {
+// GetAll returns all lists in insertion order.
+func (r *SQLiteListRepository) GetAll() ([]domain.List, error) {
 	const q = `SELECT id, name FROM lists ORDER BY rowid`
 	rows, err := r.db.Query(q)
 	if err != nil {
