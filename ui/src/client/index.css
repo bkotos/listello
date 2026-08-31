@@ -1,59 +1,131 @@
+@import "bulma/css/bulma.min.css";
+
 :root {
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.5;
-  color: #1a1a1a;
-  background: #fafafa;
+  --bulma-primary-h: 153deg;
+  --bulma-primary-s: 48%;
+  --bulma-primary-l: 43%;
+
+  --bulma-family-primary: ui-sans-serif, system-ui, sans-serif;
+  --bulma-family-code: ui-monospace, monospace;
+
+  --bulma-radius: 0.5rem;
+  --bulma-radius-small: 0.375rem;
+  --bulma-radius-large: 0.75rem;
+
+  --app-page: hsl(0deg 0% 98%);
+  --app-border: hsl(0deg 0% 90%);
 }
 
-* {
-  box-sizing: border-box;
+html {
+  background-color: var(--app-page);
 }
 
 body {
   margin: 0;
+  font-family: var(--bulma-family-primary);
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: 1.5rem;
+  height: 100dvh;
 }
 
-header {
+.is-family-code {
+  font-family: var(--bulma-family-code);
+}
+
+.app-shell {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--app-page);
 }
 
-.brand {
-  margin: 0;
-  font-weight: 600;
+.app-sidebar {
+  width: 16rem;
+  flex-shrink: 0;
+  border-right: 1px solid var(--app-border);
+  background-color: hsl(0deg 0% 100%);
 }
 
-nav {
+.app-main {
   display: flex;
-  gap: 1rem;
+  min-width: 0;
+  flex: 1 1 0;
+  flex-direction: column;
 }
 
-nav a {
-  color: #555;
-  text-decoration: none;
+.app-detail {
+  width: 400px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--app-border);
+  background-color: hsl(0deg 0% 100%);
 }
 
-nav a.active {
-  color: #1a1a1a;
-  font-weight: 600;
+.app-scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
 }
 
-h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem;
+.app-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background-color: hsl(0deg 0% 0% / 0.35);
 }
 
-p {
-  margin: 0;
-  color: #555;
+.app-drawer {
+  position: fixed;
+  inset-block: 0;
+  z-index: 41;
+  box-shadow: 0 10px 40px hsl(0deg 0% 0% / 0.2);
+  background-color: hsl(0deg 0% 100%);
+  overflow-y: auto;
+}
+
+.app-drawer.is-left {
+  inset-inline-start: 0;
+  width: 18rem;
+  max-width: 85%;
+  border-right: 1px solid var(--app-border);
+}
+
+.app-drawer.is-right {
+  inset-inline-end: 0;
+  width: 100%;
+  max-width: 28rem;
+  border-left: 1px solid var(--app-border);
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: var(--bulma-radius-small);
+  color: hsl(0deg 0% 45%);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.icon-btn:hover {
+  background-color: hsl(0deg 0% 94%);
+  color: hsl(0deg 0% 20%);
+}
+
+.icon-btn.is-active {
+  background-color: hsl(0deg 0% 94%);
+  color: hsl(0deg 0% 20%);
+}
+
+.muted {
+  color: hsl(0deg 0% 45%);
+}
+
+.menu-list a.is-active {
+  background-color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l) / 0.12);
+  color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l));
 }

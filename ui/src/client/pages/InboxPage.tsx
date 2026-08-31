@@ -1,9 +1,19 @@
+import { Inbox } from "lucide-react";
+import { ContentArea } from "../components/ContentArea.tsx";
+import { useShellContext } from "../lib/useShellContext.ts";
+
 function InboxPage() {
+  const { openSidebar } = useShellContext();
+
   return (
-    <section>
-      <h1>Inbox</h1>
-      <p>No captured items yet.</p>
-    </section>
+    <ContentArea
+      title="Inbox"
+      icon={<Inbox size={20} className="muted" />}
+      capturePlaceholder="Capture something on your mind…"
+      onOpenSidebar={openSidebar}
+    >
+      <p className="muted">No captured items yet.</p>
+    </ContentArea>
   );
 }
 
