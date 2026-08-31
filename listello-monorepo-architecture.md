@@ -1,14 +1,13 @@
 # Listello monorepo architecture
 
-Target layout for shipping Listello as a Go core, a Node/WASM SDK, and a UI — without forcing the UI (or other JS consumers) to talk to Go directly.
+Target layout for shipping Listello as a Go API and a UI — the UI talks to the API over HTTP, not to Go directly.
 
 ## Packages
 
 ```text
 listello/
-  lib-go/       # Go module: domain, application, adapters, CLIs
-  lib-node/     # npm package: loader, TypeScript types, WASM artifact
-  ui/           # UI app; depends on lib-node
+  api/          # Go module: domain, application, adapters, HTTP server, CLI
+  ui/           # UI app; calls api over HTTP
 ```
 
 Optional root `package.json` with npm/pnpm workspaces:
@@ -16,104 +15,95 @@ Optional root `package.json` with npm/pnpm workspaces:
 ```json
 {
   "private": true,
-  "workspaces": ["lib-node", "ui"]
+  "workspaces": ["ui"]
 }
 ```
 
-Go remains its own module (`lib-go/go.mod`). JS workspaces do not replace the Go module.
+Go remains its own module (`api/go.mod`). JS workspaces do not replace the Go module.
 
 ## Responsibilities
 
 | Package | Owns | Does not own |
-|---------|------|----------------|
-| `lib-go` | Domain, application, ports/adapters, native CLI, `js/wasm` bridge entrypoint (`cmd/listello-js`), WASI CLI build | npm metadata, UI |
-| `lib-node` | `package.json`, JS/TS loader (`wasm_exec` glue), `.d.ts` API surface, published `dist/` including the `.wasm` | Go sources, business rules |
-| `ui` | Presentation and UX | Persistence, domain logic, WASM build |
+|---------|------|--------------|
+| `api` | Domain, application, ports/adapters, HTTP API, native CLI | Presentation, npm metadata |
+| `ui` | Presentation and UX | Persistence, domain logic |
 
 Dependency direction:
 
 ```text
-ui  →  lib-node  →  (embeds) listello-js.wasm
-                      ↑
-              built from lib-go
+ui  →  HTTP  →  api
 ```
 
 ## Build flow
 
-1. **Compile the JS-callable WASM from Go**, emitting into the Node package:
+1. **Run the API** (Go HTTP server + composition root):
 
    ```bash
-   # from lib-go (or root Make that cds there)
-   GOOS=js GOARCH=wasm go build -o ../lib-node/dist/listello-js.wasm ./cmd/listello-js
-   cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" ../lib-node/dist/
+   # from api/
+   go run ./cmd/listello serve   # or equivalent entrypoint
    ```
 
-2. **Node package** wraps that artifact: load/instantiate WASM, expose `globalThis.listello` (or a default export that resolves after load).
+2. **Run the UI** (Vite dev server + optional dev proxy to the API):
 
-3. **UI** depends on `@…/listello` (workspace protocol locally, published version in CI/release).
-
-It is intentional that the WASM binary is built **into** `lib-node` (e.g. `dist/`), not kept as the consumer-facing home under `lib-go/bin`. Go owns the *build*; the Node package owns the *distribution artifact*.
-
-Native and WASI CLIs can still emit under `lib-go/bin/` for local Go workflows (`make build`, `make build-wasm` / Wasmtime). Those are separate from the npm-shipped `js/wasm` module.
+   ```bash
+   # from ui/
+   npm run dev
+   ```
 
 ```text
-lib-go
-  cmd/listello        → native + wasip1 CLI
-  cmd/listello-js     → GOOS=js GOARCH=wasm (Node SDK)
+api/
+  cmd/listello        → CLI + HTTP server (composition root)
+  internal/
+    listello-domain   → business logic and invariants
+    listello-application → use cases; defines ports
+    listello-adapter  → port implementations (SQLite, event log)
 
-lib-node/dist
-  listello-js.wasm    ← js/wasm build output
-  wasm_exec.js
-  index.js / index.d.ts
+ui/
+  src/client/         → React app
+  src/server/         → dev-only proxy or BFF (optional; can be removed once client calls api directly)
 ```
 
-## Node SDK surface
+## HTTP API surface
 
-The `js/wasm` bridge exports a nested JS API (not the WASI CLI). Example shape:
+The API exposes REST (or RPC-style) endpoints over HTTP. Example shape:
 
-```ts
-listello.list.createList(name: string): List
-listello.item.defineItem(listId: string, title: string): Item
+```http
+POST /api/lists
+Content-Type: application/json
+
+{ "name": "Next actions" }
 ```
 
-- Return values are plain JS objects derived from Go structs (e.g. `{ ID, Name }` unless the bridge maps to camelCase).
-- TypeScript `.d.ts` files describe that JS shape; they do not carry Go types across the boundary.
-- Errors need an explicit convention at the boundary (throw vs result object); `(T, error)` cannot cross as-is.
-
-Go sketch:
-
-```go
-js.Global().Set("listello", map[string]any{
-	"list": map[string]any{
-		"createList": js.FuncOf(createList),
-	},
-	"item": map[string]any{
-		"defineItem": js.FuncOf(defineItem),
-	},
-})
-select {} // keep the runtime alive
+```json
+{ "id": "...", "name": "Next actions" }
 ```
 
-`internal/` packages stay under `lib-go`. The bridge lives in the same Go module (`cmd/listello-js`), so it may import `internal/...`. External npm consumers never import Go packages.
+- Request and response bodies are JSON; field naming follows one convention (camelCase or PascalCase) and is documented in the API.
+- Errors use HTTP status codes and a consistent error body (e.g. `{ "error": "..." }`).
+- The UI (or any HTTP client) is the consumer; no Go types cross the boundary.
 
-## Persistence note
+`internal/` packages stay under `api`. The HTTP handlers live in the same Go module (e.g. `cmd/listello` or a dedicated `internal/listello-http` package) and may import `internal/...`.
 
-- **Native / WASI CLI:** file-backed SQLite (e.g. ncruces) and file event log, as today.
-- **Node `js/wasm` SDK:** may need adapters suited to that target (same application ports; possibly different adapter implementations). The monorepo split exists partly so those composition roots can diverge without affecting the UI.
+## Persistence
 
-## Publishing
+File-backed SQLite (e.g. ncruces) and file event log, as today. The API is the single composition root for adapters in this layout.
 
-- Publish `lib-node` from `dist/` (`main`, `types`, `files` point at built outputs).
-- Consumers of the npm package should not need a Go toolchain.
-- Choose one policy for the `.wasm` blob: commit under `dist/` for simple installs, or produce it in CI on publish. Either is valid; document the choice in the Node package README when implemented.
+## Local development
+
+Typical workflow:
+
+1. Start `api` on a fixed port (e.g. `:8080`).
+2. Start `ui` with Vite; configure the dev server or client to proxy `/api` to the Go server.
+3. Use Bruno, `api.http`, or similar to hit the API directly when debugging backend behavior.
 
 ## Migration from the current repo
 
-Today the repo root *is* the Go module. Moving to this layout means:
+Today the repo has `lib-go/`, `lib-node/`, and `ui/`. Moving to this layout means:
 
-1. Relocate Go sources into `lib-go/` and update `go.mod` / import paths as needed.
-2. Add `lib-node` with loader + types; point the `js/wasm` `-o` path at its `dist/`.
-3. Add `ui` as a workspace package depending on the Node library.
-4. Keep root docs/Make as a thin orchestrator if useful (`make build-js-wasm` → output into `lib-node/dist`).
+1. Rename `lib-go/` → `api/` and update `go.mod` / import paths as needed.
+2. Add an HTTP server to `api` (or promote an existing entrypoint) as the primary integration surface.
+3. Point `ui` at the API over HTTP; remove the `@bkotos/listello` / WASM dependency and delete `lib-node/`.
+4. Drop `cmd/listello-js` and any WASM build targets until a JS/WASM SDK is needed again.
+5. Update root `package.json` workspaces to `["ui"]` only; keep root docs/Make as a thin orchestrator if useful (`make run-api`, `make run-ui`).
 
 Until that move happens, this document is the target architecture — not a description of the current tree.
