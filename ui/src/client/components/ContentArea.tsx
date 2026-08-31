@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { PanelLeft, Plus } from "lucide-react";
 
-type ContentAreaProps = {
+export type ContentAreaProps = {
   title: string;
   icon?: ReactNode;
   capturePlaceholder: string;
