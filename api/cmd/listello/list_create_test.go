@@ -13,6 +13,7 @@ import (
 
 type stubListService struct {
 	createListFn func(name string) (domain.List, error)
+	getAllFn     func() ([]domain.List, error)
 	calledWith   string
 }
 
@@ -22,6 +23,13 @@ func (s *stubListService) CreateList(name string) (domain.List, error) {
 		return s.createListFn(name)
 	}
 	return domain.List{}, fmt.Errorf("unexpected CreateList call")
+}
+
+func (s *stubListService) GetAll() ([]domain.List, error) {
+	if s.getAllFn != nil {
+		return s.getAllFn()
+	}
+	return nil, fmt.Errorf("unexpected GetAll call")
 }
 
 func TestListCreate_CallsApplicationAndPrintsConfirmation(t *testing.T) {

@@ -32,12 +32,29 @@ func newServeCmd(lists listService) *cobra.Command {
 func newAPIServer(lists listService) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", handleHealth)
+	mux.HandleFunc("GET /api/lists", handleGetAllLists(lists))
 	mux.HandleFunc("POST /api/lists", handleCreateList(lists))
 	return mux
 }
 
 func handleHealth(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func handleGetAllLists(lists listService) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		all, err := lists.GetAll()
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		payload := make([]map[string]string, len(all))
+		for i, list := range all {
+			payload[i] = listToJSON(list)
+		}
+		writeJSON(w, http.StatusOK, payload)
+	}
 }
 
 func handleCreateList(lists listService) http.HandlerFunc {

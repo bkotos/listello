@@ -11,6 +11,7 @@ import (
 // listService is the application-layer surface the CLI needs for list commands.
 type listService interface {
 	CreateList(name string) (domain.List, error)
+	GetAll() ([]domain.List, error)
 }
 
 func newRoot(lists listService) *cobra.Command {

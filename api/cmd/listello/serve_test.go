@@ -58,3 +58,41 @@ func TestHandleCreateList(t *testing.T) {
 		t.Fatalf("ID = %q, want %q", list["ID"], "LS_test")
 	}
 }
+
+func TestHandleGetAllLists(t *testing.T) {
+	expected := []domain.List{
+		{ID: "LS_1", Name: "Work"},
+		{ID: "LS_2", Name: "Personal"},
+	}
+	svc := &stubListService{
+		getAllFn: func() ([]domain.List, error) {
+			return expected, nil
+		},
+	}
+	server := newAPIServer(svc)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/lists", nil)
+	rec := httptest.NewRecorder()
+
+	server.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d; body = %s", rec.Code, http.StatusOK, rec.Body.String())
+	}
+
+	var received []map[string]string
+	if err := json.NewDecoder(rec.Body).Decode(&received); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if len(received) != len(expected) {
+		t.Fatalf("len = %d, want %d", len(received), len(expected))
+	}
+	for i, list := range expected {
+		if received[i]["ID"] != list.ID {
+			t.Fatalf("ID[%d] = %q, want %q", i, received[i]["ID"], list.ID)
+		}
+		if received[i]["Name"] != list.Name {
+			t.Fatalf("Name[%d] = %q, want %q", i, received[i]["Name"], list.Name)
+		}
+	}
+}
