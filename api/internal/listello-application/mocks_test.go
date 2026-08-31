@@ -198,6 +198,61 @@ func (_m *MockListRepository) EXPECT() *MockListRepository_Expecter {
 	return &MockListRepository_Expecter{mock: &_m.Mock}
 }
 
+// GetAll provides a mock function for the type MockListRepository
+func (_mock *MockListRepository) GetAll() ([]domain.List, error) {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAll")
+	}
+
+	var r0 []domain.List
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func() ([]domain.List, error)); ok {
+		return returnFunc()
+	}
+	if returnFunc, ok := ret.Get(0).(func() []domain.List); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.List)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func() error); ok {
+		r1 = returnFunc()
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockListRepository_GetAll_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAll'
+type MockListRepository_GetAll_Call struct {
+	*mock.Call
+}
+
+// GetAll is a helper method to define mock.On call
+func (_e *MockListRepository_Expecter) GetAll() *MockListRepository_GetAll_Call {
+	return &MockListRepository_GetAll_Call{Call: _e.mock.On("GetAll")}
+}
+
+func (_c *MockListRepository_GetAll_Call) Run(run func()) *MockListRepository_GetAll_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockListRepository_GetAll_Call) Return(lists []domain.List, err error) *MockListRepository_GetAll_Call {
+	_c.Call.Return(lists, err)
+	return _c
+}
+
+func (_c *MockListRepository_GetAll_Call) RunAndReturn(run func() ([]domain.List, error)) *MockListRepository_GetAll_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Save provides a mock function for the type MockListRepository
 func (_mock *MockListRepository) Save(list domain.List) error {
 	ret := _mock.Called(list)
