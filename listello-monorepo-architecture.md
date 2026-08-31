@@ -60,7 +60,6 @@ api/
 
 ui/
   src/client/         → React app
-  src/server/         → dev-only proxy or BFF (optional; can be removed once client calls api directly)
 ```
 
 ## HTTP API surface
@@ -75,7 +74,7 @@ Content-Type: application/json
 ```
 
 ```json
-{ "id": "...", "name": "Next actions" }
+{ "ID": "...", "Name": "Next actions" }
 ```
 
 - Request and response bodies are JSON; field naming follows one convention (camelCase or PascalCase) and is documented in the API.
@@ -98,12 +97,4 @@ Typical workflow:
 
 ## Migration from the current repo
 
-Today the repo has `lib-go/`, `lib-node/`, and `ui/`. Moving to this layout means:
-
-1. Rename `lib-go/` → `api/` and update `go.mod` / import paths as needed.
-2. Add an HTTP server to `api` (or promote an existing entrypoint) as the primary integration surface.
-3. Point `ui` at the API over HTTP; remove the `@bkotos/listello` / WASM dependency and delete `lib-node/`.
-4. Drop `cmd/listello-js` and any WASM build targets until a JS/WASM SDK is needed again.
-5. Update root `package.json` workspaces to `["ui"]` only; keep root docs/Make as a thin orchestrator if useful (`make run-api`, `make run-ui`).
-
-Until that move happens, this document is the target architecture — not a description of the current tree.
+The repo uses this layout: `api/` (Go module) and `ui/` (npm workspace). The UI calls the API over HTTP; there is no Node/WASM SDK.

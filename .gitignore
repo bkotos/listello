@@ -1,7 +1,5 @@
-/lib-go/reports/
-/lib-go/bin/
+/api/reports/
+/api/bin/
 *.db
 *.log
 node_modules/
-lib-node/dist/
-!lib-node/dist/.gitkeep

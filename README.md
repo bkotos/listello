@@ -6,14 +6,16 @@ Listello is a personal task-list system in the spirit of Getting Things Done: ca
 
 The codebase follows a hexagonal (ports & adapters) layout. Dependencies point inward toward the domain.
 
-![Listello hexagonal architecture](lib-go/hexagonal-architecture.png)
+![Listello hexagonal architecture](api/hexagonal-architecture.png)
 
 ```
-cmd/listello          → composition root (wires adapters into application services)
-internal/
-  listello-domain     → business logic and invariants; free of infrastructure
-  listello-application→ use cases; defines ports (repositories, EventPublisher)
-  listello-adapter    → port implementations (SQLite, file event log)
+api/
+  cmd/listello          → composition root (CLI + HTTP server; wires adapters into application services)
+  internal/
+    listello-domain     → business logic and invariants; free of infrastructure
+    listello-application→ use cases; defines ports (repositories, EventPublisher)
+    listello-adapter    → port implementations (SQLite, file event log)
+ui/                     → React app; calls api over HTTP (Vite dev proxy in local dev)
 ```
 
 **Domain** is the technology-free core: business logic, invariants, and domain concepts (lists, items, events, and whatever else the model needs). Commands raise typed domain events with structured `EventMetadata*` payloads. No I/O, frameworks, or persistence concerns live here.
@@ -22,7 +24,7 @@ internal/
 
 **Adapter** implements those ports (SQLite for lists today; a logging publisher for events) and is the only layer that talks to the outside world.
 
-**Composition** lives in `cmd/listello`: open SQLite and the event log, construct adapter implementations, inject them into application services.
+**Composition** lives in `api/cmd/listello`: open SQLite and the event log, construct adapter implementations, inject them into application services. The `serve` subcommand exposes the same services over HTTP (`GET /health`, `POST /api/lists`).
 
 ### Command flow: `listello list create`
 

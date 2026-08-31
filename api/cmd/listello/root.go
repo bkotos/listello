@@ -21,6 +21,7 @@ func newRoot(lists listService) *cobra.Command {
 		SilenceErrors: true,
 	}
 	root.AddCommand(newListCmd(lists))
+	root.AddCommand(newServeCmd(lists))
 	return root
 }
 

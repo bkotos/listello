@@ -1,12 +1,10 @@
 {
-  "name": "listello",
   "private": true,
   "workspaces": [
-    "lib-node",
     "ui"
   ],
   "scripts": {
-    "start": "npm run start -w ui",
+    "start": "npm run dev -w ui",
     "test": "npm test --workspaces --if-present"
   }
 }

@@ -9,13 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: lib-go
+        working-directory: api
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
-          go-version-file: lib-go/go.mod
+          go-version-file: api/go.mod
 
       - name: Test
         run: make test
