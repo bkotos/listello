@@ -41,3 +41,26 @@ func (r *SQLiteListRepository) FindByID(id string) (domain.List, error) {
 	}
 	return domain.List{ID: listID, Name: name}, nil
 }
+
+// List returns all lists in insertion order.
+func (r *SQLiteListRepository) List() ([]domain.List, error) {
+	const q = `SELECT id, name FROM lists ORDER BY rowid`
+	rows, err := r.db.Query(q)
+	if err != nil {
+		return nil, fmt.Errorf("list lists: %w", err)
+	}
+	defer rows.Close()
+
+	var lists []domain.List
+	for rows.Next() {
+		var listID, name string
+		if err := rows.Scan(&listID, &name); err != nil {
+			return nil, fmt.Errorf("list lists: %w", err)
+		}
+		lists = append(lists, domain.List{ID: listID, Name: name})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list lists: %w", err)
+	}
+	return lists, nil
+}

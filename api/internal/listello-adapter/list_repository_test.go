@@ -30,3 +30,26 @@ func TestSQLiteListRepository_SaveAndFindByID(t *testing.T) {
 	assert.Equal(t, list.ID, got.ID)
 	assert.Equal(t, list.Name, got.Name)
 }
+
+func TestSQLiteListRepository_List(t *testing.T) {
+	// Arrange
+	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "lists.db"))
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = db.Close() })
+
+	repo := adapter.NewSQLiteListRepository(db)
+	work, _, err := domain.CreateList("Work")
+	require.NoError(t, err)
+	personal, _, err := domain.CreateList("Personal")
+	require.NoError(t, err)
+	require.NoError(t, repo.Save(work))
+	require.NoError(t, repo.Save(personal))
+
+	// Act
+	got, err := repo.List()
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, got, 2)
+	assert.Equal(t, []domain.List{work, personal}, got)
+}
