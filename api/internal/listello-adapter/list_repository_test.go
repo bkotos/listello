@@ -11,7 +11,7 @@ import (
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
 
-func TestSQLiteListRepository_SaveAndFindByID(t *testing.T) {
+func TestSQLiteListRepository_SaveAndGetByID(t *testing.T) {
 	// Arrange
 	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "lists.db"))
 	require.NoError(t, err)
@@ -23,7 +23,7 @@ func TestSQLiteListRepository_SaveAndFindByID(t *testing.T) {
 
 	// Act
 	require.NoError(t, repo.Save(list))
-	got, err := repo.FindByID(list.ID)
+	got, err := repo.GetByID(list.ID)
 
 	// Assert
 	require.NoError(t, err)

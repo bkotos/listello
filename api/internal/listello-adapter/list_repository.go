@@ -28,8 +28,8 @@ ON CONFLICT(id) DO UPDATE SET name = excluded.name;`
 	return nil
 }
 
-// FindByID returns the list with the given ID.
-func (r *SQLiteListRepository) FindByID(id string) (domain.List, error) {
+// GetByID returns the list with the given ID.
+func (r *SQLiteListRepository) GetByID(id string) (domain.List, error) {
 	const q = `SELECT id, name FROM lists WHERE id = ?`
 	var listID, name string
 	err := r.db.QueryRow(q, id).Scan(&listID, &name)
