@@ -88,3 +88,23 @@ func TestListService_GetAll_ReturnsListsFromRepository(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, expected, received)
 }
+
+func TestListService_GetByID_ReturnsListFromRepository(t *testing.T) {
+	// Arrange
+	const listID = "LS_1"
+	expected := domain.List{ID: listID, Name: "Work"}
+	repo := NewMockListRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListService(repo, publisher)
+
+	repo.EXPECT().
+		GetByID(listID).
+		Return(expected, nil)
+
+	// Act
+	received, err := svc.GetByID(listID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, expected, received)
+}

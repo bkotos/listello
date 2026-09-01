@@ -8,6 +8,7 @@ import (
 type ListRepository interface {
 	Save(list domain.List) error
 	GetAll() ([]domain.List, error)
+	GetByID(id string) (domain.List, error)
 }
 
 // ListService coordinates list aggregate commands and persistence.
@@ -42,4 +43,9 @@ func (s *ListService) CreateList(name string) (domain.List, error) {
 // GetAll returns all lists from persistence.
 func (s *ListService) GetAll() ([]domain.List, error) {
 	return s.listRepository.GetAll()
+}
+
+// GetByID returns the list with the given ID from persistence.
+func (s *ListService) GetByID(id string) (domain.List, error) {
+	return s.listRepository.GetByID(id)
 }
