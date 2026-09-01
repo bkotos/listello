@@ -4,6 +4,8 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Sidebar } from "./Sidebar.tsx";
 
+const createList = vi.fn();
+
 vi.mock("../contexts/useAppContext.ts", () => ({
   useAppContext: () => ({
     lists: [
@@ -17,6 +19,10 @@ vi.mock("../contexts/useAppContext.ts", () => ({
   }),
 }));
 
+vi.mock("../lib/api/list-queries.ts", () => ({
+  useCreateListMutation: () => ({ mutate: createList }),
+}));
+
 type RenderSidebarOptions = {
   initialEntry?: string;
   onNavigate?: () => void;
@@ -24,6 +30,7 @@ type RenderSidebarOptions = {
 
 afterEach(() => {
   cleanup();
+  createList.mockClear();
 });
 
 function renderSidebar({ initialEntry = "/inbox", onNavigate }: RenderSidebarOptions = {}) {
@@ -144,5 +151,47 @@ describe("Sidebar", () => {
 
     // Assert
     expect(screen.queryByPlaceholderText("List name")).not.toBeInTheDocument();
+  });
+
+  it("creates a list when Enter is pressed with a name", () => {
+    // Arrange
+    renderSidebar();
+    fireEvent.click(screen.getByRole("button", { name: "Add list" }));
+    const input = screen.getByPlaceholderText("List name");
+
+    // Act
+    fireEvent.change(input, { target: { value: "Errands" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    expect(createList).toHaveBeenCalledWith("Errands");
+  });
+
+  it("hides the list name input after submitting with Enter", () => {
+    // Arrange
+    renderSidebar();
+    fireEvent.click(screen.getByRole("button", { name: "Add list" }));
+    const input = screen.getByPlaceholderText("List name");
+    fireEvent.change(input, { target: { value: "Errands" } });
+
+    // Act
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    expect(screen.queryByPlaceholderText("List name")).not.toBeInTheDocument();
+  });
+
+  it("does not create a list when Enter is pressed with only whitespace", () => {
+    // Arrange
+    renderSidebar();
+    fireEvent.click(screen.getByRole("button", { name: "Add list" }));
+    const input = screen.getByPlaceholderText("List name");
+    fireEvent.change(input, { target: { value: "   " } });
+
+    // Act
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    expect(createList).not.toHaveBeenCalled();
   });
 });

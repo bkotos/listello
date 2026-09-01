@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { getAllLists, getList } from "./list-client.ts";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createList, getAllLists, getList } from "./list-client.ts";
 
 export const listQueryKeys = {
   all: ["lists"] as const,
@@ -18,5 +18,16 @@ export function useListQuery(listId: string | undefined) {
     queryKey: listQueryKeys.detail(listId ?? ""),
     queryFn: ({ signal }) => getList(listId!, { signal }),
     enabled: Boolean(listId),
+  });
+}
+
+export function useCreateListMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (name: string) => createList(name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: listQueryKeys.all });
+    },
   });
 }

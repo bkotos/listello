@@ -2,6 +2,7 @@ import { Check, Hash, Inbox, Plus } from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAppContext } from "../contexts/useAppContext.ts";
+import { useCreateListMutation } from "../lib/api/list-queries.ts";
 import { AccountMenu } from "./AccountMenu.tsx";
 
 type SidebarProps = {
@@ -10,7 +11,21 @@ type SidebarProps = {
 
 export function Sidebar({ onNavigate }: SidebarProps) {
   const { lists } = useAppContext();
+  const { mutate: createList } = useCreateListMutation();
   const [adding, setAdding] = useState(false);
+  const [newList, setNewList] = useState("");
+
+  const submitList = () => {
+    const name = newList.trim();
+    if (!name) {
+      return;
+    }
+
+    createList(name);
+    setNewList("");
+    setAdding(false);
+    onNavigate?.();
+  };
 
   return (
     <div
@@ -95,13 +110,20 @@ export function Sidebar({ onNavigate }: SidebarProps) {
           {adding && (
             <input
               autoFocus
+              value={newList}
               placeholder="List name"
               className="input is-small mt-2"
+              onChange={(event) => setNewList(event.target.value)}
               onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  submitList();
+                }
                 if (event.key === "Escape") {
                   setAdding(false);
+                  setNewList("");
                 }
               }}
+              onBlur={submitList}
             />
           )}
         </aside>

@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { createElement, type ReactNode } from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { createQueryWrapper } from "../test/renderWithQueryClient.tsx";
 import { AppShell } from "./AppShell.tsx";
 import InboxPage from "../pages/InboxPage.tsx";
 
@@ -23,14 +24,20 @@ afterEach(() => {
 });
 
 function renderAppShell(routes: ReactNode, initialEntry = "/inbox") {
+  const { QueryWrapper } = createQueryWrapper();
+
   render(
     createElement(
-      MemoryRouter,
-      { initialEntries: [initialEntry] },
+      QueryWrapper,
+      null,
       createElement(
-        Routes,
-        null,
-        createElement(Route, { element: createElement(AppShell) }, routes),
+        MemoryRouter,
+        { initialEntries: [initialEntry] },
+        createElement(
+          Routes,
+          null,
+          createElement(Route, { element: createElement(AppShell) }, routes),
+        ),
       ),
     ),
   );
