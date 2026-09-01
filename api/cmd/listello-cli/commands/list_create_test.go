@@ -1,10 +1,10 @@
-package main
+package commands
 
 import (
 	"bytes"
-	"fmt"
 	"testing"
 
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -12,34 +12,15 @@ import (
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
 
-type stubListRepository struct {
-	saveFn   func(list domain.List) error
-	getAllFn func() ([]domain.List, error)
-}
-
-func (r *stubListRepository) Save(list domain.List) error {
-	if r.saveFn != nil {
-		return r.saveFn(list)
+func newTestRoot(lists *application.ListService) *cobra.Command {
+	root := &cobra.Command{
+		Use:           "listello",
+		Short:         "Listello command-line interface",
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
-	return nil
-}
-
-func (r *stubListRepository) GetAll() ([]domain.List, error) {
-	if r.getAllFn != nil {
-		return r.getAllFn()
-	}
-	return nil, fmt.Errorf("unexpected GetAll call")
-}
-
-type stubEventPublisher struct {
-	publishFn func(event domain.Event) error
-}
-
-func (p *stubEventPublisher) Publish(event domain.Event) error {
-	if p.publishFn != nil {
-		return p.publishFn(event)
-	}
-	return nil
+	root.AddCommand(NewList(lists))
+	return root
 }
 
 func TestListCreate_CallsApplicationAndPrintsConfirmation(t *testing.T) {
@@ -56,13 +37,13 @@ func TestListCreate_CallsApplicationAndPrintsConfirmation(t *testing.T) {
 	)
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	root := newRoot(svc)
+	root := newTestRoot(svc)
 	root.SetOut(stdout)
 	root.SetErr(stderr)
 	root.SetArgs([]string{"list", "create", "Next actions"})
 
 	// Act
-	err := run(root)
+	err := root.Execute()
 
 	// Assert
 	require.NoError(t, err)
@@ -77,16 +58,17 @@ func TestListCreate_PrintsDomainError(t *testing.T) {
 	svc := application.NewListService(&stubListRepository{}, &stubEventPublisher{})
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	root := newRoot(svc)
+	root := newTestRoot(svc)
 	root.SetOut(stdout)
 	root.SetErr(stderr)
 	root.SetArgs([]string{"list", "create", "Inbox"})
 
 	// Act
-	err := run(root)
+	err := root.Execute()
 
 	// Assert
 	require.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot create a list named Inbox")
 	assert.Empty(t, stdout.String())
-	assert.Contains(t, stderr.String(), "error: cannot create a list named Inbox")
+	assert.Empty(t, stderr.String())
 }

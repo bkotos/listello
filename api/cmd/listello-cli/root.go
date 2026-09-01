@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/bkotos/listello/cmd/listello-cli/commands"
 	application "github.com/bkotos/listello/internal/listello-application"
 )
 
@@ -15,7 +16,7 @@ func newRoot(lists *application.ListService) *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.AddCommand(newListCmd(lists))
+	root.AddCommand(commands.NewList(lists))
 	return root
 }
 

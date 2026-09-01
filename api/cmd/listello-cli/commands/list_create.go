@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -8,16 +8,7 @@ import (
 	application "github.com/bkotos/listello/internal/listello-application"
 )
 
-func newListCmd(lists *application.ListService) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "Manage lists",
-	}
-	cmd.AddCommand(newListCreateCmd(lists))
-	return cmd
-}
-
-func newListCreateCmd(lists *application.ListService) *cobra.Command {
+func NewListCreate(lists *application.ListService) *cobra.Command {
 	return &cobra.Command{
 		Use:   "create <name>",
 		Short: "Create a list",
