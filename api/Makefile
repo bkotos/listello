@@ -41,7 +41,7 @@ build: clean build-cli build-server
 
 build-cli:
 	mkdir -p bin
-	go build -o $(BIN) ./cmd/listello
+	go build -o $(BIN) ./cmd/listello-cli
 
 build-server:
 	mkdir -p bin
@@ -55,7 +55,7 @@ serve: build-server
 
 build-wasm: clean
 	mkdir -p bin
-	GOOS=wasip1 GOARCH=wasm go build -tags sqlite3_dotlk -o $(BIN_WASM) ./cmd/listello
+	GOOS=wasip1 GOARCH=wasm go build -tags sqlite3_dotlk -o $(BIN_WASM) ./cmd/listello-cli
 
 run-wasm: build-wasm
 	@command -v $(WASMTIME) >/dev/null || { echo "wasmtime not found. Install with: brew install wasmtime"; exit 1; }
