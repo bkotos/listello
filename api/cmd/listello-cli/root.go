@@ -8,7 +8,7 @@ import (
 	application "github.com/bkotos/listello/internal/listello-application"
 )
 
-func newRoot(lists application.ListService) *cobra.Command {
+func newRoot(lists *application.ListService) *cobra.Command {
 	root := &cobra.Command{
 		Use:           "listello",
 		Short:         "Listello command-line interface",

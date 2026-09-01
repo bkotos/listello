@@ -29,7 +29,7 @@ func MustOpenEventLog(path string) *os.File {
 }
 
 // NewListService wires list persistence and event publishing into ListService.
-func NewListService(db *adapter.SQLite, eventLog *os.File) application.ListService {
+func NewListService(db *adapter.SQLite, eventLog *os.File) *application.ListService {
 	lists := adapter.NewSQLiteListRepository(db)
 	events := adapter.NewLoggingEventPublisher(eventLog)
 	return application.NewListService(lists, events)

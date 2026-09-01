@@ -8,7 +8,7 @@ import (
 	application "github.com/bkotos/listello/internal/listello-application"
 )
 
-func newListCmd(lists application.ListService) *cobra.Command {
+func newListCmd(lists *application.ListService) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "Manage lists",
@@ -17,7 +17,7 @@ func newListCmd(lists application.ListService) *cobra.Command {
 	return cmd
 }
 
-func newListCreateCmd(lists application.ListService) *cobra.Command {
+func newListCreateCmd(lists *application.ListService) *cobra.Command {
 	return &cobra.Command{
 		Use:   "create <name>",
 		Short: "Create a list",

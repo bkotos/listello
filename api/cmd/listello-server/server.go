@@ -8,7 +8,7 @@ import (
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
 
-func newAPIServer(lists application.ListService) http.Handler {
+func newAPIServer(lists *application.ListService) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", handleHealth)
 	mux.HandleFunc("GET /api/lists", handleGetAllLists(lists))
@@ -20,7 +20,7 @@ func handleHealth(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 }
 
-func handleGetAllLists(lists application.ListService) http.HandlerFunc {
+func handleGetAllLists(lists *application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		all, err := lists.GetAll()
 		if err != nil {
@@ -36,7 +36,7 @@ func handleGetAllLists(lists application.ListService) http.HandlerFunc {
 	}
 }
 
-func handleCreateList(lists application.ListService) http.HandlerFunc {
+func handleCreateList(lists *application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			Name string `json:"name"`

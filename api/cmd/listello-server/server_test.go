@@ -8,26 +8,38 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	application "github.com/bkotos/listello/internal/listello-application"
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
 
-type stubListService struct {
-	createListFn func(name string) (domain.List, error)
-	getAllFn     func() ([]domain.List, error)
+type stubListRepository struct {
+	saveFn   func(list domain.List) error
+	getAllFn func() ([]domain.List, error)
 }
 
-func (s *stubListService) CreateList(name string) (domain.List, error) {
-	if s.createListFn != nil {
-		return s.createListFn(name)
+func (r *stubListRepository) Save(list domain.List) error {
+	if r.saveFn != nil {
+		return r.saveFn(list)
 	}
-	return domain.List{}, fmt.Errorf("unexpected CreateList call")
+	return nil
 }
 
-func (s *stubListService) GetAll() ([]domain.List, error) {
-	if s.getAllFn != nil {
-		return s.getAllFn()
+func (r *stubListRepository) GetAll() ([]domain.List, error) {
+	if r.getAllFn != nil {
+		return r.getAllFn()
 	}
 	return nil, fmt.Errorf("unexpected GetAll call")
+}
+
+type stubEventPublisher struct {
+	publishFn func(event domain.Event) error
+}
+
+func (p *stubEventPublisher) Publish(event domain.Event) error {
+	if p.publishFn != nil {
+		return p.publishFn(event)
+	}
+	return nil
 }
 
 func TestHandleHealth(t *testing.T) {
@@ -50,11 +62,7 @@ func TestHandleHealth(t *testing.T) {
 }
 
 func TestHandleCreateList(t *testing.T) {
-	svc := &stubListService{
-		createListFn: func(name string) (domain.List, error) {
-			return domain.List{ID: "LS_test", Name: name}, nil
-		},
-	}
+	svc := application.NewListService(&stubListRepository{}, &stubEventPublisher{})
 	server := newAPIServer(svc)
 
 	body := bytes.NewBufferString(`{"name":"Next actions"}`)
@@ -74,8 +82,8 @@ func TestHandleCreateList(t *testing.T) {
 	if list["Name"] != "Next actions" {
 		t.Fatalf("Name = %q, want %q", list["Name"], "Next actions")
 	}
-	if list["ID"] != "LS_test" {
-		t.Fatalf("ID = %q, want %q", list["ID"], "LS_test")
+	if list["ID"] == "" {
+		t.Fatal("ID is empty")
 	}
 }
 
@@ -84,11 +92,14 @@ func TestHandleGetAllLists(t *testing.T) {
 		{ID: "LS_1", Name: "Work"},
 		{ID: "LS_2", Name: "Personal"},
 	}
-	svc := &stubListService{
-		getAllFn: func() ([]domain.List, error) {
-			return expected, nil
+	svc := application.NewListService(
+		&stubListRepository{
+			getAllFn: func() ([]domain.List, error) {
+				return expected, nil
+			},
 		},
-	}
+		&stubEventPublisher{},
+	)
 	server := newAPIServer(svc)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/lists", nil)
