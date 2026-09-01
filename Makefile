@@ -2,12 +2,12 @@
 
 run:
 	@trap 'kill 0' EXIT INT TERM; \
-	$(MAKE) -C api serve & \
+	$(MAKE) -C api serve-watch & \
 	npm run dev -w ui & \
 	wait
 
 run-api:
-	$(MAKE) -C api serve
+	$(MAKE) -C api serve-watch
 
 run-ui:
 	npm run dev -w ui

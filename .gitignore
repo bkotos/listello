@@ -1,5 +1,6 @@
 /api/reports/
 /api/bin/
+/api/tmp/
 *.db
 *.log
 node_modules/

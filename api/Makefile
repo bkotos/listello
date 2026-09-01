@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := list
 
-.PHONY: list test mocks clean build build-cli build-server run serve build-wasm run-wasm bdd-report bdd-gaps bdd-steps api-types
+.PHONY: list test mocks clean build build-cli build-server run serve serve-watch build-wasm run-wasm bdd-report bdd-gaps bdd-steps api-types
 
 REPORTS_DIR := reports
 CUCUMBER_JSON := $(CURDIR)/$(REPORTS_DIR)/cucumber.json
@@ -21,6 +21,7 @@ list:
 	@echo "  make build-server  Compile server to $(BIN_SERVER)"
 	@echo "  make run           Run CLI (pass args via ARGS=...)"
 	@echo "  make serve         Run HTTP API server (pass args via ARGS=...)"
+	@echo "  make serve-watch   Run HTTP API server with auto-reload on code changes"
 	@echo "  make build-wasm    Clean and compile CLI to WASI WASM ($(BIN_WASM))"
 	@echo "  make run-wasm      Run WASM CLI via wasmtime (pass args via ARGS=...)"
 	@echo "  make bdd-report    Run implemented BDD features + write Cucumber JSON"
@@ -56,6 +57,9 @@ run: build-cli
 
 serve: build-server
 	./$(BIN_SERVER) $(ARGS)
+
+serve-watch:
+	go run github.com/air-verse/air@v1.61.7
 
 build-wasm: clean
 	mkdir -p bin
