@@ -110,6 +110,17 @@ describe("Sidebar", () => {
     expect(input).toHaveClass("input", "is-small", "mt-2");
   });
 
+  it("focuses the list name input when Add list is clicked", () => {
+    // Arrange
+    renderSidebar();
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Add list" }));
+
+    // Assert
+    expect(screen.getByPlaceholderText("List name")).toHaveFocus();
+  });
+
   it("hides the list name input when Add list is clicked again", () => {
     // Arrange
     renderSidebar();

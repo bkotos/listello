@@ -93,7 +93,11 @@ export function Sidebar({ onNavigate }: SidebarProps) {
           </ul>
 
           {adding && (
-            <input placeholder="List name" className="input is-small mt-2" />
+            <input
+              autoFocus
+              placeholder="List name"
+              className="input is-small mt-2"
+            />
           )}
         </aside>
       </div>
