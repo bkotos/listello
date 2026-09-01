@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	application "github.com/bkotos/listello/internal/listello-application"
+	viewdto "github.com/bkotos/listello/internal/listello-view-dtos"
 
 	"github.com/bkotos/listello/cmd/listello-server/response"
 )
@@ -29,6 +30,6 @@ func CreateList(lists *application.ListService) http.HandlerFunc {
 			return
 		}
 
-		response.WriteJSON(w, http.StatusCreated, response.ListToJSON(list))
+		response.WriteJSON(w, http.StatusCreated, viewdto.ListFromDomain(list))
 	}
 }

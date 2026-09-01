@@ -6,11 +6,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	application "github.com/bkotos/listello/internal/listello-application"
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
 
 func TestGetAllLists(t *testing.T) {
+	// Arrange
 	expected := []domain.List{
 		{ID: "LS_1", Name: "Work"},
 		{ID: "LS_2", Name: "Personal"},
@@ -23,28 +27,20 @@ func TestGetAllLists(t *testing.T) {
 		},
 		&stubEventPublisher{},
 	)
-
 	req := httptest.NewRequest(http.MethodGet, "/api/lists", nil)
 	rec := httptest.NewRecorder()
+
+	// Act
 	GetAllLists(lists)(rec, req)
 
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status = %d, want %d; body = %s", rec.Code, http.StatusOK, rec.Body.String())
-	}
+	// Assert
+	assert.Equal(t, http.StatusOK, rec.Code)
 
 	var received []map[string]string
-	if err := json.NewDecoder(rec.Body).Decode(&received); err != nil {
-		t.Fatalf("decode response: %v", err)
-	}
-	if len(received) != len(expected) {
-		t.Fatalf("len = %d, want %d", len(received), len(expected))
-	}
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&received))
+	require.Len(t, received, len(expected))
 	for i, list := range expected {
-		if received[i]["ID"] != list.ID {
-			t.Fatalf("ID[%d] = %q, want %q", i, received[i]["ID"], list.ID)
-		}
-		if received[i]["Name"] != list.Name {
-			t.Fatalf("Name[%d] = %q, want %q", i, received[i]["Name"], list.Name)
-		}
+		assert.Equal(t, list.ID, received[i]["ID"])
+		assert.Equal(t, list.Name, received[i]["Name"])
 	}
 }

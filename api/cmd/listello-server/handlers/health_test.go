@@ -5,23 +5,23 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestHealth(t *testing.T) {
+	// Arrange
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	rec := httptest.NewRecorder()
 
+	// Act
 	Health(rec, req)
 
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
-	}
+	// Assert
+	assert.Equal(t, http.StatusOK, rec.Code)
 
 	var body map[string]bool
-	if err := json.NewDecoder(rec.Body).Decode(&body); err != nil {
-		t.Fatalf("decode response: %v", err)
-	}
-	if !body["ok"] {
-		t.Fatalf("body = %#v, want ok=true", body)
-	}
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&body))
+	assert.True(t, body["ok"])
 }

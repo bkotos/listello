@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	application "github.com/bkotos/listello/internal/listello-application"
+	viewdto "github.com/bkotos/listello/internal/listello-view-dtos"
 
 	"github.com/bkotos/listello/cmd/listello-server/response"
 )
@@ -16,10 +17,6 @@ func GetAllLists(lists *application.ListService) http.HandlerFunc {
 			return
 		}
 
-		payload := make([]map[string]string, len(all))
-		for i, list := range all {
-			payload[i] = response.ListToJSON(list)
-		}
-		response.WriteJSON(w, http.StatusOK, payload)
+		response.WriteJSON(w, http.StatusOK, viewdto.ListsFromDomain(all))
 	}
 }
