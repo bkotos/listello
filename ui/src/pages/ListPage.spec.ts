@@ -1,44 +1,63 @@
-import { cleanup, fireEvent, screen } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderPageWithShellContext } from "../test/renderPageWithShellContext.ts";
 import ListPage from "./ListPage.tsx";
 
+vi.mock("../lib/api/list-client.ts", () => ({
+  getList: vi.fn(),
+}));
+
+import { getList } from "../lib/api/list-client.ts";
+
 afterEach(() => {
   cleanup();
+  vi.clearAllMocks();
 });
 
 describe("ListPage", () => {
-  it("renders the list title from the route param", () => {
+  it("renders the list title from the API", async () => {
     // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
     renderPageWithShellContext(createElement(ListPage), {
       path: "lists/:listId",
-      initialEntry: "/lists/work",
+      initialEntry: "/lists/LS_1",
     });
 
     // Assert
-    expect(screen.getByRole("heading", { name: "Work" })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Work" })).toBeInTheDocument();
+    });
+    expect(getList).toHaveBeenCalledWith("LS_1");
     expect(screen.getByPlaceholderText("Add to Work…")).toBeInTheDocument();
     expect(screen.getByText("No items yet.")).toBeInTheDocument();
   });
 
-  it("renders a generic title for an unknown list id", () => {
+  it("renders a generic title when the list cannot be loaded", async () => {
     // Arrange
+    vi.mocked(getList).mockRejectedValue(new Error("not found"));
     renderPageWithShellContext(createElement(ListPage), {
       path: "lists/:listId",
-      initialEntry: "/lists/unknown",
+      initialEntry: "/lists/LS_missing",
     });
 
     // Assert
+    await waitFor(() => {
+      expect(getList).toHaveBeenCalledWith("LS_missing");
+    });
     expect(screen.getByRole("heading", { name: "List" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Add to List…")).toBeInTheDocument();
   });
 
-  it("calls openSidebar when the open menu button is clicked", () => {
+  it("calls openSidebar when the open menu button is clicked", async () => {
     // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_2", Name: "Personal" });
     const { openSidebar } = renderPageWithShellContext(createElement(ListPage), {
       path: "lists/:listId",
-      initialEntry: "/lists/personal",
+      initialEntry: "/lists/LS_2",
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Personal" })).toBeInTheDocument();
     });
 
     // Act
