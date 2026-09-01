@@ -133,4 +133,16 @@ describe("Sidebar", () => {
     // Assert
     expect(screen.queryByPlaceholderText("List name")).not.toBeInTheDocument();
   });
+
+  it("hides the list name input when Escape is pressed", () => {
+    // Arrange
+    renderSidebar();
+    fireEvent.click(screen.getByRole("button", { name: "Add list" }));
+
+    // Act
+    fireEvent.keyDown(screen.getByPlaceholderText("List name"), { key: "Escape" });
+
+    // Assert
+    expect(screen.queryByPlaceholderText("List name")).not.toBeInTheDocument();
+  });
 });

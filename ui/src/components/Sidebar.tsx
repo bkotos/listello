@@ -97,6 +97,11 @@ export function Sidebar({ onNavigate }: SidebarProps) {
               autoFocus
               placeholder="List name"
               className="input is-small mt-2"
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  setAdding(false);
+                }
+              }}
             />
           )}
         </aside>
