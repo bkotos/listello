@@ -167,6 +167,21 @@ describe("Sidebar", () => {
     expect(createList).toHaveBeenCalledWith("Errands");
   });
 
+  it("hides the list name input when it loses focus", () => {
+    // Arrange
+    renderSidebar();
+    fireEvent.click(screen.getByRole("button", { name: "Add list" }));
+    const input = screen.getByPlaceholderText("List name");
+    fireEvent.change(input, { target: { value: "Errands" } });
+
+    // Act
+    fireEvent.blur(input);
+
+    // Assert
+    expect(screen.queryByPlaceholderText("List name")).not.toBeInTheDocument();
+    expect(createList).not.toHaveBeenCalled();
+  });
+
   it("hides the list name input after submitting with Enter", () => {
     // Arrange
     renderSidebar();

@@ -123,7 +123,10 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                   setNewList("");
                 }
               }}
-              onBlur={submitList}
+              onBlur={() => {
+                setAdding(false);
+                setNewList("");
+              }}
             />
           )}
         </aside>
