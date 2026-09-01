@@ -4,6 +4,19 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Sidebar } from "./Sidebar.tsx";
 
+vi.mock("../contexts/useAppContext.ts", () => ({
+  useAppContext: () => ({
+    lists: [
+      { ID: "work", Name: "Work" },
+      { ID: "personal", Name: "Personal" },
+      { ID: "reading", Name: "Reading" },
+    ],
+    isLoadingLists: false,
+    listsError: null,
+    refreshLists: vi.fn(),
+  }),
+}));
+
 type RenderSidebarOptions = {
   initialEntry?: string;
   onNavigate?: () => void;

@@ -1,9 +1,22 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppShell } from "./AppShell.tsx";
 import InboxPage from "../pages/InboxPage.tsx";
+
+vi.mock("../contexts/useAppContext.ts", () => ({
+  useAppContext: () => ({
+    lists: [
+      { ID: "work", Name: "Work" },
+      { ID: "personal", Name: "Personal" },
+      { ID: "reading", Name: "Reading" },
+    ],
+    isLoadingLists: false,
+    listsError: null,
+    refreshLists: vi.fn(),
+  }),
+}));
 
 afterEach(() => {
   cleanup();

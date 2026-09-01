@@ -1,18 +1,15 @@
 import { Check, Hash, Inbox, Plus } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useAppContext } from "../contexts/useAppContext.ts";
 import { AccountMenu } from "./AccountMenu.tsx";
-
-const PLACEHOLDER_LISTS = [
-  { id: "work", name: "Work" },
-  { id: "personal", name: "Personal" },
-  { id: "reading", name: "Reading" },
-];
 
 type SidebarProps = {
   onNavigate?: () => void;
 };
 
 export function Sidebar({ onNavigate }: SidebarProps) {
+  const { lists } = useAppContext();
+
   return (
     <div
       className="is-flex is-flex-direction-column p-4"
@@ -66,10 +63,10 @@ export function Sidebar({ onNavigate }: SidebarProps) {
 
         <aside className="menu app-scroll">
           <ul className="menu-list">
-            {PLACEHOLDER_LISTS.map((list) => (
-              <li key={list.id}>
+            {lists.map((list) => (
+              <li key={list.ID}>
                 <NavLink
-                  to={`/lists/${list.id}`}
+                  to={`/lists/${list.ID}`}
                   className={({ isActive }) =>
                     `is-flex is-align-items-center${isActive ? " is-active" : ""}`
                   }
@@ -85,7 +82,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {list.name}
+                    {list.Name}
                   </span>
                 </NavLink>
               </li>
