@@ -21,7 +21,7 @@ describe("getAllLists", () => {
     const result = await getAllLists();
 
     // Assert
-    expect(request).toHaveBeenCalledWith("/api/lists");
+    expect(request).toHaveBeenCalledWith("/api/lists", undefined);
     expect(result).toEqual(lists);
   });
 });
@@ -36,7 +36,7 @@ describe("getList", () => {
     const result = await getList("LS_1");
 
     // Assert
-    expect(request).toHaveBeenCalledWith("/api/lists/LS_1");
+    expect(request).toHaveBeenCalledWith("/api/lists/LS_1", undefined);
     expect(result).toEqual(list);
   });
 });

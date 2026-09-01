@@ -2,6 +2,7 @@ import { render } from "@testing-library/react";
 import { createElement, type ReactElement } from "react";
 import { MemoryRouter, Outlet, Route, Routes } from "react-router-dom";
 import { vi } from "vitest";
+import { createQueryWrapper } from "./renderWithQueryClient.tsx";
 
 type RenderPageWithShellContextOptions = {
   path: string;
@@ -14,21 +15,27 @@ export function renderPageWithShellContext(
 ) {
   const openSidebar = vi.fn();
 
+  const { QueryWrapper } = createQueryWrapper();
+
   function Shell() {
     return createElement(Outlet, { context: { openSidebar } });
   }
 
   const view = render(
     createElement(
-      MemoryRouter,
-      { initialEntries: [initialEntry] },
+      QueryWrapper,
+      null,
       createElement(
-        Routes,
-        null,
+        MemoryRouter,
+        { initialEntries: [initialEntry] },
         createElement(
-          Route,
-          { element: createElement(Shell) },
-          createElement(Route, { path, element: page }),
+          Routes,
+          null,
+          createElement(
+            Route,
+            { element: createElement(Shell) },
+            createElement(Route, { path, element: page }),
+          ),
         ),
       ),
     ),

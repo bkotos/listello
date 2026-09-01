@@ -1,6 +1,7 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { createQueryWrapper } from "../test/renderWithQueryClient.tsx";
 
 vi.mock("../lib/api/list-client.ts", () => ({
   getAllLists: vi.fn(),
@@ -11,7 +12,13 @@ import { getAllLists } from "../lib/api/list-client.ts";
 import { useAppContext } from "./useAppContext.ts";
 
 function wrapper({ children }: { children: ReactNode }) {
-  return createElement(AppProvider, null, children);
+  const { QueryWrapper } = createQueryWrapper();
+
+  return createElement(
+    QueryWrapper,
+    null,
+    createElement(AppProvider, null, children),
+  );
 }
 
 afterEach(() => {
@@ -23,7 +30,6 @@ describe("AppProvider", () => {
     // Arrange
     const lists = [{ ID: "LS_1", Name: "Work" }];
     vi.mocked(getAllLists).mockResolvedValue(lists);
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     // Act
     const { result } = renderHook(() => useAppContext(), { wrapper });
@@ -35,8 +41,6 @@ describe("AppProvider", () => {
     expect(getAllLists).toHaveBeenCalledOnce();
     expect(result.current.lists).toEqual(lists);
     expect(result.current.listsError).toBeNull();
-    expect(logSpy).toHaveBeenCalledWith("lists", lists);
-    logSpy.mockRestore();
   });
 
   it("stores an error when loading lists fails", async () => {
@@ -64,7 +68,6 @@ describe("AppProvider", () => {
     vi.mocked(getAllLists)
       .mockResolvedValueOnce(initialLists)
       .mockResolvedValueOnce(updatedLists);
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     const { result } = renderHook(() => useAppContext(), { wrapper });
     await waitFor(() => {
@@ -79,6 +82,5 @@ describe("AppProvider", () => {
     await waitFor(() => {
       expect(result.current.lists).toEqual(updatedLists);
     });
-    logSpy.mockRestore();
   });
 });

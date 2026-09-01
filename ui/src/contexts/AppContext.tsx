@@ -1,13 +1,6 @@
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useMemo, type ReactNode } from "react";
 import type { ListResponse } from "api-types";
-import { getAllLists } from "../lib/api/list-client.ts";
+import { useAllListsQuery } from "../lib/api/list-queries.ts";
 
 export type AppContextValue = {
   lists: ListResponse[];
@@ -23,37 +16,18 @@ type AppProviderProps = {
 };
 
 export function AppProvider({ children }: AppProviderProps) {
-  const [lists, setLists] = useState<ListResponse[]>([]);
-  const [isLoadingLists, setIsLoadingLists] = useState(true);
-  const [listsError, setListsError] = useState<string | null>(null);
-
-  const refreshLists = useCallback(async () => {
-    setIsLoadingLists(true);
-    setListsError(null);
-
-    try {
-      const fetchedLists = await getAllLists();
-      console.log("lists", fetchedLists);
-      setLists(fetchedLists);
-    } catch (error) {
-      setListsError(error instanceof Error ? error.message : "Failed to load lists");
-    } finally {
-      setIsLoadingLists(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void refreshLists();
-  }, [refreshLists]);
+  const { data, isLoading, error, refetch } = useAllListsQuery();
 
   const value = useMemo(
     () => ({
-      lists,
-      isLoadingLists,
-      listsError,
-      refreshLists,
+      lists: data ?? [],
+      isLoadingLists: isLoading,
+      listsError: error instanceof Error ? error.message : error ? "Failed to load lists" : null,
+      refreshLists: async () => {
+        await refetch();
+      },
     }),
-    [lists, isLoadingLists, listsError, refreshLists],
+    [data, isLoading, error, refetch],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

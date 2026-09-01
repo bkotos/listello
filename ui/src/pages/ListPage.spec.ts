@@ -28,7 +28,10 @@ describe("ListPage", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Work" })).toBeInTheDocument();
     });
-    expect(getList).toHaveBeenCalledWith("LS_1");
+    expect(getList).toHaveBeenCalledWith(
+      "LS_1",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
     expect(screen.getByPlaceholderText("Add to Work…")).toBeInTheDocument();
     expect(screen.getByText("No items yet.")).toBeInTheDocument();
   });
@@ -43,7 +46,10 @@ describe("ListPage", () => {
 
     // Assert
     await waitFor(() => {
-      expect(getList).toHaveBeenCalledWith("LS_missing");
+      expect(getList).toHaveBeenCalledWith(
+        "LS_missing",
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
     });
     expect(screen.getByRole("heading", { name: "List" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Add to List…")).toBeInTheDocument();
