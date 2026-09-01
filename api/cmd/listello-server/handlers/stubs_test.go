@@ -7,8 +7,9 @@ import (
 )
 
 type stubListRepository struct {
-	saveFn   func(list domain.List) error
-	getAllFn func() ([]domain.List, error)
+	saveFn    func(list domain.List) error
+	getAllFn  func() ([]domain.List, error)
+	getByIDFn func(id string) (domain.List, error)
 }
 
 func (r *stubListRepository) Save(list domain.List) error {
@@ -23,6 +24,13 @@ func (r *stubListRepository) GetAll() ([]domain.List, error) {
 		return r.getAllFn()
 	}
 	return nil, fmt.Errorf("unexpected GetAll call")
+}
+
+func (r *stubListRepository) GetByID(id string) (domain.List, error) {
+	if r.getByIDFn != nil {
+		return r.getByIDFn(id)
+	}
+	return domain.List{}, fmt.Errorf("unexpected GetByID call")
 }
 
 type stubEventPublisher struct {
