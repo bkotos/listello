@@ -4,7 +4,7 @@ vi.mock("./util.ts", () => ({
   request: vi.fn(),
 }));
 
-import { createList, getAllLists } from "./list-client.ts";
+import { createList, getAllLists, getList } from "./list-client.ts";
 import { request } from "./util.ts";
 
 afterEach(() => {
@@ -23,6 +23,21 @@ describe("getAllLists", () => {
     // Assert
     expect(request).toHaveBeenCalledWith("/api/lists");
     expect(result).toEqual(lists);
+  });
+});
+
+describe("getList", () => {
+  it("requests a list by id from the API", async () => {
+    // Arrange
+    const list = { ID: "LS_1", Name: "Work" };
+    vi.mocked(request).mockResolvedValue(list);
+
+    // Act
+    const result = await getList("LS_1");
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/lists/LS_1");
+    expect(result).toEqual(list);
   });
 });
 

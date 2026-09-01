@@ -5,6 +5,10 @@ export async function getAllLists(): Promise<ListResponse[]> {
   return request<ListResponse[]>("/api/lists");
 }
 
+export async function getList(id: string): Promise<ListResponse> {
+  return request<ListResponse>(`/api/lists/${id}`);
+}
+
 export async function createList(name: string): Promise<ListResponse> {
   return request<ListResponse>("/api/lists", {
     method: "POST",
