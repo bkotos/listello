@@ -1,5 +1,3 @@
-import type { ListResponse } from "api-types";
-
 export class ApiError extends Error {
   readonly status: number;
 
@@ -10,7 +8,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
     headers: {
@@ -33,15 +31,4 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return response.json() as Promise<T>;
-}
-
-export async function getAllLists(): Promise<ListResponse[]> {
-  return request<ListResponse[]>("/api/lists");
-}
-
-export async function createList(name: string): Promise<ListResponse> {
-  return request<ListResponse>("/api/lists", {
-    method: "POST",
-    body: JSON.stringify({ name }),
-  });
 }
