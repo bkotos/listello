@@ -4,15 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	application "github.com/bkotos/listello/internal/listello-application"
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
 
-type listService interface {
-	CreateList(name string) (domain.List, error)
-	GetAll() ([]domain.List, error)
-}
-
-func newAPIServer(lists listService) http.Handler {
+func newAPIServer(lists application.ListService) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", handleHealth)
 	mux.HandleFunc("GET /api/lists", handleGetAllLists(lists))
@@ -24,7 +20,7 @@ func handleHealth(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 }
 
-func handleGetAllLists(lists listService) http.HandlerFunc {
+func handleGetAllLists(lists application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		all, err := lists.GetAll()
 		if err != nil {
@@ -40,7 +36,7 @@ func handleGetAllLists(lists listService) http.HandlerFunc {
 	}
 }
 
-func handleCreateList(lists listService) http.HandlerFunc {
+func handleCreateList(lists application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			Name string `json:"name"`

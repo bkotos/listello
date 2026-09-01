@@ -5,14 +5,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	domain "github.com/bkotos/listello/internal/listello-domain"
+	application "github.com/bkotos/listello/internal/listello-application"
 )
 
-type listService interface {
-	CreateList(name string) (domain.List, error)
-}
-
-func newRoot(lists listService) *cobra.Command {
+func newRoot(lists application.ListService) *cobra.Command {
 	root := &cobra.Command{
 		Use:           "listello",
 		Short:         "Listello command-line interface",

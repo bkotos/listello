@@ -24,6 +24,10 @@ func (s *stubListService) CreateList(name string) (domain.List, error) {
 	return domain.List{}, fmt.Errorf("unexpected CreateList call")
 }
 
+func (s *stubListService) GetAll() ([]domain.List, error) {
+	return nil, fmt.Errorf("unexpected GetAll call")
+}
+
 func TestListCreate_CallsApplicationAndPrintsConfirmation(t *testing.T) {
 	// Arrange
 	svc := &stubListService{

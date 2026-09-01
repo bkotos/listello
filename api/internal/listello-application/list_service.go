@@ -10,22 +10,29 @@ type ListRepository interface {
 	GetAll() ([]domain.List, error)
 }
 
-// ListService coordinates list aggregate commands and persistence.
-type ListService struct {
+// ListService is the list use case surface for driving adapters (CLI, HTTP).
+type ListService interface {
+	CreateList(name string) (domain.List, error)
+	GetAll() ([]domain.List, error)
+}
+
+type listService struct {
 	listRepository ListRepository
 	eventPublisher EventPublisher
 }
 
+var _ ListService = (*listService)(nil)
+
 // NewListService returns a ListService backed by the given repository and publisher.
-func NewListService(listRepository ListRepository, eventPublisher EventPublisher) *ListService {
-	return &ListService{
+func NewListService(listRepository ListRepository, eventPublisher EventPublisher) ListService {
+	return &listService{
 		listRepository: listRepository,
 		eventPublisher: eventPublisher,
 	}
 }
 
 // CreateList creates a list via the domain and persists it.
-func (s *ListService) CreateList(name string) (domain.List, error) {
+func (s *listService) CreateList(name string) (domain.List, error) {
 	list, event, err := domain.CreateList(name)
 	if err != nil {
 		return domain.List{}, err
@@ -40,6 +47,6 @@ func (s *ListService) CreateList(name string) (domain.List, error) {
 }
 
 // GetAll returns all lists from persistence.
-func (s *ListService) GetAll() ([]domain.List, error) {
+func (s *listService) GetAll() ([]domain.List, error) {
 	return s.listRepository.GetAll()
 }
