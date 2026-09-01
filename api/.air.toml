@@ -2,7 +2,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-  cmd = "go build -o ./bin/listello-server ./cmd/listello-server"
+  cmd = "go build -o ./bin/listello-server ./cmd/server"
   bin = "./bin/listello-server"
   include_ext = ["go"]
   exclude_dir = ["bin", "reports", "tmp", "vendor"]

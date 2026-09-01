@@ -46,11 +46,11 @@ build: clean build-cli build-server
 
 build-cli:
 	mkdir -p bin
-	go build -o $(BIN) ./cmd/listello-cli
+	go build -o $(BIN) ./cmd/cli
 
 build-server:
 	mkdir -p bin
-	go build -o $(BIN_SERVER) ./cmd/listello-server
+	go build -o $(BIN_SERVER) ./cmd/server
 
 run: build-cli
 	./$(BIN) $(ARGS)
@@ -63,7 +63,7 @@ serve-watch:
 
 build-wasm: clean
 	mkdir -p bin
-	GOOS=wasip1 GOARCH=wasm go build -tags sqlite3_dotlk -o $(BIN_WASM) ./cmd/listello-cli
+	GOOS=wasip1 GOARCH=wasm go build -tags sqlite3_dotlk -o $(BIN_WASM) ./cmd/cli
 
 run-wasm: build-wasm
 	@command -v $(WASMTIME) >/dev/null || { echo "wasmtime not found. Install with: brew install wasmtime"; exit 1; }
@@ -72,7 +72,7 @@ run-wasm: build-wasm
 # Run implemented domain Gherkin suite (excludes @wip) + Cucumber JSON report.
 bdd-report:
 	mkdir -p $(REPORTS_DIR)
-	go test ./internal/listello-domain -v -count=1 \
+	go test ./internal/domain -v -count=1 \
 		-godog.format=pretty,cucumber:$(CUCUMBER_JSON) \
 		-godog.strict
 	@echo "Cucumber JSON written to $(CUCUMBER_JSON)"
@@ -80,11 +80,11 @@ bdd-report:
 # Include @wip scenarios so undefined steps show up in the report.
 bdd-gaps:
 	mkdir -p $(REPORTS_DIR)
-	go test ./internal/listello-domain -v -count=1 \
+	go test ./internal/domain -v -count=1 \
 		-godog.tags= \
 		-godog.format=pretty,cucumber:$(CUCUMBER_JSON)
 	@echo "Cucumber JSON written to $(CUCUMBER_JSON)"
 
 # List registered step definitions (implemented steps).
 bdd-steps:
-	go test ./internal/listello-domain -v -count=1 -godog.definitions
+	go test ./internal/domain -v -count=1 -godog.definitions
