@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := list
 
-.PHONY: list test mocks clean build build-cli build-server run serve build-wasm run-wasm bdd-report bdd-gaps bdd-steps
+.PHONY: list test mocks clean build build-cli build-server run serve build-wasm run-wasm bdd-report bdd-gaps bdd-steps api-types
 
 REPORTS_DIR := reports
 CUCUMBER_JSON := $(CURDIR)/$(REPORTS_DIR)/cucumber.json
@@ -26,6 +26,10 @@ list:
 	@echo "  make bdd-report    Run implemented BDD features + write Cucumber JSON"
 	@echo "  make bdd-gaps      Run all BDD features including @wip (shows undefined steps)"
 	@echo "  make bdd-steps     List registered BDD step definitions"
+	@echo "  make api-types     Generate TypeScript types in ../api-types/"
+
+api-types:
+	go run github.com/gzuidhof/tygo generate
 
 test:
 	go test ./...

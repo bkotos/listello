@@ -1,4 +1,4 @@
-.PHONY: run run-api run-ui test-api test-ui test
+.PHONY: run run-api run-ui test-api test-ui test api-types
 
 run:
 	@trap 'kill 0' EXIT INT TERM; \
@@ -19,3 +19,6 @@ test-ui:
 	npm test -w ui
 
 test: test-api test-ui
+
+api-types:
+	$(MAKE) -C api api-types
