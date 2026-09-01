@@ -22,7 +22,11 @@ api/
     listello-adapter        → port implementations (SQLite, file event log)
     listello-bootstrap      → shared wiring (open DB, construct ListService)
     listello-view-dtos      → HTTP response DTOs; maps domain models to API shapes
+api-types/                  → TypeScript types generated from view DTOs (tygo)
 ui/                         → React app; calls api over HTTP (Vite dev proxy in local dev)
+  src/
+    contexts/               → app-wide React context (lists, loading, errors)
+    lib/api/                → HTTP client (list-client, shared request util)
 bruno/                      → API request collection for local testing
 ```
 
@@ -34,12 +38,22 @@ bruno/                      → API request collection for local testing
 
 **View DTOs** translate domain models into HTTP response shapes. Handlers map domain → DTO before encoding JSON. Today this is mostly 1-to-1; the layer exists so API responses can diverge from domain models later.
 
+**API types** (`api-types/`) are TypeScript types generated from the Go view DTOs with [tygo](https://github.com/gzuidhof/tygo). Regenerate after changing DTOs:
+
+```bash
+make api-types
+```
+
+**UI client** (`ui/src/lib/api/`) calls the HTTP API. Domain-specific clients (e.g. `list-client.ts`) use a shared `request` helper and import response types from `api-types`. **App context** (`ui/src/contexts/`) holds app-wide state such as lists fetched from the API.
+
 **Composition** is split across two binaries, both wired through `listello-bootstrap`:
 
 - **`listello-cli`** — Cobra commands that call application services directly (`listello list create "Next actions"`).
 - **`listello-server`** — stdlib `net/http` server exposing the HTTP API (`GET /health`, `GET /api/lists`, `POST /api/lists`).
 
-Local dev: `make run` starts the API server and Vite UI together. The UI proxies `/api` to the Go server on `:8080`.
+Local dev: `make run` starts the API server (with auto-reload via Air) and Vite UI together. The UI proxies `/api` to the Go server on `:8080`.
+
+Root `package.json` defines npm workspaces for `api-types` and `ui`.
 
 ### Command flow: `listello list create`
 
@@ -108,11 +122,17 @@ Reads skip domain logic and go straight from application to the repository. Hand
 ## Running
 
 ```bash
-# API server + UI (from repo root)
+# API server + UI (from repo root; API auto-reloads on Go changes)
 make run
 
-# API server only
-make -C api serve          # → bin/listello-server
+# API server only (auto-reload)
+make run-api                 # or: make -C api serve-watch
+
+# API server only (one-shot build + run)
+make -C api serve            # → bin/listello-server
+
+# Regenerate TypeScript types from Go view DTOs
+make api-types
 
 # CLI
 make -C api run ARGS='list create "Next actions"'   # → bin/listello
@@ -125,6 +145,7 @@ make test
 
 - **Domain** — Gherkin features + Godog (`internal/listello-domain/features`), developed with TDD.
 - **Application / adapters / HTTP / CLI** — Go unit tests with fakes/mocks at the ports (arrange/act/assert with testify, not Gherkin).
+- **UI** — Vitest unit/component tests (arrange/act/assert). API client and context modules mock HTTP or lower layers rather than hitting the real server.
 
 ### Domain TDD
 
