@@ -8,10 +8,8 @@ import (
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
 
-// listService is the application-layer surface the CLI needs for list commands.
 type listService interface {
 	CreateList(name string) (domain.List, error)
-	GetAll() ([]domain.List, error)
 }
 
 func newRoot(lists listService) *cobra.Command {
@@ -22,7 +20,6 @@ func newRoot(lists listService) *cobra.Command {
 		SilenceErrors: true,
 	}
 	root.AddCommand(newListCmd(lists))
-	root.AddCommand(newServeCmd(lists))
 	return root
 }
 

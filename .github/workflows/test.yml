@@ -44,7 +44,7 @@ jobs:
         run: npm ci
 
       - name: Build API
-        run: make -C api build
+        run: make -C api build-cli build-server
 
       - name: Build UI
         run: npm run build -w ui

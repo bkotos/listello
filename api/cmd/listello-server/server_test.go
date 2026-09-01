@@ -3,12 +3,32 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
+
+type stubListService struct {
+	createListFn func(name string) (domain.List, error)
+	getAllFn     func() ([]domain.List, error)
+}
+
+func (s *stubListService) CreateList(name string) (domain.List, error) {
+	if s.createListFn != nil {
+		return s.createListFn(name)
+	}
+	return domain.List{}, fmt.Errorf("unexpected CreateList call")
+}
+
+func (s *stubListService) GetAll() ([]domain.List, error) {
+	if s.getAllFn != nil {
+		return s.getAllFn()
+	}
+	return nil, fmt.Errorf("unexpected GetAll call")
+}
 
 func TestHandleHealth(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)

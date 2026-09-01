@@ -1,11 +1,12 @@
 .DEFAULT_GOAL := list
 
-.PHONY: list test mocks clean build run build-wasm run-wasm serve bdd-report bdd-gaps bdd-steps
+.PHONY: list test mocks clean build build-cli build-server run serve build-wasm run-wasm bdd-report bdd-gaps bdd-steps
 
 REPORTS_DIR := reports
 CUCUMBER_JSON := $(CURDIR)/$(REPORTS_DIR)/cucumber.json
 MOCKERY ?= $(shell go env GOPATH)/bin/mockery
 BIN := bin/listello
+BIN_SERVER := bin/listello-server
 BIN_WASM := bin/listello.wasm
 WASMTIME ?= wasmtime
 
@@ -15,7 +16,9 @@ list:
 	@echo "  make test          Run all Go tests"
 	@echo "  make mocks         Regenerate testify mocks (requires mockery v3)"
 	@echo "  make clean         Remove built binaries"
-	@echo "  make build         Clean and compile CLI to $(BIN)"
+	@echo "  make build         Clean and compile CLI + server binaries"
+	@echo "  make build-cli     Compile CLI to $(BIN)"
+	@echo "  make build-server  Compile server to $(BIN_SERVER)"
 	@echo "  make run           Run CLI (pass args via ARGS=...)"
 	@echo "  make serve         Run HTTP API server (pass args via ARGS=...)"
 	@echo "  make build-wasm    Clean and compile CLI to WASI WASM ($(BIN_WASM))"
@@ -34,15 +37,21 @@ mocks:
 clean:
 	rm -rf bin
 
-build: clean
+build: clean build-cli build-server
+
+build-cli:
 	mkdir -p bin
 	go build -o $(BIN) ./cmd/listello
 
-run: build
+build-server:
+	mkdir -p bin
+	go build -o $(BIN_SERVER) ./cmd/listello-server
+
+run: build-cli
 	./$(BIN) $(ARGS)
 
-serve: build
-	./$(BIN) serve $(ARGS)
+serve: build-server
+	./$(BIN_SERVER) $(ARGS)
 
 build-wasm: clean
 	mkdir -p bin

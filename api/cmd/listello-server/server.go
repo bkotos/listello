@@ -2,31 +2,14 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-
-	"github.com/spf13/cobra"
 
 	domain "github.com/bkotos/listello/internal/listello-domain"
 )
 
-func newServeCmd(lists listService) *cobra.Command {
-	var port int
-	var host string
-
-	cmd := &cobra.Command{
-		Use:   "serve",
-		Short: "Start the HTTP API server",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			addr := fmt.Sprintf("%s:%d", host, port)
-			cmd.Printf("listening on http://%s\n", addr)
-			return http.ListenAndServe(addr, newAPIServer(lists))
-		},
-	}
-
-	cmd.Flags().IntVarP(&port, "port", "p", 8080, "port to listen on")
-	cmd.Flags().StringVar(&host, "host", "0.0.0.0", "host to bind to")
-	return cmd
+type listService interface {
+	CreateList(name string) (domain.List, error)
+	GetAll() ([]domain.List, error)
 }
 
 func newAPIServer(lists listService) http.Handler {
