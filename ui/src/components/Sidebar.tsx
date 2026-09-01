@@ -1,4 +1,5 @@
 import { Check, Hash, Inbox, Plus } from "lucide-react";
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAppContext } from "../contexts/useAppContext.ts";
 import { AccountMenu } from "./AccountMenu.tsx";
@@ -9,6 +10,7 @@ type SidebarProps = {
 
 export function Sidebar({ onNavigate }: SidebarProps) {
   const { lists } = useAppContext();
+  const [adding, setAdding] = useState(false);
 
   return (
     <div
@@ -56,6 +58,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
             aria-label="Add list"
             className="icon-btn"
             style={{ height: "1.5rem", width: "1.5rem" }}
+            onClick={() => setAdding((value) => !value)}
           >
             <Plus size={16} />
           </button>
@@ -88,6 +91,10 @@ export function Sidebar({ onNavigate }: SidebarProps) {
               </li>
             ))}
           </ul>
+
+          {adding && (
+            <input placeholder="List name" className="input is-small mt-2" />
+          )}
         </aside>
       </div>
 

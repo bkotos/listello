@@ -93,4 +93,33 @@ describe("Sidebar", () => {
     // Assert
     expect(onNavigate).toHaveBeenCalledOnce();
   });
+
+  it("shows a list name input at the bottom of the lists section when Add list is clicked", () => {
+    // Arrange
+    renderSidebar();
+
+    // Assert
+    expect(screen.queryByPlaceholderText("List name")).not.toBeInTheDocument();
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Add list" }));
+
+    // Assert
+    const input = screen.getByPlaceholderText("List name");
+    expect(input).toBeInTheDocument();
+    expect(input).toHaveClass("input", "is-small", "mt-2");
+  });
+
+  it("hides the list name input when Add list is clicked again", () => {
+    // Arrange
+    renderSidebar();
+    const addButton = screen.getByRole("button", { name: "Add list" });
+    fireEvent.click(addButton);
+
+    // Act
+    fireEvent.click(addButton);
+
+    // Assert
+    expect(screen.queryByPlaceholderText("List name")).not.toBeInTheDocument();
+  });
 });
