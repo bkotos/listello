@@ -10,12 +10,20 @@ The codebase follows a hexagonal (ports & adapters) layout. Dependencies point i
 
 ```
 api/
-  cmd/listello          → composition root (CLI + HTTP server; wires adapters into application services)
+  cmd/
+    listello-cli/           → CLI binary (compiled as bin/listello)
+      commands/             → cobra commands (list create, …)
+    listello-server/        → HTTP API binary (compiled as bin/listello-server)
+      handlers/             → route handlers (one file per endpoint)
+      response/             → JSON response encoding
   internal/
-    listello-domain     → business logic and invariants; free of infrastructure
-    listello-application→ use cases; defines ports (repositories, EventPublisher)
-    listello-adapter    → port implementations (SQLite, file event log)
-ui/                     → React app; calls api over HTTP (Vite dev proxy in local dev)
+    listello-domain         → business logic and invariants; free of infrastructure
+    listello-application    → use cases; defines ports (repositories, EventPublisher)
+    listello-adapter        → port implementations (SQLite, file event log)
+    listello-bootstrap      → shared wiring (open DB, construct ListService)
+    listello-view-dtos      → HTTP response DTOs; maps domain models to API shapes
+ui/                         → React app; calls api over HTTP (Vite dev proxy in local dev)
+bruno/                      → API request collection for local testing
 ```
 
 **Domain** is the technology-free core: business logic, invariants, and domain concepts (lists, items, events, and whatever else the model needs). Commands raise typed domain events with structured `EventMetadata*` payloads. No I/O, frameworks, or persistence concerns live here.
@@ -24,14 +32,21 @@ ui/                     → React app; calls api over HTTP (Vite dev proxy in lo
 
 **Adapter** implements those ports (SQLite for lists today; a logging publisher for events) and is the only layer that talks to the outside world.
 
-**Composition** lives in `api/cmd/listello`: open SQLite and the event log, construct adapter implementations, inject them into application services. The `serve` subcommand exposes the same services over HTTP (`GET /health`, `POST /api/lists`).
+**View DTOs** translate domain models into HTTP response shapes. Handlers map domain → DTO before encoding JSON. Today this is mostly 1-to-1; the layer exists so API responses can diverge from domain models later.
+
+**Composition** is split across two binaries, both wired through `listello-bootstrap`:
+
+- **`listello-cli`** — Cobra commands that call application services directly (`listello list create "Next actions"`).
+- **`listello-server`** — stdlib `net/http` server exposing the HTTP API (`GET /health`, `GET /api/lists`, `POST /api/lists`).
+
+Local dev: `make run` starts the API server and Vite UI together. The UI proxies `/api` to the Go server on `:8080`.
 
 ### Command flow: `listello list create`
 
 ```mermaid
 sequenceDiagram
     actor User
-    participant CLI as CLI<br/>(cmd/listello)
+    participant CLI as CLI<br/>(cmd/listello-cli)
     participant App as Application<br/>(ListService)
     participant Domain as Domain<br/>(technology-free)
     participant Repo as Adapter<br/>(SQLiteListRepository)
@@ -63,10 +78,53 @@ sequenceDiagram
 
 The domain never touches the database or the event log. It returns a value object plus a typed event; the application layer is responsible for persisting the aggregate through a repository port and publishing that event through `EventPublisher`. Only adapters know about SQLite and the file log.
 
+### HTTP flow: `GET /api/lists`
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Server as HTTP server<br/>(cmd/listello-server)
+    participant Handler as handlers.GetAllLists
+    participant App as Application<br/>(ListService)
+    participant Repo as Adapter<br/>(SQLiteListRepository)
+    participant DB as SQLite
+    participant DTO as view-dtos<br/>(ListResponse)
+
+    Client->>Server: GET /api/lists
+    Server->>Handler: route match
+    Handler->>App: GetAll()
+    App->>Repo: GetAll()
+    Repo->>DB: SELECT id, name FROM lists
+    DB-->>Repo: rows
+    Repo-->>App: []domain.List
+    App-->>Handler: []domain.List
+    Handler->>DTO: ListsFromDomain(lists)
+    DTO-->>Handler: []ListResponse
+    Handler-->>Client: 200 JSON array
+```
+
+Reads skip domain logic and go straight from application to the repository. Handlers map domain results to view DTOs before writing JSON.
+
+## Running
+
+```bash
+# API server + UI (from repo root)
+make run
+
+# API server only
+make -C api serve          # → bin/listello-server
+
+# CLI
+make -C api run ARGS='list create "Next actions"'   # → bin/listello
+
+# Tests (API + UI)
+make test
+```
+
 ## Testing
 
 - **Domain** — Gherkin features + Godog (`internal/listello-domain/features`), developed with TDD.
-- **Application / adapters** — Go unit tests with fakes/mocks at the ports (arrange/act/assert, not Gherkin).
+- **Application / adapters / HTTP / CLI** — Go unit tests with fakes/mocks at the ports (arrange/act/assert with testify, not Gherkin).
 
 ### Domain TDD
 
