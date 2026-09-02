@@ -8,10 +8,11 @@ This repo includes Cursor configuration that guides agents working on Listello: 
 .cursor/
 ├── rules/
 │   └── tdd.mdc                              # Always applied
-└── skills/
-    ├── create-application-service/
-    │   ├── SKILL.md                         # Application-layer use cases
-    │   └── examples.md
+├── skills/
+│   ├── LAYER-ORDER.md                       # Upstream dependency gates (read first)
+│   ├── create-application-service/
+│   │   ├── SKILL.md                         # Application-layer use cases
+│   │   └── examples.md
     ├── create-adapter-repository/
     │   ├── SKILL.md                         # SQLite repository adapters
     │   └── examples.md
@@ -37,6 +38,38 @@ Applied to every agent session. When adding or changing behavior:
 3. **Green** — Implement the bare minimum to pass. Re-run tests.
 
 Agents must not ship production code in the same turn as a new failing spec.
+
+## Skill layer order
+
+Skills correspond to layers in the stack. **Upstream code must be implemented** before starting downstream work. See [.cursor/skills/LAYER-ORDER.md](../.cursor/skills/LAYER-ORDER.md) for the full gate definitions.
+
+```mermaid
+flowchart TD
+    domain[Domain]
+    app[create-application-service]
+    adapter[create-adapter-repository]
+    cli[create-cli-command]
+    handler[create-api-handler]
+    client[create-api-client]
+
+    domain --> app
+    app --> adapter
+    app --> cli
+    app --> handler
+    handler --> client
+```
+
+| Skill | Stop if upstream missing |
+|-------|--------------------------|
+| `create-application-service` | Domain command (for writes) |
+| `create-adapter-repository` | Application port + service struct |
+| `create-cli-command` | Application service method (implemented, tests green) |
+| `create-api-handler` | Application service method (implemented, tests green) |
+| `create-api-client` | API handler + route + `api-types` |
+
+Adapter is **not** required before handler or CLI (those tests use stubs). Handler **is** required before API client.
+
+When upstream code is missing, agents must **stop**, name the upstream skill, and not write tests or code for the downstream layer.
 
 ## Project skills
 
@@ -298,7 +331,8 @@ Follow the same structure:
 
 ## Tips for working with agents
 
+- **Upstream gates** — Each skill verifies lower layers exist before proceeding. If you ask for an API client but the handler does not exist yet, the agent should stop and point you to `create-api-handler` first.
 - **Approve red before green** — The TDD rule requires a stop after failing specs. Say *"approved, implement"* when you're ready for production code.
-- **Scope requests** — Application and adapter skills stop at their layer. Name bootstrap, handlers, or CLI explicitly if you want them in the same task.
-- **Layer order** — For a full vertical slice: domain → application → adapter → bootstrap → handlers/CLI → **api-types** → UI client → pages/context.
+- **Scope requests** — Skills stop at their layer. Name bootstrap, pages, or context explicitly if you want them in the same task.
+- **Full vertical slice** — domain → application → adapter → bootstrap → handler or CLI → `make api-types` → API client → pages/context. Details in [LAYER-ORDER.md](../.cursor/skills/LAYER-ORDER.md).
 - **Reload if needed** — After adding or changing skills, start a new chat or reload the window so Cursor picks up new project skills.

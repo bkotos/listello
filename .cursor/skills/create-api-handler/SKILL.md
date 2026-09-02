@@ -11,7 +11,23 @@ description: >-
 
 Guide for adding HTTP endpoints in `api/cmd/server/`. Read this skill before changing handlers or routes.
 
-Architecture context: see [README.md](../../../README.md) (handlers call application services, map domain results to view DTOs, encode JSON). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
+Architecture context: see [README.md](../../../README.md) (handlers call application services, map domain results to view DTOs, encode JSON). Layer order: [LAYER-ORDER.md](../LAYER-ORDER.md). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
+
+## Upstream dependencies
+
+**Stop and do not proceed** until the application service method exists and is implemented. See [LAYER-ORDER.md](../LAYER-ORDER.md).
+
+Before starting, verify:
+
+| Check | How |
+|-------|-----|
+| Service method exists | `(s *{Service}) {Method}(...)` in `internal/application/` |
+| Method is implemented | Not `return ..., fmt.Errorf("not implemented")` |
+| Application tests pass | `go test ./internal/application/...` green for that method |
+
+If any check fails → **stop**. Tell the user to use `create-application-service` first and get green tests. Do not write handler tests, DTOs, or routes.
+
+Adapter repository is **not** required for this skill (handler tests use stub repositories).
 
 ## Scope
 
@@ -37,10 +53,12 @@ Architecture context: see [README.md](../../../README.md) (handlers call applica
 
 ## Preconditions
 
-1. **Application service method exists** — the handler calls an existing service API.
-2. **Request and response shapes defined** — add or reuse DTOs in `internal/view-dtos/`.
+These duplicate the upstream gate — all must pass:
 
-If the service method is missing, stop and use `create-application-service` first.
+1. **Application service method exists and is implemented** — the handler calls a real service API, not a stub.
+2. **Request and response shapes** — you will add DTOs in `internal/view-dtos/` as part of this skill.
+
+If the service method is missing or still `not implemented` → **stop** and use `create-application-service` first.
 
 ## Decision tree
 
@@ -54,6 +72,7 @@ If the service method is missing, stop and use `create-application-service` firs
 
 ```
 Task progress:
+- [ ] Verify upstream: service method implemented, application tests green (stop if not — see LAYER-ORDER.md)
 - [ ] Read application service method signature
 - [ ] Decide HTTP method, path, request body fields, response fields
 - [ ] Add request DTO in internal/view-dtos/ (POST/PUT/PATCH)

@@ -11,7 +11,21 @@ description: >-
 
 Guide for implementing repository adapters in `api/internal/adapter/`. Read this skill before changing adapter persistence code.
 
-Architecture context: see [README.md](../../../README.md) (adapters implement application ports and are the only layer that talks to SQLite). Application port definitions: `api/internal/application/`. TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
+Architecture context: see [README.md](../../../README.md) (adapters implement application ports and are the only layer that talks to SQLite). Layer order: [LAYER-ORDER.md](../LAYER-ORDER.md). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
+
+## Upstream dependencies
+
+**Stop and do not proceed** until application-layer code exists. See [LAYER-ORDER.md](../LAYER-ORDER.md).
+
+Before starting, verify:
+
+| Check | How |
+|-------|-----|
+| `{Aggregate}Repository` interface exists | `internal/application/{aggregate}_service.go` |
+| `{Aggregate}Service` + constructor exist | Same file |
+| Interface includes methods you will implement | `Save`, `GetByID`, etc. |
+
+If any check fails → **stop**. Tell the user to use `create-application-service` first. Do not write adapter tests or SQL.
 
 ## Scope
 
@@ -34,11 +48,13 @@ Architecture context: see [README.md](../../../README.md) (adapters implement ap
 
 ## Preconditions
 
+These duplicate the upstream gate — all must pass:
+
 1. **Application port exists** — interface in `api/internal/application/{aggregate}_service.go` with the methods to implement.
 2. **Domain types defined** — know which fields to persist and scan.
 3. **Schema planned** — new table or column changes identified.
 
-If the port is missing, stop and use `create-application-service` first.
+If the port is missing, **stop** and use `create-application-service` first.
 
 ## Decision tree
 
@@ -50,6 +66,7 @@ If the port is missing, stop and use `create-application-service` first.
 
 ```
 Task progress:
+- [ ] Verify upstream: application port + service exist (stop if not — see LAYER-ORDER.md)
 - [ ] Read application port interface (method signatures)
 - [ ] Read domain type fields to persist
 - [ ] Decide: new repository vs extend existing

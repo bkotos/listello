@@ -11,7 +11,26 @@ description: >-
 
 Guide for adding UI client code in `ui/src/lib/api/`. Read this skill before adding functions that call the HTTP API.
 
-Architecture context: see [README.md](../../../README.md) (UI client calls the API via a shared `request` helper; types come from `api-types`). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
+Architecture context: see [README.md](../../../README.md) (UI client calls the API via a shared `request` helper; types come from `api-types`). Layer order: [LAYER-ORDER.md](../LAYER-ORDER.md). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
+
+## Upstream dependencies
+
+**Stop and do not proceed** until the API handler and types exist. See [LAYER-ORDER.md](../LAYER-ORDER.md).
+
+Before starting, verify:
+
+| Check | How |
+|-------|-----|
+| Handler function exists | `handlers.{Handler}(...)` in `api/cmd/server/handlers/` |
+| Route registered | `mux.HandleFunc("{METHOD} /api/...", ...)` in `server.go` |
+| Response type in api-types | e.g. `{Resource}Response` in `api-types/index.ts` |
+| Request type in api-types (writes) | e.g. `{Action}{Resource}Request` in `api-types/index.ts` |
+
+If handler or route missing → **stop**. Tell the user to use `create-api-handler` first (which requires `create-application-service` first).
+
+If types missing → **stop**. Tell the user to add view DTOs via `create-api-handler` and run `make api-types`.
+
+Do not write client tests or fetch wrappers until the handler is implemented.
 
 ## Scope
 
@@ -37,10 +56,12 @@ Architecture context: see [README.md](../../../README.md) (UI client calls the A
 
 ## Preconditions
 
-1. **HTTP endpoint exists** — route and handler implemented (or spec'd).
-2. **`api-types` up to date** — run `make api-types` so `{Resource}Response` and `{Action}{Resource}Request` types exist.
+These duplicate the upstream gate — all must pass:
 
-If the endpoint or types are missing, stop and use `create-api-handler` first (including DTOs + `make api-types`).
+1. **HTTP handler implemented** — not a stub; route wired in `server.go`.
+2. **`api-types` current** — run `make api-types` after the handler's view DTOs were added.
+
+If the endpoint or types are missing → **stop** and use `create-api-handler` first.
 
 ## Decision tree
 
@@ -54,6 +75,7 @@ If the endpoint or types are missing, stop and use `create-api-handler` first (i
 
 ```
 Task progress:
+- [ ] Verify upstream: handler + route + api-types exist (stop if not — see LAYER-ORDER.md)
 - [ ] Confirm API route, method, path, request/response types in api-types
 - [ ] Run make api-types if Go DTOs changed recently
 - [ ] Add client function(s) in ui/src/lib/api/{resource}-client.ts

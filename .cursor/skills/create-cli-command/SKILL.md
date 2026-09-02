@@ -10,7 +10,23 @@ description: >-
 
 Guide for adding Cobra commands in `api/cmd/cli/`. Read this skill before changing CLI commands or root wiring.
 
-Architecture context: see [README.md](../../../README.md) (CLI calls application services directly). CLI design conventions: [listello-cli-design.md](../../../listello-cli-design.md). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
+Architecture context: see [README.md](../../../README.md) (CLI calls application services directly). Layer order: [LAYER-ORDER.md](../LAYER-ORDER.md). CLI design: [listello-cli-design.md](../../../listello-cli-design.md). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
+
+## Upstream dependencies
+
+**Stop and do not proceed** until the application service method exists and is implemented. See [LAYER-ORDER.md](../LAYER-ORDER.md).
+
+Before starting, verify:
+
+| Check | How |
+|-------|-----|
+| Service method exists | `(s *{Service}) {Method}(...)` in `internal/application/` |
+| Method is implemented | Not `return ..., fmt.Errorf("not implemented")` |
+| Application tests pass | `go test ./internal/application/...` green for that method |
+
+If any check fails → **stop**. Tell the user to use `create-application-service` first and get green tests. Do not write command tests or Cobra wiring.
+
+Adapter repository is **not** required for this skill (command tests use stub repositories).
 
 ## Scope
 
@@ -36,10 +52,12 @@ Architecture context: see [README.md](../../../README.md) (CLI calls application
 
 ## Preconditions
 
-1. **Application service method exists** — the command calls an existing service API.
+These duplicate the upstream gate — all must pass:
+
+1. **Application service method exists and is implemented** — the command calls a real service API, not a stub.
 2. **Command name and args decided** — see [listello-cli-design.md](../../../listello-cli-design.md) for the command tree.
 
-If the service method is missing, stop and use `create-application-service` first.
+If the service method is missing or still `not implemented` → **stop** and use `create-application-service` first.
 
 ## Decision tree
 
@@ -53,6 +71,7 @@ If the service method is missing, stop and use `create-application-service` firs
 
 ```
 Task progress:
+- [ ] Verify upstream: service method implemented, application tests green (stop if not — see LAYER-ORDER.md)
 - [ ] Read application service method signature
 - [ ] Decide command path (e.g. list create), args, flags, confirmation message
 - [ ] Create or extend parent group command ({resource}.go)

@@ -11,7 +11,22 @@ description: >-
 
 Guide for adding or extending use cases in `api/internal/application/`. Read this skill before changing application-layer code.
 
-Architecture context: see [README.md](../../../README.md) (Application layer coordinates domain commands, repository ports, and `EventPublisher`). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
+Architecture context: see [README.md](../../../README.md) (Application layer coordinates domain commands, repository ports, and `EventPublisher`). Layer order: [LAYER-ORDER.md](../LAYER-ORDER.md). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
+
+## Upstream dependencies
+
+**This is the first application-layer skill.** For write commands, domain must exist first.
+
+Before starting, verify:
+
+| Check | Required for |
+|-------|--------------|
+| `domain.{Command}(...)` exists | Write methods |
+| Godog scenarios pass for the command | Write methods |
+
+If domain is missing → **stop**. Do not add application tests or service code. Tell the user domain work is needed first.
+
+Downstream skills (`create-adapter-repository`, `create-api-handler`, `create-cli-command`) depend on **implemented** service methods from this skill. Finish green application tests before moving on.
 
 ## Scope
 
@@ -42,6 +57,7 @@ Architecture context: see [README.md](../../../README.md) (Application layer coo
 
 ```
 Task progress:
+- [ ] Verify upstream: domain command exists for writes (stop if not — see LAYER-ORDER.md)
 - [ ] Read domain API (command signature, event type, metadata)
 - [ ] Decide: new service vs extend existing
 - [ ] Add/update repository port interface (same file as service)
