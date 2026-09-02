@@ -52,3 +52,38 @@ func TestSQLiteItemRepository_Save_PersistsItem(t *testing.T) {
 	assert.Equal(t, item.Title, gotTitle)
 	assert.Equal(t, string(item.State), gotState)
 }
+
+func TestSQLiteItemRepository_GetAll_ReturnsItemsForList(t *testing.T) {
+	// Arrange
+	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = db.Close() })
+
+	listRepo := adapter.NewSQLiteListRepository(db)
+	itemRepo := adapter.NewSQLiteItemRepository(db)
+
+	work, _, err := domain.CreateList("Work")
+	require.NoError(t, err)
+	personal, _, err := domain.CreateList("Personal")
+	require.NoError(t, err)
+	require.NoError(t, listRepo.Save(work))
+	require.NoError(t, listRepo.Save(personal))
+
+	buyMilk, _, err := domain.DefineItem(work, "Buy milk")
+	require.NoError(t, err)
+	callDentist, _, err := domain.DefineItem(work, "Call dentist")
+	require.NoError(t, err)
+	groceries, _, err := domain.DefineItem(personal, "Groceries")
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(buyMilk))
+	require.NoError(t, itemRepo.Save(callDentist))
+	require.NoError(t, itemRepo.Save(groceries))
+
+	// Act
+	got, err := itemRepo.GetAll(work.ID)
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, got, 2)
+	assert.Equal(t, []domain.Item{buyMilk, callDentist}, got)
+}

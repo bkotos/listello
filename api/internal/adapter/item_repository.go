@@ -30,3 +30,31 @@ ON CONFLICT(id) DO UPDATE SET
 	}
 	return nil
 }
+
+// GetAll returns all items for the given list in insertion order.
+func (r *SQLiteItemRepository) GetAll(listID string) ([]domain.Item, error) {
+	const q = `SELECT id, list_id, title, state FROM items WHERE list_id = ? ORDER BY rowid`
+	rows, err := r.db.Query(q, listID)
+	if err != nil {
+		return nil, fmt.Errorf("list items: %w", err)
+	}
+	defer rows.Close()
+
+	var items []domain.Item
+	for rows.Next() {
+		var id, listID, title, state string
+		if err := rows.Scan(&id, &listID, &title, &state); err != nil {
+			return nil, fmt.Errorf("list items: %w", err)
+		}
+		items = append(items, domain.Item{
+			ID:     id,
+			ListID: listID,
+			Title:  title,
+			State:  domain.ItemState(state),
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list items: %w", err)
+	}
+	return items, nil
+}
