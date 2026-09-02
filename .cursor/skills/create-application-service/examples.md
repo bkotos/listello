@@ -2,14 +2,45 @@
 
 Annotated references from the Listello codebase. Read when implementing a new or extended service.
 
-## 1. Write command: `ListService.CreateList`
+## 1. Service interface + implementation: `ListService`
 
 **File:** `api/internal/application/list_service.go`
 
-Full write path: domain → save → publish.
+Each aggregate exposes an exported **interface** and an unexported **struct**. The constructor returns the interface; a compile-time check ensures the struct satisfies it.
 
 ```go
-func (s *ListService) CreateList(name string) (domain.List, error) {
+// ListService defines list application operations.
+type ListService interface {
+	CreateList(name string) (domain.List, error)
+	GetAll() ([]domain.List, error)
+	GetByID(id string) (domain.List, error)
+}
+
+type listService struct {
+	listRepository ListRepository
+	eventPublisher EventPublisher
+}
+
+var _ ListService = (*listService)(nil)
+
+func NewListService(listRepository ListRepository, eventPublisher EventPublisher) ListService {
+	return &listService{
+		listRepository: listRepository,
+		eventPublisher: eventPublisher,
+	}
+}
+```
+
+Key points:
+
+- Handlers and CLI depend on `ListService` (interface), not `*listService`.
+- `var _ ListService = (*listService)(nil)` catches drift if methods are added to the interface but not the struct.
+- Repository ports stay in the same file as the service.
+
+### Write command: `CreateList`
+
+```go
+func (s *listService) CreateList(name string) (domain.List, error) {
 	list, event, err := domain.CreateList(name)
 	if err != nil {
 		return domain.List{}, err
@@ -24,96 +55,73 @@ func (s *ListService) CreateList(name string) (domain.List, error) {
 }
 ```
 
-Key points:
-
 - Domain owns validation and event construction; application only orchestrates.
 - Errors from domain, repository, or publisher propagate unchanged.
-- Return the domain aggregate on success.
 
 ### Test: persistence (`TestListService_CreateList_PersistsList`)
 
 **File:** `api/internal/application/list_service_test.go`
 
-- Mocks: `NewMockListRepository(t)`, `NewMockEventPublisher(t)`.
-- `Save` expectation uses `mock.MatchedBy` to assert aggregate fields (name, ID prefix).
+- Mocks: `NewMockListRepository(t)`, `NewMockEventPublisher(t)` from `mocks_test.go`.
+- `Save` expectation uses `mock.MatchedBy` to verify a non-empty item was passed (do not re-assert domain field values).
 - `Publish` expectation accepts any `domain.Event` (persistence is the focus).
-- Asserts returned list name and ID prefix.
 
 ### Test: event publish (`TestListService_CreateList_PublishesEvent`)
 
 - Captures published event via closure in `mock.MatchedBy`.
-- Asserts `event.Name == domain.EventListCreated`.
-- Asserts metadata type `domain.EventMetadataListCreated` and ID matches returned list.
-- Asserts `published.Timestamp` is non-empty.
+- Asserts `event.Name`, metadata type, and non-empty timestamp.
+- Does not re-test domain field values on the returned aggregate.
 
-**Pattern:** Split persistence and event assertions into separate tests.
+**Pattern:** Split persistence and event assertions into separate tests. Application tests mock **repository ports**, not service interfaces.
 
-## 2. Read methods: `ListService.GetAll` and `GetByID`
-
-**File:** `api/internal/application/list_service.go`
+## 2. Read methods: `GetAll` and `GetByID`
 
 ```go
-func (s *ListService) GetAll() ([]domain.List, error) {
+func (s *listService) GetAll() ([]domain.List, error) {
 	return s.listRepository.GetAll()
 }
 
-func (s *ListService) GetByID(id string) (domain.List, error) {
+func (s *listService) GetByID(id string) (domain.List, error) {
 	return s.listRepository.GetByID(id)
 }
 ```
 
-Key points:
-
 - No domain call, no event publish.
 - One-line delegation to repository.
 
-### Test: `TestListService_GetAll_ReturnsListsFromRepository`
-
-- Sets up `expected` slice of domain values.
-- `repo.EXPECT().GetAll().Return(expected, nil)`.
-- Asserts `received` equals `expected`.
-
-### Test: `TestListService_GetByID_ReturnsListFromRepository`
-
-- Same pattern with `GetByID(listID)` and a single `domain.List`.
-
-## 3. Partial scaffold: `ItemService`
+## 3. `ItemService` with cross-aggregate dependency
 
 **File:** `api/internal/application/item_service.go`
 
-Shows a new aggregate service with repository port and red-phase stub:
-
 ```go
-// ItemRepository persists items and their list membership.
-type ItemRepository interface {
-	Save(listID string, item domain.Item) error
+// ItemService defines item application operations.
+type ItemService interface {
+	DefineItem(listID, title string) (domain.Item, error)
 }
 
-// ItemService coordinates item aggregate commands and persistence.
-type ItemService struct {
+type itemService struct {
+	listRepository ListRepository
 	itemRepository ItemRepository
 	eventPublisher EventPublisher
 }
 
-func NewItemService(itemRepository ItemRepository, eventPublisher EventPublisher) *ItemService {
-	return &ItemService{
-		itemRepository: itemRepository,
-		eventPublisher: eventPublisher,
-	}
+var _ ItemService = (*itemService)(nil)
+
+func NewItemService(listRepository ListRepository, itemRepository ItemRepository, eventPublisher EventPublisher) ItemService {
+	return &itemService{ ... }
 }
 
-// DefineItem defines an item on a list via the domain and persists it.
-func (s *ItemService) DefineItem(listID, title string) (domain.Item, error) {
-	return domain.Item{}, fmt.Errorf("not implemented")
+func (s *itemService) DefineItem(listID, title string) (domain.Item, error) {
+	list, err := s.listRepository.GetByID(listID)
+	// domain.DefineItem → Save(item) → Publish(event)
 }
 ```
 
 Key points:
 
-- Repository port colocated with service in the same file.
-- Constructor takes repository + shared `EventPublisher`.
-- Stub returns `not implemented` so tests fail for the right reason during red phase.
-- `ItemRepository` is registered in `api/.mockery.yml` for mock generation.
+- `ItemRepository.Save(item domain.Item)` — no separate `listID` param; `listID` is on `domain.Item`.
+- `itemService` depends on `ListRepository` to load the list before calling domain.
+- Application tests mock repository ports; handler tests mock `ItemService` (see `create-api-handler` skill).
 
 ## 4. Shared `EventPublisher` port
 
@@ -138,6 +146,19 @@ packages:
       ListRepository:
       EventPublisher:
       ItemRepository:
+      ListService:
+        config:
+          dir: '{{.InterfaceDir}}/mocks'
+          filename: mocks.go
+          pkgname: mocks
+      ItemService:
+        config:
+          dir: '{{.InterfaceDir}}/mocks'
+          filename: mocks.go
+          pkgname: mocks
 ```
 
-After adding a new port interface, add it here and run `make -C api mocks`.
+- **Repository mocks** → `mocks_test.go` (default config) for `application_test` package.
+- **Service mocks** → `mocks/mocks.go` importable by handler tests as `appmocks "github.com/bkotos/listello/internal/application/mocks"`.
+
+After adding a new interface, register it in `.mockery.yml` and run `make -C api mocks`.

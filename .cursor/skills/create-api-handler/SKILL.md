@@ -21,13 +21,13 @@ Before starting, verify:
 
 | Check | How |
 |-------|-----|
-| Service method exists | `(s *{Service}) {Method}(...)` in `internal/application/` |
+| Service method exists | `{Method}(...)` on `{Aggregate}Service` interface in `internal/application/` |
 | Method is implemented | Not `return ..., fmt.Errorf("not implemented")` |
 | Application tests pass | `go test ./internal/application/...` green for that method |
 
 If any check fails → **stop**. Tell the user to use `create-application-service` first and get green tests. Do not write handler tests, DTOs, or routes.
 
-Adapter repository is **not** required for this skill (handler tests use stub repositories).
+Adapter repository is **not** required for this skill (handler tests use mock service interfaces).
 
 ## Scope
 
@@ -43,13 +43,14 @@ Adapter repository is **not** required for this skill (handler tests use stub re
 
 ## Architecture constraints
 
-- Handlers depend on application services — never call domain or adapters directly.
-- **All JSON request and response bodies use named DTOs** in `internal/view-dtos/` — never anonymous inline structs in handlers.
-- Decode into a `{Action}{Resource}Request` DTO; map domain results to `{Resource}Response` via `{Resource}FromDomain`.
-- Validate required request fields in the handler (empty string, missing body) before calling the service.
+- Handlers depend on application **service interfaces** — never call domain, adapters, or concrete service structs directly.
+- **All JSON request and response bodies use named DTOs** in `internal/view-dtos/` — never anonymous inline structs in handlers (legacy handlers may still use inline structs; migrate when touching them).
+- Decode into a `{Action}{Resource}Request` DTO; map domain results to response DTOs via `{Resource}FromDomain`.
+- **Do not validate domain-owned fields in handlers** (e.g. empty `title` on `DefineItem`) — domain/application return errors; map those to 400.
+- Validate only HTTP/transport concerns in handlers (invalid JSON, missing path param).
 - Use `response.WriteJSON` and `response.WriteError` from `cmd/server/response`.
 - One handler file per endpoint (`create_list.go`, `get_list.go`, …).
-- Handler factory accepts the application service: `func CreateList(listService *application.ListService) http.HandlerFunc`.
+- Handler factory accepts the service **interface**: `func CreateList(listService application.ListService) http.HandlerFunc`.
 
 ## Preconditions
 
@@ -64,7 +65,7 @@ If the service method is missing or still `not implemented` → **stop** and use
 
 1. **New endpoint?** → Add request/response DTOs → handler + test → register route in `server.go`.
 2. **POST/PUT/PATCH with body?** → Add `{Action}{Resource}Request` in `view-dtos/`; decode into it in the handler.
-3. **JSON response?** → Add or reuse `{Resource}Response` + `{Resource}FromDomain`; run `make api-types`.
+3. **JSON response?** → Add or reuse response DTO (`{Resource}Dto` or `{Resource}Response`) + `{Resource}FromDomain`; run `make api-types`.
 4. **New service dependency?** → Add parameter to `newAPIServer` in `server.go`; mention `main.go` bootstrap follow-up.
 5. **Path parameter?** → Use `r.PathValue("name")` (Go 1.22+ route patterns); set `req.SetPathValue` in tests.
 
@@ -84,6 +85,7 @@ Task progress:
 - [ ] (After approval) Implement handler (decode request DTO, call service, write response DTO)
 - [ ] Register route in server.go
 - [ ] Update newAPIServer signature if new service dependency
+- [ ] Register new `{Aggregate}Service` in api/.mockery.yml (mocks/ output) if new aggregate; run make -C api mocks
 - [ ] Run make api-types
 - [ ] Re-run tests — confirm green
 ```
@@ -99,11 +101,11 @@ Task progress:
 | Test name | `Test{Handler}` or `Test{Handler}_{Behavior}` |
 | Route pattern | `{METHOD} /api/{resource}` or `{METHOD} /api/{resource}/{param}` |
 | Request DTO | `{Action}{Resource}Request` (e.g. `CreateListRequest`, `DefineItemRequest`) |
-| Response DTO | `{Resource}Response` (e.g. `ListResponse`, `ItemResponse`) |
+| Response DTO | `{Resource}Dto` or `{Resource}Response` (e.g. `ListResponse`, `ItemDto`) |
 | Response mapper | `{Resource}FromDomain`, `{Plural}FromDomain` for slices |
 | DTO test file | `view-dtos/{resource}_test.go` |
-| Stubs | `stubListRepository`, `stubEventPublisher` in `stubs_test.go` |
-| Service handler param | `{aggregate}Service` (e.g. `listService`, `itemService`) — not plural nouns like `lists` or `items` |
+| Service mocks | `appmocks "github.com/bkotos/listello/internal/application/mocks"` (mockery-generated) |
+| Service handler param | `{aggregate}Service` (e.g. `listService`, `itemService`) — type is `application.{Aggregate}Service` interface |
 
 ## Code templates
 
@@ -122,19 +124,15 @@ import (
 	"github.com/bkotos/listello/cmd/server/response"
 )
 
-func {Action}({aggregate}Service *application.{Service}) http.HandlerFunc {
+func {Action}({aggregate}Service application.{Service}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req viewdto.{Action}{Resource}Request
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			response.WriteError(w, http.StatusBadRequest, "invalid JSON body")
 			return
 		}
-		if req.{Field} == "" {
-			response.WriteError(w, http.StatusBadRequest, "{field} is required")
-			return
-		}
 
-		result, err := {aggregate}Service.{Method}(req.{Field} /* map other fields */)
+		result, err := {aggregate}Service.{Method}(/* map fields from req */)
 		if err != nil {
 			response.WriteError(w, http.StatusBadRequest, err.Error())
 			return
@@ -148,7 +146,7 @@ func {Action}({aggregate}Service *application.{Service}) http.HandlerFunc {
 ### Handler factory (GET collection)
 
 ```go
-func GetAll{Resource}({aggregate}Service *application.{Service}) http.HandlerFunc {
+func GetAll{Resource}({aggregate}Service application.{Service}) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		all, err := {aggregate}Service.GetAll()
 		if err != nil {
@@ -165,7 +163,7 @@ func GetAll{Resource}({aggregate}Service *application.{Service}) http.HandlerFun
 ```go
 import "strings"
 
-func Get{Resource}({aggregate}Service *application.{Service}) http.HandlerFunc {
+func Get{Resource}({aggregate}Service application.{Service}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		if id == "" {
@@ -191,7 +189,7 @@ func Get{Resource}({aggregate}Service *application.{Service}) http.HandlerFunc {
 ### Route registration (`server.go`)
 
 ```go
-func newAPIServer(listService *application.ListService /*, itemService *application.ItemService */) http.Handler {
+func newAPIServer(listService application.ListService, itemService application.ItemService) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", handlers.Health)
 	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))
@@ -254,14 +252,18 @@ After any DTO change: `make api-types` (regenerates `api-types/index.ts` via tyg
 
 ## Test templates
 
-Use `httptest` with stub repositories from `stubs_test.go`. Inject a real `application.New{Service}(stubRepo, stubPublisher)`.
+Use `httptest` with **mock service interfaces** from `internal/application/mocks`. Assert the service method was called with the correct arguments via `EXPECT()`; optionally assert HTTP status and response mapping from the value returned by the mock.
 
 ### POST handler
 
 ```go
 func TestCreateList(t *testing.T) {
 	// Arrange
-	listService := application.NewListService(&stubListRepository{}, &stubEventPublisher{})
+	const listName = "Next actions"
+	expected := domain.List{ID: "LS_1", Name: listName}
+	listService := appmocks.NewMockListService(t)
+	listService.EXPECT().CreateList(listName).Return(expected, nil)
+
 	body := bytes.NewBufferString(`{"name":"Next actions"}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/lists", body)
 	rec := httptest.NewRecorder()
@@ -273,13 +275,17 @@ func TestCreateList(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, rec.Code)
 	var received viewdto.ListResponse
 	require.NoError(t, json.NewDecoder(rec.Body).Decode(&received))
-	assert.Equal(t, "Next actions", received.Name)
+	assert.Equal(t, expected.Name, received.Name)
+	assert.Equal(t, expected.ID, received.ID)
 }
 ```
 
 ### GET with path param
 
 ```go
+listService := appmocks.NewMockListService(t)
+listService.EXPECT().GetByID(listID).Return(expected, nil)
+
 req := httptest.NewRequest(http.MethodGet, "/api/lists/"+listID, nil)
 req.SetPathValue("id", listID)
 ```
@@ -288,23 +294,20 @@ req.SetPathValue("id", listID)
 
 ```go
 func TestGetList_NotFound(t *testing.T) {
-	listService := application.NewListService(&stubListRepository{
-		getByIDFn: func(id string) (domain.List, error) {
-			return domain.List{}, fmt.Errorf("list %q not found", id)
-		},
-	}, &stubEventPublisher{})
+	listService := appmocks.NewMockListService(t)
+	listService.EXPECT().GetByID(listID).Return(domain.List{}, fmt.Errorf("list %q not found", listID))
 	// ...
 	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 ```
 
-One behavioral concern per test. Add stubs to `stubs_test.go` when a new repository port is needed.
+One behavioral concern per test. Do **not** stub repository ports in handler tests — mock the service interface instead.
 
 ## HTTP status conventions
 
 | Situation | Status |
 |-----------|--------|
-| Invalid JSON / missing required field | 400 Bad Request |
+| Invalid JSON / missing path param | 400 Bad Request |
 | Domain/application validation error (writes) | 400 Bad Request |
 | Resource not found (`"not found"` in error) | 404 Not Found |
 | Unexpected persistence error | 500 Internal Server Error |

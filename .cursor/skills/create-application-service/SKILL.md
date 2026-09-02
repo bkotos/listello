@@ -30,7 +30,7 @@ Downstream skills (`create-adapter-repository`, `create-api-handler`, `create-cl
 
 ## Scope
 
-**In scope:** repository ports, service struct, constructor, methods, unit tests, mockery config/regeneration.
+**In scope:** repository ports, service interface + implementation, constructor, methods, unit tests, mockery config/regeneration.
 
 **Out of scope** (mention as follow-ups only; do not implement unless asked):
 
@@ -61,7 +61,8 @@ Task progress:
 - [ ] Read domain API (command signature, event type, metadata)
 - [ ] Decide: new service vs extend existing
 - [ ] Add/update repository port interface (same file as service)
-- [ ] Add service struct + constructor (if new aggregate)
+- [ ] Add service interface + unexported `{aggregate}Service` struct + constructor (if new aggregate)
+- [ ] Add `var _ {Aggregate}Service = (*{aggregate}Service)(nil)` compile-time check
 - [ ] Add method stub returning `fmt.Errorf("not implemented")` for red phase
 - [ ] Write failing unit test(s) in application_test package
 - [ ] Run tests — confirm failure is missing behavior
@@ -79,8 +80,10 @@ Task progress:
 | Test file | `{aggregate}_service_test.go` |
 | Test package | `application_test` |
 | Repository port | `{Aggregate}Repository` (same file as service) |
-| Service type | `{Aggregate}Service` |
-| Constructor | `New{Aggregate}Service(repo, eventPublisher)` |
+| Service interface | `{Aggregate}Service` (exported) |
+| Service implementation | `{aggregate}Service` (unexported struct) |
+| Constructor | `New{Aggregate}Service(...) {Aggregate}Service` — returns interface |
+| Interface check | `var _ {Aggregate}Service = (*{aggregate}Service)(nil)` |
 | Test name | `Test{Service}_{Method}_{Behavior}` |
 | Domain import | `domain "github.com/bkotos/listello/internal/domain"` |
 
@@ -102,15 +105,21 @@ type {Aggregate}Repository interface {
 	Save(/* args */) error
 }
 
-// {Aggregate}Service coordinates {aggregate} commands and persistence.
-type {Aggregate}Service struct {
+// {Aggregate}Service defines {aggregate} application operations.
+type {Aggregate}Service interface {
+	{Method}(/* args */) (/* return */, error)
+}
+
+type {aggregate}Service struct {
 	{aggregate}Repository {Aggregate}Repository
 	eventPublisher        EventPublisher
 }
 
+var _ {Aggregate}Service = (*{aggregate}Service)(nil)
+
 // New{Aggregate}Service returns a {Aggregate}Service backed by the given repository and publisher.
-func New{Aggregate}Service({aggregate}Repository {Aggregate}Repository, eventPublisher EventPublisher) *{Aggregate}Service {
-	return &{Aggregate}Service{
+func New{Aggregate}Service({aggregate}Repository {Aggregate}Repository, eventPublisher EventPublisher) {Aggregate}Service {
+	return &{aggregate}Service{
 		{aggregate}Repository: {aggregate}Repository,
 		eventPublisher:        eventPublisher,
 	}
@@ -121,7 +130,7 @@ func New{Aggregate}Service({aggregate}Repository {Aggregate}Repository, eventPub
 
 ```go
 // {MethodName} {description} via the domain and persists it.
-func (s *{Aggregate}Service) {MethodName}(/* args */) (domain.{Aggregate}, error) {
+func (s *{aggregate}Service) {MethodName}(/* args */) (domain.{Aggregate}, error) {
 	aggregate, event, err := domain.{Command}(/* args */)
 	if err != nil {
 		return domain.{Aggregate}{}, err
@@ -140,7 +149,7 @@ func (s *{Aggregate}Service) {MethodName}(/* args */) (domain.{Aggregate}, error
 
 ```go
 // {MethodName} returns {what} from persistence.
-func (s *{Aggregate}Service) {MethodName}(/* args */) (/* return type */, error) {
+func (s *{aggregate}Service) {MethodName}(/* args */) (/* return type */, error) {
 	return s.{aggregate}Repository.{MethodName}(/* args */)
 }
 ```
@@ -234,13 +243,20 @@ Do not write production implementation in the same turn as a new failing spec.
 
 ## Mockery
 
-When a port interface is added or changed:
+When a port or service interface is added or changed:
 
 1. Add the interface under `packages.github.com/bkotos/listello/internal/application.interfaces` in `api/.mockery.yml`.
 2. Run `make -C api mocks` (requires mockery v3).
-3. Use generated mocks from `mocks_test.go` — **never hand-edit mocks**.
+3. Use generated mocks — **never hand-edit mocks**.
 
-Existing ports: `ListRepository`, `ItemRepository`, `EventPublisher`.
+| Interface kind | Generated to | Used by |
+|----------------|--------------|---------|
+| Repository ports (`ListRepository`, `ItemRepository`, `EventPublisher`) | `mocks_test.go` (`application_test` package) | Application unit tests |
+| Service interfaces (`ListService`, `ItemService`) | `mocks/mocks.go` (`mocks` package) | Handler tests (`cmd/server/handlers/`) |
+
+When adding a new `{Aggregate}Service` interface, register it in `.mockery.yml` with `config` pointing to `mocks/` (same as `ListService` / `ItemService`).
+
+Existing interfaces: `ListRepository`, `ItemRepository`, `EventPublisher`, `ListService`, `ItemService`.
 
 ## Verification
 

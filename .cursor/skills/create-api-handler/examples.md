@@ -4,121 +4,44 @@ Annotated references from the Listello codebase. Read when implementing a new HT
 
 ## 0. Request and response DTOs (required for new endpoints)
 
-All JSON bodies use named types in `internal/view-dtos/`. Do not decode into anonymous structs in handlers.
+All JSON bodies use named types in `internal/view-dtos/`. Do not decode into anonymous structs in handlers (legacy `CreateList` still uses an inline struct — migrate when touching it).
 
-**File:** `api/internal/view-dtos/list.go`
+**File:** `api/internal/view-dtos/item.go`
 
 ```go
-// CreateListRequest is the HTTP request body for creating a list.
-type CreateListRequest struct {
-	Name string `json:"name"`
+type DefineItemRequest struct {
+	Title string `json:"title"`
 }
 
-// ListResponse is the HTTP representation of a list.
-type ListResponse struct {
-	ID   string `json:"ID"`
-	Name string `json:"Name"`
+type ItemDto struct {
+	ID    string `json:"ID"`
+	Title string `json:"Title"`
+	// ...
 }
 
-func ListFromDomain(list domain.List) ListResponse { ... }
-func ListsFromDomain(lists []domain.List) []ListResponse { ... }
+func ItemFromDomain(item domain.Item) ItemDto { ... }
 ```
 
 **Target handler pattern:**
 
 ```go
-var req viewdto.CreateListRequest
+var req viewdto.DefineItemRequest
 if err := json.NewDecoder(r.Body).Decode(&req); err != nil { ... }
-if req.Name == "" { ... }
 
-list, err := listService.CreateList(req.Name)
-response.WriteJSON(w, http.StatusCreated, viewdto.ListFromDomain(list))
+item, err := itemService.DefineItem(id, req.Title)
+response.WriteJSON(w, http.StatusCreated, viewdto.ItemFromDomain(item))
 ```
 
-**DTO tests** in `view-dtos/list_test.go` cover `FromDomain` mappers. Run `make api-types` after adding or changing DTOs so `api-types/index.ts` stays in sync for the UI.
+Do **not** add handler-level validation for fields the domain already validates (e.g. empty `title` on `DefineItem`). Let the service return an error and map it to 400.
 
-> **Note:** `CreateList` still uses an inline request struct — legacy. New endpoints must add `{Action}{Resource}Request` in `view-dtos/`.
+**DTO tests** in `view-dtos/{resource}_test.go` cover `FromDomain` mappers. Run `make api-types` after adding or changing DTOs.
 
-## 1. POST `CreateList` — write endpoint
+## 1. POST `DefineItem` — write endpoint with path param
 
-**File:** `api/cmd/server/handlers/create_list.go`
-
-```go
-func CreateList(listService *application.ListService) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var body struct {
-			Name string `json:"name"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			response.WriteError(w, http.StatusBadRequest, "invalid JSON body")
-			return
-		}
-		if body.Name == "" {
-			response.WriteError(w, http.StatusBadRequest, "name is required")
-			return
-		}
-
-		list, err := listService.CreateList(body.Name)
-		if err != nil {
-			response.WriteError(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		response.WriteJSON(w, http.StatusCreated, viewdto.ListFromDomain(list))
-	}
-}
-```
-
-Key points:
-
-- **Legacy:** decodes into an anonymous struct — replace with `viewdto.CreateListRequest` when touching this handler.
-- Application errors on writes map to 400.
-- Return 201 Created with `viewdto.ListResponse` (not raw domain type).
-- Factory closes over `*application.ListService`.
-
-### Test
-
-**File:** `api/cmd/server/handlers/create_list_test.go`
-
-- `application.NewListService(&stubListRepository{}, &stubEventPublisher{})` — real service, stubbed ports.
-- POST body as `bytes.NewBufferString(`{"name":"..."}`)`.
-- Assert status 201 and decode into `viewdto.ListResponse` (or `map[string]string` until `CreateListRequest`/`ListResponse` are wired).
-
-## 2. GET `GetAllLists` — collection read
-
-**File:** `api/cmd/server/handlers/get_all_lists.go`
+**File:** `api/cmd/server/handlers/define_item.go`
 
 ```go
-func GetAllLists(listService *application.ListService) http.HandlerFunc {
-	return func(w http.ResponseWriter, _ *http.Request) {
-		all, err := listService.GetAll()
-		if err != nil {
-			response.WriteError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		response.WriteJSON(w, http.StatusOK, viewdto.ListsFromDomain(all))
-	}
-}
-```
-
-Key points:
-
-- Read endpoints: persistence errors → 500.
-- Plural mapper `ListsFromDomain` for slices.
-
-### Test
-
-**File:** `api/cmd/server/handlers/get_all_lists_test.go`
-
-- Stub `getAllFn` on `stubListRepository` to return expected slice.
-- Assert 200 and array of objects with matching `ID` / `Name`.
-
-## 3. GET `GetList` — resource by ID
-
-**File:** `api/cmd/server/handlers/get_list.go`
-
-```go
-func GetList(listService *application.ListService) http.HandlerFunc {
+func DefineItem(itemService application.ItemService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		if id == "" {
@@ -126,68 +49,165 @@ func GetList(listService *application.ListService) http.HandlerFunc {
 			return
 		}
 
-		list, err := listService.GetByID(id)
-		if err != nil {
-			if strings.Contains(err.Error(), "not found") {
-				response.WriteError(w, http.StatusNotFound, err.Error())
-				return
-			}
-			response.WriteError(w, http.StatusInternalServerError, err.Error())
+		var req viewdto.DefineItemRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			response.WriteError(w, http.StatusBadRequest, "invalid JSON body")
 			return
 		}
 
-		response.WriteJSON(w, http.StatusOK, viewdto.ListFromDomain(list))
+		item, err := itemService.DefineItem(id, req.Title)
+		if err != nil {
+			response.WriteError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		response.WriteJSON(w, http.StatusCreated, viewdto.ItemFromDomain(item))
 	}
 }
 ```
 
 Key points:
 
-- Path param via `r.PathValue("id")` — matches route `GET /api/lists/{id}`.
-- `"not found"` in error message → 404; other errors → 500.
+- Factory accepts `application.ItemService` **interface**, not a concrete struct or pointer.
+- Parameter named `itemService` (not `items` — collides with `/items` route).
+- No `title is required` check — domain owns that validation.
+- Return 201 Created with `viewdto.ItemDto`.
+
+### Test
+
+**File:** `api/cmd/server/handlers/define_item_test.go`
+
+```go
+import appmocks "github.com/bkotos/listello/internal/application/mocks"
+
+func TestDefineItem(t *testing.T) {
+	const listID = "LS_1"
+	expected := domain.Item{ID: "IT_1", ListID: listID, Title: "Buy milk", State: domain.ItemOutstanding}
+	itemService := appmocks.NewMockItemService(t)
+	itemService.EXPECT().DefineItem(listID, "Buy milk").Return(expected, nil)
+
+	body := bytes.NewBufferString(`{"title":"Buy milk"}`)
+	req := httptest.NewRequest(http.MethodPost, "/api/lists/"+listID+"/items", body)
+	req.SetPathValue("id", listID)
+	rec := httptest.NewRecorder()
+
+	DefineItem(itemService)(rec, req)
+
+	assert.Equal(t, http.StatusCreated, rec.Code)
+	// assert response maps from expected
+}
+```
+
+- Mock the **service interface** — do not wire stub repositories.
+- `EXPECT()` asserts the handler called the service with the correct arguments.
+
+## 2. POST `CreateList` — write endpoint (legacy request decode)
+
+**File:** `api/cmd/server/handlers/create_list.go`
+
+```go
+func CreateList(listService application.ListService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// ...
+		list, err := listService.CreateList(body.Name)
+		response.WriteJSON(w, http.StatusCreated, viewdto.ListFromDomain(list))
+	}
+}
+```
+
+### Test
+
+**File:** `api/cmd/server/handlers/create_list_test.go`
+
+```go
+listService := appmocks.NewMockListService(t)
+listService.EXPECT().CreateList("Next actions").Return(domain.List{ID: "LS_1", Name: "Next actions"}, nil)
+CreateList(listService)(rec, req)
+```
+
+## 3. GET `GetAllLists` — collection read
+
+**File:** `api/cmd/server/handlers/get_all_lists.go`
+
+```go
+func GetAllLists(listService application.ListService) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		all, err := listService.GetAll()
+		// ...
+		response.WriteJSON(w, http.StatusOK, viewdto.ListsFromDomain(all))
+	}
+}
+```
+
+### Test
+
+```go
+listService := appmocks.NewMockListService(t)
+listService.EXPECT().GetAll().Return(expected, nil)
+```
+
+## 4. GET `GetList` — resource by ID
+
+**File:** `api/cmd/server/handlers/get_list.go`
+
+```go
+func GetList(listService application.ListService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		list, err := listService.GetByID(id)
+		// 404 when err contains "not found"
+		response.WriteJSON(w, http.StatusOK, viewdto.ListFromDomain(list))
+	}
+}
+```
 
 ### Tests
-
-**File:** `api/cmd/server/handlers/get_list_test.go`
 
 Success:
 
 ```go
-req := httptest.NewRequest(http.MethodGet, "/api/lists/"+listID, nil)
-req.SetPathValue("id", listID)
+listService := appmocks.NewMockListService(t)
+listService.EXPECT().GetByID(listID).Return(expected, nil)
 ```
 
 Not found:
 
 ```go
-getByIDFn: func(id string) (domain.List, error) {
-	return domain.List{}, fmt.Errorf("list %q not found", id)
-}
-// assert 404 and {"error": "list \"LS_missing\" not found"}
+listService.EXPECT().GetByID(listID).Return(domain.List{}, fmt.Errorf("list %q not found", listID))
+// assert 404
 ```
 
-## 4. Route registration
+## 5. Route registration
 
 **File:** `api/cmd/server/server.go`
 
 ```go
-func newAPIServer(listService *application.ListService) http.Handler {
+func newAPIServer(listService application.ListService, itemService application.ItemService) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", handlers.Health)
 	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))
 	mux.HandleFunc("GET /api/lists/{id}", handlers.GetList(listService))
 	mux.HandleFunc("POST /api/lists", handlers.CreateList(listService))
+	mux.HandleFunc("POST /api/lists/{id}/items", handlers.DefineItem(itemService))
 	return mux
 }
 ```
 
-Key points:
+## 6. Service mocks (handler tests)
 
-- Go 1.22+ method-aware patterns: `"GET /api/lists/{id}"`.
-- Pass application service into handler factory.
-- Adding a new service (e.g. `ItemService`) requires a new `newAPIServer` parameter and routes — update `main.go` separately to construct and pass the service.
+**File:** `api/internal/application/mocks/mocks.go` (mockery-generated)
 
-## 5. Response helpers
+Service interfaces (`ListService`, `ItemService`) are mocked here so handler tests can import them:
+
+```go
+import appmocks "github.com/bkotos/listello/internal/application/mocks"
+```
+
+Repository port mocks remain in `mocks_test.go` for **application-layer** tests only.
+
+When adding a new `{Aggregate}Service` interface, register it in `api/.mockery.yml` with `config` pointing to `mocks/` and run `make -C api mocks`.
+
+## 7. Response helpers
 
 **File:** `api/cmd/server/response/json.go`
 
@@ -196,58 +216,12 @@ func WriteJSON(w http.ResponseWriter, status int, payload any)
 func WriteError(w http.ResponseWriter, status int, message string) // {"error": "..."}
 ```
 
-Always use these — do not write JSON directly to `ResponseWriter`.
-
-## 6. View DTOs — request and response
-
-**File:** `api/internal/view-dtos/list.go`
+## 8. View DTO naming
 
 | Type | Purpose | Example |
 |------|---------|---------|
-| `{Action}{Resource}Request` | JSON request body | `CreateListRequest`, `DefineItemRequest` |
-| `{Resource}Response` | JSON response body | `ListResponse`, `ItemResponse` |
-| `{Resource}FromDomain` | domain → response | `ListFromDomain(list)` |
-| `{Plural}FromDomain` | slice mapper | `ListsFromDomain(lists)` |
+| `{Action}{Resource}Request` | JSON request body | `DefineItemRequest` |
+| `{Resource}Dto` / `{Resource}Response` | JSON response body | `ItemDto`, `ListResponse` |
+| `{Resource}FromDomain` | domain → response | `ItemFromDomain(item)` |
 
-```go
-type ListResponse struct {
-	ID   string `json:"ID"`
-	Name string `json:"Name"`
-}
-
-func ListFromDomain(list domain.List) ListResponse { ... }
-func ListsFromDomain(lists []domain.List) []ListResponse { ... }
-```
-
-After adding or changing any DTO, run `make api-types` to regenerate TypeScript types in `api-types/index.ts` (tygo config in `api/tygo.yaml`).
-
-## 7. Test stubs
-
-**File:** `api/cmd/server/handlers/stubs_test.go`
-
-Hand-rolled stubs implement application ports for handler tests (not mockery):
-
-```go
-type stubListRepository struct {
-	saveFn    func(list domain.List) error
-	getAllFn  func() ([]domain.List, error)
-	getByIDFn func(id string) (domain.List, error)
-}
-```
-
-Add `stubItemRepository` here when wiring item endpoints.
-
-## 8. Next endpoint example: define item
-
-Given `ItemService.DefineItem(listID, title string)`:
-
-1. **DTOs** in `view-dtos/item.go`:
-   - `DefineItemRequest` with `Title string \`json:"title"\``
-   - `ItemResponse` with fields from `domain.Item`
-   - `ItemFromDomain(item domain.Item) ItemResponse`
-   - Tests in `item_test.go` for `ItemFromDomain`
-2. **Route:** `POST /api/lists/{id}/items`
-3. **Handler:** `define_item.go` — `r.PathValue("id")`, decode `viewdto.DefineItemRequest`, call `itemService.DefineItem(id, req.Title)`, return `viewdto.ItemFromDomain(item)`
-4. **server.go:** add `itemService *application.ItemService` param and route
-5. **`make api-types`** — exports new request/response types to the UI
-6. **Follow-up:** `main.go` bootstrap to construct `ItemService` (out of skill scope unless asked)
+After adding or changing any DTO, run `make api-types`.
