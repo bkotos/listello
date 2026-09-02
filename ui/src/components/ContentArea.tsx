@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type KeyboardEvent, type ReactNode } from "react";
 import { PanelLeft, Plus } from "lucide-react";
 
 export type ContentAreaProps = {
@@ -7,6 +7,7 @@ export type ContentAreaProps = {
   icon?: ReactNode;
   capturePlaceholder: string;
   onOpenSidebar?: () => void;
+  onCaptureSubmit?: (title: string) => void;
   children: ReactNode;
 };
 
@@ -16,8 +17,25 @@ export function ContentArea({
   icon,
   capturePlaceholder,
   onOpenSidebar,
+  onCaptureSubmit,
   children,
 }: ContentAreaProps) {
+  const [captureValue, setCaptureValue] = useState("");
+
+  function handleCaptureKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    const title = captureValue.trim();
+    if (!title || !onCaptureSubmit) {
+      return;
+    }
+
+    onCaptureSubmit(title);
+    setCaptureValue("");
+  }
+
   return (
     <div className="is-flex is-flex-direction-column" style={{ height: "100%" }}>
       <header
@@ -54,8 +72,10 @@ export function ContentArea({
           <div className="control has-icons-left">
             <input
               className="input is-medium"
-              readOnly
               placeholder={capturePlaceholder}
+              value={captureValue}
+              onChange={(event) => setCaptureValue(event.target.value)}
+              onKeyDown={handleCaptureKeyDown}
             />
             <span className="icon is-left">
               <Plus size={18} />

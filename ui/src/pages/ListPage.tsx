@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { ContentArea } from "../components/ContentArea";
 import { ItemRow } from "../components/ItemRow";
+import { defineItem } from "../lib/api/item-client";
 import { useAllItemsQuery } from "../lib/api/item-queries";
 import { useListQuery } from "../lib/api/list-queries";
 import { useShellContext } from "../lib/useShellContext";
@@ -12,12 +13,21 @@ function ListPage() {
   const { data: items } = useAllItemsQuery(listId);
   const title = list?.Name ?? "List";
 
+  function handleCaptureSubmit(itemTitle: string) {
+    if (!listId) {
+      return;
+    }
+
+    void defineItem(listId, { title: itemTitle });
+  }
+
   return (
     <ContentArea
       title={title}
       count={items?.length}
       capturePlaceholder={`Add to ${title}…`}
       onOpenSidebar={openSidebar}
+      onCaptureSubmit={handleCaptureSubmit}
     >
       {items && items.length > 0 ? (
         <div

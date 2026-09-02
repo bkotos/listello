@@ -10,9 +10,10 @@ vi.mock("../lib/api/list-client", () => ({
 
 vi.mock("../lib/api/item-client", () => ({
   getAllItems: vi.fn(),
+  defineItem: vi.fn(),
 }));
 
-import { getAllItems } from "../lib/api/item-client";
+import { defineItem, getAllItems } from "../lib/api/item-client";
 import { getList } from "../lib/api/list-client";
 
 const sampleItems = [
@@ -87,6 +88,24 @@ describe("ListPage", () => {
     expect(screen.getByPlaceholderText("Add to List…")).toBeInTheDocument();
   });
 
+  it("loads items for the list from the API", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue([]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledWith(
+        "LS_1",
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
+    });
+  });
+
   it("renders items from the API", async () => {
     // Arrange
     vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
@@ -117,6 +136,38 @@ describe("ListPage", () => {
     await waitFor(() => {
       expect(screen.getByLabelText("2 items")).toBeInTheDocument();
     });
+  });
+
+  it("calls defineItem when Enter is pressed in the capture input", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue([]);
+    vi.mocked(defineItem).mockResolvedValue({
+      ID: "IT_3",
+      ListID: "LS_1",
+      ParentID: "",
+      Title: "Buy milk",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    });
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Work" })).toBeInTheDocument();
+    });
+
+    // Act
+    const input = screen.getByPlaceholderText("Add to Work…");
+    fireEvent.change(input, { target: { value: "Buy milk" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    expect(defineItem).toHaveBeenCalledWith("LS_1", { title: "Buy milk" });
   });
 
   it("calls openSidebar when the open menu button is clicked", async () => {
