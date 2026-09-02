@@ -16,5 +16,6 @@ func newAPIServer(listService application.ListService, itemService application.I
 	mux.HandleFunc("POST /api/lists", handlers.CreateList(listService))
 	mux.HandleFunc("POST /api/lists/{id}/items", handlers.DefineItem(itemService))
 	mux.HandleFunc("GET /api/lists/{id}/items", handlers.GetAllItems(itemService))
+	mux.HandleFunc("POST /api/items/{id}/complete", handlers.CompleteItem(itemService))
 	return mux
 }
