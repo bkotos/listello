@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { Sidebar } from "./Sidebar.tsx";
+import { Sidebar } from "./Sidebar";
 
 export function AppShell() {
   const [mobileNav, setMobileNav] = useState(false);

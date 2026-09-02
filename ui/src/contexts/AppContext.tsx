@@ -1,6 +1,6 @@
 import { createContext, useMemo, type ReactNode } from "react";
 import type { ListResponse } from "api-types";
-import { useAllListsQuery } from "../lib/api/list-queries.ts";
+import { useAllListsQuery } from "../lib/api/list-queries";
 
 export type AppContextValue = {
   lists: ListResponse[];

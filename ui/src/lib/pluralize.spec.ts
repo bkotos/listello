@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pluralize } from "./pluralize.ts";
+import { pluralize } from "./pluralize";
 
 describe("pluralize", () => {
   it("uses the singular form for a count of one", () => {

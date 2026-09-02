@@ -1,15 +1,15 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createQueryWrapper } from "../../test/renderWithQueryClient.tsx";
+import { createQueryWrapper } from "../../test/renderWithQueryClient";
 
-vi.mock("./list-client.ts", () => ({
+vi.mock("./list-client", () => ({
   createList: vi.fn(),
   getAllLists: vi.fn(),
   getList: vi.fn(),
 }));
 
-import { createList, getAllLists } from "./list-client.ts";
-import { useAllListsQuery, useCreateListMutation } from "./list-queries.ts";
+import { createList, getAllLists } from "./list-client";
+import { useAllListsQuery, useCreateListMutation } from "./list-queries";
 
 afterEach(() => {
   vi.clearAllMocks();

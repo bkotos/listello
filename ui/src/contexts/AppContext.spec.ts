@@ -1,15 +1,15 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createQueryWrapper } from "../test/renderWithQueryClient.tsx";
+import { createQueryWrapper } from "../test/renderWithQueryClient";
 
-vi.mock("../lib/api/list-client.ts", () => ({
+vi.mock("../lib/api/list-client", () => ({
   getAllLists: vi.fn(),
 }));
 
-import { AppProvider } from "./AppContext.tsx";
-import { getAllLists } from "../lib/api/list-client.ts";
-import { useAppContext } from "./useAppContext.ts";
+import { AppProvider } from "./AppContext";
+import { getAllLists } from "../lib/api/list-client";
+import { useAppContext } from "./useAppContext";
 
 function wrapper({ children }: { children: ReactNode }) {
   const { QueryWrapper } = createQueryWrapper();

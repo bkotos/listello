@@ -1,9 +1,9 @@
 import { Check, Hash, Inbox, Plus } from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { useAppContext } from "../contexts/useAppContext.ts";
-import { useCreateListMutation } from "../lib/api/list-queries.ts";
-import { AccountMenu } from "./AccountMenu.tsx";
+import { useAppContext } from "../contexts/useAppContext";
+import { useCreateListMutation } from "../lib/api/list-queries";
+import { AccountMenu } from "./AccountMenu";
 
 type SidebarProps = {
   onNavigate?: () => void;

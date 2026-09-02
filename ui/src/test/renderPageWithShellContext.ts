@@ -2,7 +2,7 @@ import { render } from "@testing-library/react";
 import { createElement, type ReactElement } from "react";
 import { MemoryRouter, Outlet, Route, Routes } from "react-router-dom";
 import { vi } from "vitest";
-import { createQueryWrapper } from "./renderWithQueryClient.tsx";
+import { createQueryWrapper } from "./renderWithQueryClient";
 
 type RenderPageWithShellContextOptions = {
   path: string;

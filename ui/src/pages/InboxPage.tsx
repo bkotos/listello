@@ -1,6 +1,6 @@
 import { Inbox } from "lucide-react";
-import { ContentArea } from "../components/ContentArea.tsx";
-import { useShellContext } from "../lib/useShellContext.ts";
+import { ContentArea } from "../components/ContentArea";
+import { useShellContext } from "../lib/useShellContext";
 
 function InboxPage() {
   const { openSidebar } = useShellContext();

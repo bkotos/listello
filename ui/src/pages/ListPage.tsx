@@ -1,9 +1,9 @@
 import { useParams } from "react-router-dom";
-import { ContentArea } from "../components/ContentArea.tsx";
-import { ItemRow } from "../components/ItemRow.tsx";
-import { useAllItemsQuery } from "../lib/api/item-queries.ts";
-import { useListQuery } from "../lib/api/list-queries.ts";
-import { useShellContext } from "../lib/useShellContext.ts";
+import { ContentArea } from "../components/ContentArea";
+import { ItemRow } from "../components/ItemRow";
+import { useAllItemsQuery } from "../lib/api/item-queries";
+import { useListQuery } from "../lib/api/list-queries";
+import { useShellContext } from "../lib/useShellContext";
 
 function ListPage() {
   const { listId } = useParams();

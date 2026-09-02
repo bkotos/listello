@@ -1,19 +1,19 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderPageWithShellContext } from "../test/renderPageWithShellContext.ts";
-import ListPage from "./ListPage.tsx";
+import { renderPageWithShellContext } from "../test/renderPageWithShellContext";
+import ListPage from "./ListPage";
 
-vi.mock("../lib/api/list-client.ts", () => ({
+vi.mock("../lib/api/list-client", () => ({
   getList: vi.fn(),
 }));
 
-vi.mock("../lib/api/item-client.ts", () => ({
+vi.mock("../lib/api/item-client", () => ({
   getAllItems: vi.fn(),
 }));
 
-import { getAllItems } from "../lib/api/item-client.ts";
-import { getList } from "../lib/api/list-client.ts";
+import { getAllItems } from "../lib/api/item-client";
+import { getList } from "../lib/api/list-client";
 
 const sampleItems = [
   {

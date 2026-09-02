@@ -1,8 +1,8 @@
 import { cleanup, fireEvent, screen } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it } from "vitest";
-import { renderPageWithShellContext } from "../test/renderPageWithShellContext.ts";
-import InboxPage from "./InboxPage.tsx";
+import { renderPageWithShellContext } from "../test/renderPageWithShellContext";
+import InboxPage from "./InboxPage";
 
 afterEach(() => {
   cleanup();

@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it } from "vitest";
-import { AccountMenu } from "./AccountMenu.tsx";
+import { AccountMenu } from "./AccountMenu";
 
 afterEach(() => {
   cleanup();

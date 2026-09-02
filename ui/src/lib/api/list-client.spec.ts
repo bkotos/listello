@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("./util.ts", () => ({
+vi.mock("./util", () => ({
   request: vi.fn(),
 }));
 
-import { createList, getAllLists, getList } from "./list-client.ts";
-import { request } from "./util.ts";
+import { createList, getAllLists, getList } from "./list-client";
+import { request } from "./util";
 
 afterEach(() => {
   vi.clearAllMocks();

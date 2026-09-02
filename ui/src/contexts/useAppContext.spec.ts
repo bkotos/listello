@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { useAppContext } from "./useAppContext.ts";
+import { useAppContext } from "./useAppContext";
 
 describe("useAppContext", () => {
   it("throws when used outside AppProvider", () => {

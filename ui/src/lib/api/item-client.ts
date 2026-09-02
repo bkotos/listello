@@ -1,5 +1,5 @@
 import type { DefineItemRequest, ItemDto } from "api-types";
-import { request } from "./util.ts";
+import { request } from "./util";
 
 export async function getAllItems(
   listId: string,

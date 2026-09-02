@@ -2,11 +2,11 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Sidebar } from "./Sidebar.tsx";
+import { Sidebar } from "./Sidebar";
 
 const createList = vi.fn();
 
-vi.mock("../contexts/useAppContext.ts", () => ({
+vi.mock("../contexts/useAppContext", () => ({
   useAppContext: () => ({
     lists: [
       { ID: "work", Name: "Work" },
@@ -19,7 +19,7 @@ vi.mock("../contexts/useAppContext.ts", () => ({
   }),
 }));
 
-vi.mock("../lib/api/list-queries.ts", () => ({
+vi.mock("../lib/api/list-queries", () => ({
   useCreateListMutation: () => ({ mutate: createList }),
 }));
 

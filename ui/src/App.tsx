@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { AppShell } from "./components/AppShell.tsx";
-import InboxPage from "./pages/InboxPage.tsx";
-import ListPage from "./pages/ListPage.tsx";
+import { AppShell } from "./components/AppShell";
+import InboxPage from "./pages/InboxPage";
+import ListPage from "./pages/ListPage";
 
 function App() {
   return (

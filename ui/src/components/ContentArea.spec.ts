@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import { Inbox } from "lucide-react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ContentArea, type ContentAreaProps } from "./ContentArea.tsx";
+import { ContentArea, type ContentAreaProps } from "./ContentArea";
 
 type RenderContentAreaOptions = Partial<ContentAreaProps>;
 

@@ -1,11 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { defineItem, getAllItems } from "./item-client";
+import { request } from "./util";
 
-vi.mock("./util.ts", () => ({
+vi.mock(import("./util"), () => ({
   request: vi.fn(),
 }));
-
-import { defineItem, getAllItems } from "./item-client.ts";
-import { request } from "./util.ts";
 
 afterEach(() => {
   vi.clearAllMocks();

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createList, getAllLists, getList } from "./list-client.ts";
+import { createList, getAllLists, getList } from "./list-client";
 
 export const listQueryKeys = {
   all: ["lists"] as const,

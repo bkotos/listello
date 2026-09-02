@@ -1,5 +1,5 @@
 import type { ListResponse } from "api-types";
-import { request } from "./util.ts";
+import { request } from "./util";
 
 export async function getAllLists(init?: RequestInit): Promise<ListResponse[]> {
   return request<ListResponse[]>("/api/lists", init);
