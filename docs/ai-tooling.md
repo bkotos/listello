@@ -9,9 +9,12 @@ This repo includes Cursor configuration that guides agents working on Listello: 
 ├── rules/
 │   └── tdd.mdc                              # Always applied
 └── skills/
-    └── create-application-service/
-        ├── SKILL.md                         # Main workflow
-        └── examples.md                      # Annotated ListService / ItemService
+    ├── create-application-service/
+    │   ├── SKILL.md                         # Application-layer use cases
+    │   └── examples.md
+    └── create-adapter-repository/
+        ├── SKILL.md                         # SQLite repository adapters
+        └── examples.md
 ```
 
 ## Always-on rules
@@ -77,6 +80,56 @@ After tests pass, the agent may mention follow-ups (adapter, bootstrap, handlers
 
 See [.cursor/skills/create-application-service/examples.md](../.cursor/skills/create-application-service/examples.md) for annotated `ListService` and `ItemService` patterns.
 
+### `create-adapter-repository`
+
+Implements application repository ports in `api/internal/adapter/` with SQLite: `SQLite{Aggregate}Repository`, SQL queries, schema in `sqlite.go`, and integration tests against a real temp database.
+
+**In scope:** `{aggregate}_repository.go`, `{aggregate}_repository_test.go`, `CREATE TABLE` additions in `sqlite.go`.
+
+**Out of scope** (unless you ask separately): application port definitions, bootstrap wiring, HTTP handlers, CLI commands.
+
+**Prerequisite:** the application port must exist first — use `create-application-service` if it does not.
+
+Skill details: [.cursor/skills/create-adapter-repository/SKILL.md](../.cursor/skills/create-adapter-repository/SKILL.md).
+
+#### How to invoke
+
+| Mode | What to say |
+|------|-------------|
+| **Explicit** | `@create-adapter-repository` or *"use the create-adapter-repository skill"* |
+| **Auto-discover** | Describe the task — e.g. *"Implement SQLiteItemRepository"* or *"Add GetByID to the list adapter"* |
+
+Example prompts:
+
+- *"Implement SQLiteItemRepository for the ItemRepository port"*
+- *"Add an items table and adapter Save method"*
+- *"@create-adapter-repository add GetByID to SQLiteListRepository"*
+
+#### What the agent will do
+
+```mermaid
+flowchart TD
+    start[Your request] --> readPort[Read application port interface]
+    readPort --> portExists{Port exists?}
+    portExists -->|no| stopPort[Stop — use create-application-service first]
+    portExists -->|yes| schema[Add table to sqlite.go migrate if needed]
+    schema --> scaffold[Add/update SQLite repository]
+    scaffold --> red[Write failing integration test]
+    red --> stop[STOP — summarize spec for your review]
+    stop --> approved{You approve?}
+    approved -->|yes| green[Implement minimum SQL]
+    approved -->|no| red
+    green --> done[Tests green — adapter layer only]
+```
+
+Tests use real SQLite via `adapter.OpenSQLite` and `t.TempDir()` — no mocks.
+
+After tests pass, the agent may mention bootstrap wiring as a follow-up but will not implement it unless you ask.
+
+#### Reference implementation
+
+See [.cursor/skills/create-adapter-repository/examples.md](../.cursor/skills/create-adapter-repository/examples.md) for annotated `SQLiteListRepository` patterns.
+
 ## Adding more skills
 
 Follow the same structure:
@@ -90,5 +143,6 @@ Follow the same structure:
 ## Tips for working with agents
 
 - **Approve red before green** — The TDD rule requires a stop after failing specs. Say *"approved, implement"* when you're ready for production code.
-- **Scope requests** — The application-service skill stops at `internal/application`. Name other layers explicitly if you want them in the same task.
+- **Scope requests** — Application and adapter skills stop at their layer. Name bootstrap, handlers, or CLI explicitly if you want them in the same task.
+- **Layer order** — For a full vertical slice, typical order is domain → application port/service → adapter repository → bootstrap → handlers/CLI.
 - **Reload if needed** — After adding or changing skills, start a new chat or reload the window so Cursor picks up new project skills.
