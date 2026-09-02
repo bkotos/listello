@@ -12,8 +12,11 @@ This repo includes Cursor configuration that guides agents working on Listello: 
     ├── create-application-service/
     │   ├── SKILL.md                         # Application-layer use cases
     │   └── examples.md
-    └── create-adapter-repository/
-        ├── SKILL.md                         # SQLite repository adapters
+    ├── create-adapter-repository/
+    │   ├── SKILL.md                         # SQLite repository adapters
+    │   └── examples.md
+    └── create-api-handler/
+        ├── SKILL.md                         # HTTP handlers and routes
         └── examples.md
 ```
 
@@ -130,6 +133,56 @@ After tests pass, the agent may mention bootstrap wiring as a follow-up but will
 
 See [.cursor/skills/create-adapter-repository/examples.md](../.cursor/skills/create-adapter-repository/examples.md) for annotated `SQLiteListRepository` patterns.
 
+### `create-api-handler`
+
+Wires HTTP endpoints in `api/cmd/server/`: handler function, `httptest` tests, route registration in `server.go`, and **request + response DTOs** in `view-dtos/`.
+
+**In scope:** `handlers/{action}_{resource}.go`, handler tests, `server.go` routes, `{Action}{Resource}Request` + `{Resource}Response` DTOs, DTO tests, `make api-types`.
+
+**Out of scope** (unless you ask separately): application services, adapters, bootstrap/`main.go`, UI client, Bruno.
+
+**Prerequisite:** the application service method must exist — use `create-application-service` if it does not.
+
+Skill details: [.cursor/skills/create-api-handler/SKILL.md](../.cursor/skills/create-api-handler/SKILL.md).
+
+#### How to invoke
+
+| Mode | What to say |
+|------|-------------|
+| **Explicit** | `@create-api-handler` or *"use the create-api-handler skill"* |
+| **Auto-discover** | Describe the task — e.g. *"Add POST /api/lists/{id}/items"* or *"Wire up DefineItem as an HTTP endpoint"* |
+
+Example prompts:
+
+- *"Add an API endpoint for DefineItem"*
+- *"Wire POST /api/lists to CreateList"*
+- *"@create-api-handler add GET /api/lists/{id}"*
+
+#### What the agent will do
+
+```mermaid
+flowchart TD
+    start[Your request] --> readSvc[Read application service method]
+    readSvc --> svcExists{Method exists?}
+    svcExists -->|no| stopSvc[Stop — use create-application-service first]
+    svcExists -->|yes| dto[Add request + response DTOs in view-dtos]
+    dto --> red[Write failing handler test]
+    red --> stop[STOP — summarize spec for your review]
+    stop --> approved{You approve?}
+    approved -->|yes| green[Implement handler + route]
+    approved -->|no| red
+    green --> tygo[Run make api-types if DTOs changed]
+    tygo --> done[Tests green — handler layer only]
+```
+
+Handlers decode JSON into request DTOs, call application services, map results to response DTOs, and use `response.WriteJSON` / `WriteError`. Run `make api-types` after DTO changes.
+
+After tests pass, the agent may mention `main.go` bootstrap wiring as a follow-up but will not implement it unless you ask.
+
+#### Reference implementation
+
+See [.cursor/skills/create-api-handler/examples.md](../.cursor/skills/create-api-handler/examples.md) for annotated `CreateList`, `GetList`, and `GetAllLists` patterns.
+
 ## Adding more skills
 
 Follow the same structure:
@@ -144,5 +197,5 @@ Follow the same structure:
 
 - **Approve red before green** — The TDD rule requires a stop after failing specs. Say *"approved, implement"* when you're ready for production code.
 - **Scope requests** — Application and adapter skills stop at their layer. Name bootstrap, handlers, or CLI explicitly if you want them in the same task.
-- **Layer order** — For a full vertical slice, typical order is domain → application port/service → adapter repository → bootstrap → handlers/CLI.
+- **Layer order** — For a full vertical slice: domain → application → adapter → bootstrap → handlers/CLI → UI client.
 - **Reload if needed** — After adding or changing skills, start a new chat or reload the window so Cursor picks up new project skills.
