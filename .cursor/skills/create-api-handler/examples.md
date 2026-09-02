@@ -227,3 +227,39 @@ func WriteError(w http.ResponseWriter, status int, message string) // {"error": 
 | `{Resource}FromDomain` | domain → response | `ItemFromDomain(item)` |
 
 After adding or changing any DTO, run `make api-types`.
+
+## 9. Bruno collection
+
+**File:** `bruno/api/Define Item.bru`
+
+Manual smoke-test request for `POST /api/lists/{id}/items`:
+
+```bru
+meta {
+  name: Define Item
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{apiBase}}/api/lists/LS_1/items
+  body: json
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "title": "Buy milk"
+  }
+}
+```
+
+Key points:
+
+- Add when the handler is green (not during red TDD — no endpoint to hit yet).
+- Match route, method, path params, and JSON body to the handler/DTO.
+- `environments/Local.bru` provides `apiBase`; run the server with `make -C api serve` before sending.
+- Create a list first if the sample ID (`LS_1`) does not exist.

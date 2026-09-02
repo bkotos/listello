@@ -31,7 +31,7 @@ Adapter repository is **not** required for this skill (handler tests use mock se
 
 ## Scope
 
-**In scope:** handler function, handler test (`httptest`), route in `server.go`, request + response DTOs in `view-dtos/`, DTO unit tests, `make api-types` after DTO changes.
+**In scope:** handler function, handler test (`httptest`), route in `server.go`, request + response DTOs in `view-dtos/`, DTO unit tests, `make api-types` after DTO changes, Bruno request in `bruno/api/`.
 
 **Out of scope** (mention as follow-ups only; do not implement unless asked):
 
@@ -39,7 +39,6 @@ Adapter repository is **not** required for this skill (handler tests use mock se
 - Adapter repositories (`api/internal/adapter/`) — use [create-adapter-repository](../create-adapter-repository/SKILL.md)
 - Bootstrap / `main.go` service construction (`api/internal/bootstrap/`, `api/cmd/server/main.go`)
 - UI client (`ui/src/lib/api/`)
-- Bruno collection (`bruno/`)
 
 ## Architecture constraints
 
@@ -87,6 +86,7 @@ If the service method is missing or still `not implemented` → **stop** and use
 3. **JSON response?** → Add or reuse response DTO (`{Resource}Dto` or `{Resource}Response`) + `{Resource}FromDomain`; run `make api-types`.
 4. **New service dependency?** → Add parameter to `newAPIServer` in `server.go`; mention `main.go` bootstrap follow-up.
 5. **Path parameter?** → Use `r.PathValue("name")` (Go 1.22+ route patterns); set `req.SetPathValue` in tests.
+6. **Handler green?** → Add matching Bruno request in `bruno/api/` for manual testing.
 
 ## Scaffold checklist
 
@@ -106,6 +106,7 @@ Task progress:
 - [ ] Update newAPIServer signature if new service dependency
 - [ ] Register new `{Aggregate}Service` in api/.mockery.yml (mocks/ output) if new aggregate; run make -C api mocks
 - [ ] Run make api-types
+- [ ] Add Bruno request in bruno/api/{Action} {Resource}.bru (on green — manual smoke test)
 - [ ] Re-run tests — confirm green
 ```
 
@@ -125,6 +126,7 @@ Task progress:
 | DTO test file | `view-dtos/{resource}_test.go` |
 | Service mocks | `appmocks "github.com/bkotos/listello/internal/application/mocks"` (mockery-generated) |
 | Service handler param | `{aggregate}Service` (e.g. `listService`, `itemService`) — type is `application.{Aggregate}Service` interface |
+| Bruno request | `bruno/api/{Action} {Resource}.bru` (e.g. `Define Item.bru`) |
 
 ## Code templates
 
@@ -218,6 +220,58 @@ func newAPIServer(listService application.ListService, itemService application.I
 	return mux
 }
 ```
+
+### Bruno request (`bruno/api/{Action} {Resource}.bru`)
+
+Add a Bruno request when the handler goes green so the endpoint can be exercised manually against a running server. Use the `Local` environment variable `apiBase` (`http://localhost:8080`).
+
+**GET (no body):**
+
+```bru
+meta {
+  name: Get {Resource}
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{apiBase}}/api/{resources}/LS_1
+}
+```
+
+**POST with JSON body:**
+
+```bru
+meta {
+  name: Define Item
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{apiBase}}/api/lists/LS_1/items
+  body: json
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "title": "Buy milk"
+  }
+}
+```
+
+Key points:
+
+- File lives in `bruno/api/` (same collection as other API requests).
+- `meta.name` matches the action in plain language (e.g. `Define Item`, `Create List`).
+- Use `{{apiBase}}` — do not hardcode the host.
+- JSON field names match the Go request DTO `json` tags (e.g. `"title"` for `DefineItemRequest`).
+- Use a sample list/item ID in the path (e.g. `LS_1`); create prerequisite data first if needed.
+- Increment `seq` so requests stay ordered in the Bruno UI.
 
 ### View DTOs (`internal/view-dtos/{resource}.go`)
 
