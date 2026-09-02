@@ -12,14 +12,14 @@ import (
 	domain "github.com/bkotos/listello/internal/domain"
 )
 
-func newTestRoot(lists *application.ListService) *cobra.Command {
+func newTestRoot(listService application.ListService) *cobra.Command {
 	root := &cobra.Command{
 		Use:           "listello",
 		Short:         "Listello command-line interface",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.AddCommand(NewList(lists))
+	root.AddCommand(NewList(listService))
 	return root
 }
 

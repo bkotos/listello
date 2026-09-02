@@ -10,12 +10,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	application "github.com/bkotos/listello/internal/application"
+	appmocks "github.com/bkotos/listello/internal/application/mocks"
+	domain "github.com/bkotos/listello/internal/domain"
 )
 
 func TestCreateList(t *testing.T) {
 	// Arrange
-	listService := application.NewListService(&stubListRepository{}, &stubEventPublisher{})
+	const listName = "Next actions"
+	expected := domain.List{ID: "LS_1", Name: listName}
+	listService := appmocks.NewMockListService(t)
+	listService.EXPECT().CreateList(listName).Return(expected, nil)
+
 	body := bytes.NewBufferString(`{"name":"Next actions"}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/lists", body)
 	rec := httptest.NewRecorder()
@@ -28,6 +33,6 @@ func TestCreateList(t *testing.T) {
 
 	var received map[string]string
 	require.NoError(t, json.NewDecoder(rec.Body).Decode(&received))
-	assert.Equal(t, "Next actions", received["Name"])
-	assert.NotEmpty(t, received["ID"])
+	assert.Equal(t, listName, received["Name"])
+	assert.Equal(t, expected.ID, received["ID"])
 }

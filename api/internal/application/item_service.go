@@ -9,16 +9,22 @@ type ItemRepository interface {
 	Save(item domain.Item) error
 }
 
-// ItemService coordinates item aggregate commands and persistence.
-type ItemService struct {
+// ItemService defines item application operations.
+type ItemService interface {
+	DefineItem(listID, title string) (domain.Item, error)
+}
+
+type itemService struct {
 	listRepository ListRepository
 	itemRepository ItemRepository
 	eventPublisher EventPublisher
 }
 
+var _ ItemService = (*itemService)(nil)
+
 // NewItemService returns an ItemService backed by the given repositories and publisher.
-func NewItemService(listRepository ListRepository, itemRepository ItemRepository, eventPublisher EventPublisher) *ItemService {
-	return &ItemService{
+func NewItemService(listRepository ListRepository, itemRepository ItemRepository, eventPublisher EventPublisher) ItemService {
+	return &itemService{
 		listRepository: listRepository,
 		itemRepository: itemRepository,
 		eventPublisher: eventPublisher,
@@ -26,7 +32,7 @@ func NewItemService(listRepository ListRepository, itemRepository ItemRepository
 }
 
 // DefineItem defines an item on a list via the domain and persists it.
-func (s *ItemService) DefineItem(listID, title string) (domain.Item, error) {
+func (s *itemService) DefineItem(listID, title string) (domain.Item, error) {
 	list, err := s.listRepository.GetByID(listID)
 	if err != nil {
 		return domain.Item{}, err

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	application "github.com/bkotos/listello/internal/application"
+	appmocks "github.com/bkotos/listello/internal/application/mocks"
 	domain "github.com/bkotos/listello/internal/domain"
 )
 
@@ -19,14 +19,9 @@ func TestGetAllLists(t *testing.T) {
 		{ID: "LS_1", Name: "Work"},
 		{ID: "LS_2", Name: "Personal"},
 	}
-	listService := application.NewListService(
-		&stubListRepository{
-			getAllFn: func() ([]domain.List, error) {
-				return expected, nil
-			},
-		},
-		&stubEventPublisher{},
-	)
+	listService := appmocks.NewMockListService(t)
+	listService.EXPECT().GetAll().Return(expected, nil)
+
 	req := httptest.NewRequest(http.MethodGet, "/api/lists", nil)
 	rec := httptest.NewRecorder()
 

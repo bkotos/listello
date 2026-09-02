@@ -10,7 +10,7 @@ import (
 	"github.com/bkotos/listello/cmd/server/response"
 )
 
-func DefineItem(itemService *application.ItemService) http.HandlerFunc {
+func DefineItem(itemService application.ItemService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		if id == "" {

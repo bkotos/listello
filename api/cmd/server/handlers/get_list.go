@@ -10,7 +10,7 @@ import (
 	"github.com/bkotos/listello/cmd/server/response"
 )
 
-func GetList(listService *application.ListService) http.HandlerFunc {
+func GetList(listService application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		if id == "" {

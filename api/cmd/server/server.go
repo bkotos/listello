@@ -8,7 +8,7 @@ import (
 	"github.com/bkotos/listello/cmd/server/handlers"
 )
 
-func newAPIServer(listService *application.ListService, itemService *application.ItemService) http.Handler {
+func newAPIServer(listService application.ListService, itemService application.ItemService) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", handlers.Health)
 	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))

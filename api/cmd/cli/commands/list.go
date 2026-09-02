@@ -6,11 +6,11 @@ import (
 	application "github.com/bkotos/listello/internal/application"
 )
 
-func NewList(lists *application.ListService) *cobra.Command {
+func NewList(listService application.ListService) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "Manage lists",
 	}
-	cmd.AddCommand(NewListCreate(lists))
+	cmd.AddCommand(NewListCreate(listService))
 	return cmd
 }

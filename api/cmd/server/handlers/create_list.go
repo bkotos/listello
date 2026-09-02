@@ -10,7 +10,7 @@ import (
 	"github.com/bkotos/listello/cmd/server/response"
 )
 
-func CreateList(listService *application.ListService) http.HandlerFunc {
+func CreateList(listService application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			Name string `json:"name"`
