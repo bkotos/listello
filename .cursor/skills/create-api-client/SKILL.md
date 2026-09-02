@@ -1,10 +1,10 @@
 ---
 name: create-api-client
 description: >-
-  Scaffolds UI API client functions and React Query hooks in ui/src/lib/api/
-  that call HTTP endpoints. Use when adding or extending API clients, fetch
-  wrappers, list-client/item-client, React Query hooks, or UI integration with
-  api-types following Listello architecture.
+  Scaffolds UI API client functions in ui/src/lib/api/ that call HTTP
+  endpoints. Use when adding or extending API clients, fetch wrappers,
+  list-client/item-client, or UI integration with api-types following
+  Listello architecture. For React Query hooks, use create-api-queries.
 ---
 
 # Create API Client
@@ -34,9 +34,11 @@ Do not write client tests or fetch wrappers until the handler is implemented.
 
 ## Scope
 
-**In scope:** `{resource}-client.ts`, `{resource}-client.spec.ts`, `{resource}-queries.ts`, `{resource}-queries.spec.ts`.
+**In scope:** `{resource}-client.ts`, `{resource}-client.spec.ts`.
 
 **Out of scope** (mention as follow-ups only; do not implement unless asked):
+
+- React Query hooks (`{resource}-queries.ts`) — use [create-api-queries](../create-api-queries/SKILL.md)
 
 - Go API handlers and DTOs (`api/cmd/server/`, `api/internal/view-dtos/`) — use [create-api-handler](../create-api-handler/SKILL.md)
 - Application / adapter layers
@@ -50,7 +52,6 @@ Do not write client tests or fetch wrappers until the handler is implemented.
 - **Import request and response types from `api-types`** (generated from Go view DTOs via tygo).
 - One client file per API resource (`list-client.ts`, `item-client.ts`).
 - Client functions are thin: build path, method, body; return typed `Promise<T>`.
-- React Query hooks live in `{resource}-queries.ts` — query keys, `useQuery`, `useMutation` with cache invalidation.
 - Pass `RequestInit` (especially `signal`) through on reads for query cancellation.
 - Do not duplicate API path strings across files — add a new function in the resource client.
 
@@ -65,10 +66,10 @@ If the endpoint or types are missing → **stop** and use `create-api-handler` f
 
 ## Decision tree
 
-1. **New resource?** → Create `{resource}-client.ts` + spec; `{resource}-queries.ts` + spec.
-2. **New operation on existing resource?** → Add function to existing client; add hook if needed.
-3. **GET (read)?** → Client function + `useQuery` hook with query key.
-4. **POST/PUT/PATCH (write)?** → Client function + `useMutation` hook; invalidate related query keys on success.
+1. **New resource?** → Create `{resource}-client.ts` + spec.
+2. **New operation on existing resource?** → Add function to existing client.
+3. **GET (read)?** → Client function; then use [create-api-queries](../create-api-queries/SKILL.md) for the hook.
+4. **POST/PUT/PATCH (write)?** → Client function; then use [create-api-queries](../create-api-queries/SKILL.md) for the mutation hook.
 5. **Types missing in `api-types`?** → Stop; add Go DTOs and run `make api-types`.
 
 ## Scaffold checklist
@@ -83,11 +84,8 @@ Task progress:
 - [ ] Run tests — confirm failure is missing behavior
 - [ ] STOP — summarize spec and failure for user review
 - [ ] (After approval) Implement client function(s)
-- [ ] Add query keys + useQuery/useMutation in {resource}-queries.ts
-- [ ] Write failing query hook test in {resource}-queries.spec.ts
-- [ ] STOP — summarize hook spec if written in same batch
-- [ ] (After approval) Implement hooks
 - [ ] Re-run tests — confirm green
+- [ ] (Follow-up) React Query hooks — use [create-api-queries](../create-api-queries/SKILL.md)
 ```
 
 ## Naming conventions
@@ -96,13 +94,10 @@ Task progress:
 |----------|------------|
 | Client file | `{resource}-client.ts` (e.g. `list-client.ts`, `item-client.ts`) |
 | Client test | `{resource}-client.spec.ts` |
-| Queries file | `{resource}-queries.ts` |
-| Queries test | `{resource}-queries.spec.ts` |
 | Client function | `{verb}{Resource}` camelCase (e.g. `getAllLists`, `createList`, `defineItem`) |
-| Query keys | `{resource}QueryKeys` object (e.g. `listQueryKeys`) |
-| Query hook | `use{Resource}Query`, `useAll{Resources}Query` |
-| Mutation hook | `use{Action}{Resource}Mutation` (e.g. `useCreateListMutation`) |
 | Types import | `import type { ListResponse, CreateListRequest } from "api-types"` |
+
+For query hooks, see [create-api-queries](../create-api-queries/SKILL.md).
 
 ## Code templates
 
@@ -140,51 +135,6 @@ export async function {action}{Resource}(body: {Action}{Resource}Request): Promi
 
 For simple single-field bodies where no request type exists yet, accept typed parameters and build the body inline — but prefer `api-types` request interfaces once the Go DTO exists.
 
-### Query keys and useQuery
-
-```ts
-import { useQuery } from "@tanstack/react-query";
-import { getAll{Resources}, get{Resource} } from "./{resource}-client.ts";
-
-export const {resource}QueryKeys = {
-  all: ["{resources}"] as const,
-  detail: (id: string) => ["{resources}", id] as const,
-};
-
-export function useAll{Resources}Query() {
-  return useQuery({
-    queryKey: {resource}QueryKeys.all,
-    queryFn: ({ signal }) => getAll{Resources}({ signal }),
-  });
-}
-
-export function use{Resource}Query(id: string | undefined) {
-  return useQuery({
-    queryKey: {resource}QueryKeys.detail(id ?? ""),
-    queryFn: ({ signal }) => get{Resource}(id!, { signal }),
-    enabled: Boolean(id),
-  });
-}
-```
-
-### useMutation with invalidation
-
-```ts
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { {action}{Resource} } from "./{resource}-client.ts";
-
-export function use{Action}{Resource}Mutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (body: {Action}{Resource}Request) => {action}{Resource}(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: {resource}QueryKeys.all });
-    },
-  });
-}
-```
-
 ## Test templates
 
 ### Client test — mock `request`
@@ -221,32 +171,6 @@ describe("{functionName}", () => {
 
 Assert exact path, HTTP method, and JSON body for writes.
 
-### Query hook test — mock client
-
-```ts
-import { renderHook, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { createQueryWrapper } from "../../test/renderWithQueryClient.tsx";
-
-vi.mock("./{resource}-client.ts", () => ({
-  {action}{Resource}: vi.fn(),
-  getAll{Resources}: vi.fn(),
-}));
-
-import { {action}{Resource}, getAll{Resources} } from "./{resource}-client.ts";
-import { use{Action}{Resource}Mutation, useAll{Resources}Query } from "./{resource}-queries.ts";
-
-describe("use{Action}{Resource}Mutation", () => {
-  it("{action}s a {resource} and invalidates the list query", async () => {
-    // Arrange — mock client, renderHook with createQueryWrapper()
-    // Act — mutation.mutate(...)
-    // Assert — client called, invalidate refetches, data updated
-  });
-});
-```
-
-One behavioral concern per test. Client tests mock `request`; query tests mock the client module.
-
 ## TDD workflow
 
 Follow `.cursor/rules/tdd.mdc`:
@@ -254,15 +178,16 @@ Follow `.cursor/rules/tdd.mdc`:
 1. **Red** — Write failing client test first (function may not exist). Confirm failure is missing behavior.
 2. **Stop** — Summarize spec and failure. **Do not implement** until the user approves.
 3. **Green** — Implement client function. Re-run tests.
-4. Repeat for query hooks if in scope.
 
 Do not write client implementation in the same turn as a new failing spec.
+
+For React Query hooks after the client is green, use [create-api-queries](../create-api-queries/SKILL.md).
 
 ## Verification
 
 ```bash
-# Client + query tests
-cd ui && npm test -- src/lib/api/
+# Client tests
+cd ui && npm test -- src/lib/api/{resource}-client.spec.ts
 
 # Or from repo root
 make test
@@ -273,4 +198,4 @@ make api-types
 
 ## Further reading
 
-Annotated walkthrough of `list-client` and `list-queries`: [examples.md](examples.md)
+Annotated walkthrough of `list-client`: [examples.md](examples.md). For query hooks, see [create-api-queries](../create-api-queries/examples.md).

@@ -1,6 +1,8 @@
 # API Client Examples
 
-Annotated references from the Listello UI. Read when implementing client functions and React Query hooks.
+Annotated references from the Listello UI. Read when implementing client functions.
+
+For React Query hooks, see [create-api-queries/examples.md](../create-api-queries/examples.md).
 
 ## 1. Client module: `list-client.ts`
 
@@ -110,100 +112,7 @@ Key points:
 - Assert path and `RequestInit` exactly.
 - Use `afterEach(() => vi.clearAllMocks())`.
 
-## 4. React Query hooks
-
-**File:** `ui/src/lib/api/list-queries.ts`
-
-```ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createList, getAllLists, getList } from "./list-client.ts";
-
-export const listQueryKeys = {
-  all: ["lists"] as const,
-  detail: (id: string) => ["lists", id] as const,
-};
-
-export function useAllListsQuery() {
-  return useQuery({
-    queryKey: listQueryKeys.all,
-    queryFn: ({ signal }) => getAllLists({ signal }),
-  });
-}
-
-export function useListQuery(listId: string | undefined) {
-  return useQuery({
-    queryKey: listQueryKeys.detail(listId ?? ""),
-    queryFn: ({ signal }) => getList(listId!, { signal }),
-    enabled: Boolean(listId),
-  });
-}
-
-export function useCreateListMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (name: string) => createList(name),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: listQueryKeys.all });
-    },
-  });
-}
-```
-
-Key points:
-
-- Centralized query keys for invalidation.
-- `signal` forwarded from `queryFn` for abort on unmount.
-- `enabled: Boolean(id)` for optional detail queries.
-- Mutations invalidate affected list queries on success.
-
-## 5. Query hook tests
-
-**File:** `ui/src/lib/api/list-queries.spec.ts`
-
-```ts
-vi.mock("./list-client.ts", () => ({
-  createList: vi.fn(),
-  getAllLists: vi.fn(),
-  getList: vi.fn(),
-}));
-
-import { createQueryWrapper } from "../../test/renderWithQueryClient.tsx";
-
-describe("useCreateListMutation", () => {
-  it("creates a list and invalidates the lists query", async () => {
-    vi.mocked(createList).mockResolvedValue({ ID: "LS_2", Name: "Reading" });
-    vi.mocked(getAllLists)
-      .mockResolvedValueOnce(initialLists)
-      .mockResolvedValueOnce(updatedLists);
-
-    const { QueryWrapper } = createQueryWrapper();
-    const { result } = renderHook(
-      () => ({
-        listsQuery: useAllListsQuery(),
-        createMutation: useCreateListMutation(),
-      }),
-      { wrapper: QueryWrapper },
-    );
-
-    await waitFor(() => expect(result.current.listsQuery.data).toEqual(initialLists));
-
-    result.current.createMutation.mutate("Reading");
-
-    await waitFor(() => expect(result.current.createMutation.isSuccess).toBe(true));
-    expect(createList).toHaveBeenCalledWith("Reading");
-    await waitFor(() => expect(result.current.listsQuery.data).toEqual(updatedLists));
-  });
-});
-```
-
-Key points:
-
-- Mock the **client module**, not `request` or `fetch`.
-- Use `createQueryWrapper()` from `ui/src/test/renderWithQueryClient.tsx`.
-- Test cache invalidation by mocking `getAllLists` twice.
-
-## 6. Generated types
+## 4. Generated types
 
 **File:** `api-types/index.ts` (from `make api-types`)
 
@@ -216,7 +125,7 @@ export interface ListResponse {
 
 Request types (e.g. `CreateListRequest`, `DefineItemRequest`) appear here after adding Go DTOs and running `make api-types`. Client functions must use these types — do not hand-write duplicate interfaces.
 
-## 7. App context (out of skill scope)
+## 5. App context (out of skill scope)
 
 **File:** `ui/src/contexts/AppContext.tsx`
 
@@ -228,7 +137,7 @@ import { useAllListsQuery } from "../lib/api/list-queries.ts";
 
 Wire new resources into context or pages separately unless the user asks.
 
-## 8. Next client example: define item
+## 6. Next client example: define item
 
 Given `POST /api/lists/{id}/items` with `DefineItemRequest` / `ItemResponse` in `api-types`:
 
@@ -248,22 +157,6 @@ export async function defineItem(
 
 2. **Client test:** assert path `/api/lists/LS_1/items`, method POST, body `{ title: "Buy milk" }`.
 
-3. **Queries** (`item-queries.ts`):
-
-```ts
-export const itemQueryKeys = {
-  byList: (listId: string) => ["lists", listId, "items"] as const,
-};
-
-export function useDefineItemMutation(listId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (body: DefineItemRequest) => defineItem(listId, body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: itemQueryKeys.byList(listId) });
-    },
-  });
-}
-```
+3. **Queries:** add `useDefineItemMutation` via [create-api-queries](../create-api-queries/SKILL.md).
 
 4. **Prerequisite:** API handler + DTOs via `create-api-handler`, then `make api-types`.

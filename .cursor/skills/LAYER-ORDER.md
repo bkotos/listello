@@ -14,12 +14,14 @@ flowchart TD
     cli[CLI command<br/>create-cli-command]
     handler[API handler<br/>create-api-handler]
     client[API client<br/>create-api-client]
+    queries[React Query hooks<br/>create-api-queries]
 
     domain --> app
     app --> adapter
     app --> cli
     app --> handler
     handler --> client
+    client --> queries
 ```
 
 | Layer | Skill | Requires upstream |
@@ -29,6 +31,7 @@ flowchart TD
 | CLI command | `create-cli-command` | Application service method (implemented) |
 | API handler | `create-api-handler` | Application service method (implemented) |
 | API client | `create-api-client` | API handler + route + `api-types` |
+| React Query hooks | `create-api-queries` | Client function in `{resource}-client.ts` |
 
 Adapter and CLI/handler are **not** prerequisites for each other. Handler tests use stub repositories; CLI tests use stub repositories. Adapter is required for production/bootstrap wiring but not for handler or CLI skills.
 
@@ -94,6 +97,15 @@ If missing → stop, use `create-application-service`.
 If handler missing → stop, use `create-api-handler`.
 If types missing → stop, use `create-api-handler` (DTOs + `make api-types`).
 
+### React Query hooks (`create-api-queries`)
+
+| Check | How to verify |
+|-------|---------------|
+| Client function exists | `{verb}{Resource}(...)` in `ui/src/lib/api/{resource}-client.ts` |
+| Client test passes | `npm test -- src/lib/api/{resource}-client.spec.ts` green |
+
+If client function missing → stop, use `create-api-client`.
+
 ## Full vertical slice order
 
 When building end to end, work in this order:
@@ -105,4 +117,5 @@ When building end to end, work in this order:
 5. API handler **or** CLI command (`create-api-handler` / `create-cli-command`)
 6. `make api-types` (after handler DTOs)
 7. API client (`create-api-client`)
-8. UI pages / context (no skill yet)
+8. React Query hooks (`create-api-queries`)
+9. UI pages / context (no skill yet)
