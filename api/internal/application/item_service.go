@@ -6,7 +6,7 @@ import (
 
 // ItemRepository persists items and their list membership.
 type ItemRepository interface {
-	Save(listID string, item domain.Item) error
+	Save(item domain.Item) error
 }
 
 // ItemService coordinates item aggregate commands and persistence.
@@ -35,7 +35,7 @@ func (s *ItemService) DefineItem(listID, title string) (domain.Item, error) {
 	if err != nil {
 		return domain.Item{}, err
 	}
-	if err := s.itemRepository.Save(listID, item); err != nil {
+	if err := s.itemRepository.Save(item); err != nil {
 		return domain.Item{}, err
 	}
 	if err := s.eventPublisher.Publish(event); err != nil {

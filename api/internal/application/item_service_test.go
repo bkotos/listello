@@ -27,7 +27,7 @@ func TestItemService_DefineItem_PersistsItem(t *testing.T) {
 		GetByID(listID).
 		Return(list, nil)
 	itemRepo.EXPECT().
-		Save(listID, mock.MatchedBy(func(item domain.Item) bool {
+		Save(mock.MatchedBy(func(item domain.Item) bool {
 			return item.ID != ""
 		})).
 		Return(nil)
@@ -60,7 +60,7 @@ func TestItemService_DefineItem_PublishesEvent(t *testing.T) {
 		GetByID(listID).
 		Return(list, nil)
 	itemRepo.EXPECT().
-		Save(listID, mock.AnythingOfType("domain.Item")).
+		Save(mock.AnythingOfType("domain.Item")).
 		Return(nil)
 	publisher.EXPECT().
 		Publish(mock.MatchedBy(func(event domain.Event) bool {

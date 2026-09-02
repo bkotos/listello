@@ -115,16 +115,16 @@ func (_m *MockItemRepository) EXPECT() *MockItemRepository_Expecter {
 }
 
 // Save provides a mock function for the type MockItemRepository
-func (_mock *MockItemRepository) Save(listID string, item domain.Item) error {
-	ret := _mock.Called(listID, item)
+func (_mock *MockItemRepository) Save(item domain.Item) error {
+	ret := _mock.Called(item)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Save")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(string, domain.Item) error); ok {
-		r0 = returnFunc(listID, item)
+	if returnFunc, ok := ret.Get(0).(func(domain.Item) error); ok {
+		r0 = returnFunc(item)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -137,25 +137,19 @@ type MockItemRepository_Save_Call struct {
 }
 
 // Save is a helper method to define mock.On call
-//   - listID string
 //   - item domain.Item
-func (_e *MockItemRepository_Expecter) Save(listID any, item any) *MockItemRepository_Save_Call {
-	return &MockItemRepository_Save_Call{Call: _e.mock.On("Save", listID, item)}
+func (_e *MockItemRepository_Expecter) Save(item any) *MockItemRepository_Save_Call {
+	return &MockItemRepository_Save_Call{Call: _e.mock.On("Save", item)}
 }
 
-func (_c *MockItemRepository_Save_Call) Run(run func(listID string, item domain.Item)) *MockItemRepository_Save_Call {
+func (_c *MockItemRepository_Save_Call) Run(run func(item domain.Item)) *MockItemRepository_Save_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 string
+		var arg0 domain.Item
 		if args[0] != nil {
-			arg0 = args[0].(string)
-		}
-		var arg1 domain.Item
-		if args[1] != nil {
-			arg1 = args[1].(domain.Item)
+			arg0 = args[0].(domain.Item)
 		}
 		run(
 			arg0,
-			arg1,
 		)
 	})
 	return _c
@@ -166,7 +160,7 @@ func (_c *MockItemRepository_Save_Call) Return(err error) *MockItemRepository_Sa
 	return _c
 }
 
-func (_c *MockItemRepository_Save_Call) RunAndReturn(run func(listID string, item domain.Item) error) *MockItemRepository_Save_Call {
+func (_c *MockItemRepository_Save_Call) RunAndReturn(run func(item domain.Item) error) *MockItemRepository_Save_Call {
 	_c.Call.Return(run)
 	return _c
 }
