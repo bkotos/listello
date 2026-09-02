@@ -34,3 +34,12 @@ func ItemFromDomain(item domain.Item) ItemDto {
 		State:       string(item.State),
 	}
 }
+
+// ItemsFromDomain maps domain items to response DTOs.
+func ItemsFromDomain(items []domain.Item) []ItemDto {
+	response := make([]ItemDto, len(items))
+	for i, item := range items {
+		response[i] = ItemFromDomain(item)
+	}
+	return response
+}
