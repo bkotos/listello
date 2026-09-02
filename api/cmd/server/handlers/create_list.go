@@ -10,7 +10,7 @@ import (
 	"github.com/bkotos/listello/cmd/server/response"
 )
 
-func CreateList(lists *application.ListService) http.HandlerFunc {
+func CreateList(listService *application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			Name string `json:"name"`
@@ -24,7 +24,7 @@ func CreateList(lists *application.ListService) http.HandlerFunc {
 			return
 		}
 
-		list, err := lists.CreateList(body.Name)
+		list, err := listService.CreateList(body.Name)
 		if err != nil {
 			response.WriteError(w, http.StatusBadRequest, err.Error())
 			return

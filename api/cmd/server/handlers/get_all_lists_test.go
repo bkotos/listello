@@ -19,7 +19,7 @@ func TestGetAllLists(t *testing.T) {
 		{ID: "LS_1", Name: "Work"},
 		{ID: "LS_2", Name: "Personal"},
 	}
-	lists := application.NewListService(
+	listService := application.NewListService(
 		&stubListRepository{
 			getAllFn: func() ([]domain.List, error) {
 				return expected, nil
@@ -31,7 +31,7 @@ func TestGetAllLists(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	// Act
-	GetAllLists(lists)(rec, req)
+	GetAllLists(listService)(rec, req)
 
 	// Assert
 	assert.Equal(t, http.StatusOK, rec.Code)

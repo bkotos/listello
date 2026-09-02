@@ -49,7 +49,7 @@ Adapter repository is **not** required for this skill (handler tests use stub re
 - Validate required request fields in the handler (empty string, missing body) before calling the service.
 - Use `response.WriteJSON` and `response.WriteError` from `cmd/server/response`.
 - One handler file per endpoint (`create_list.go`, `get_list.go`, …).
-- Handler factory accepts the application service: `func CreateList(lists *application.ListService) http.HandlerFunc`.
+- Handler factory accepts the application service: `func CreateList(listService *application.ListService) http.HandlerFunc`.
 
 ## Preconditions
 
@@ -103,6 +103,7 @@ Task progress:
 | Response mapper | `{Resource}FromDomain`, `{Plural}FromDomain` for slices |
 | DTO test file | `view-dtos/{resource}_test.go` |
 | Stubs | `stubListRepository`, `stubEventPublisher` in `stubs_test.go` |
+| Service handler param | `{aggregate}Service` (e.g. `listService`, `itemService`) — not plural nouns like `lists` or `items` |
 
 ## Code templates
 
@@ -121,7 +122,7 @@ import (
 	"github.com/bkotos/listello/cmd/server/response"
 )
 
-func {Action}(svc *application.{Service}) http.HandlerFunc {
+func {Action}({aggregate}Service *application.{Service}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req viewdto.{Action}{Resource}Request
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -133,7 +134,7 @@ func {Action}(svc *application.{Service}) http.HandlerFunc {
 			return
 		}
 
-		result, err := svc.{Method}(req.{Field} /* map other fields */)
+		result, err := {aggregate}Service.{Method}(req.{Field} /* map other fields */)
 		if err != nil {
 			response.WriteError(w, http.StatusBadRequest, err.Error())
 			return
@@ -147,9 +148,9 @@ func {Action}(svc *application.{Service}) http.HandlerFunc {
 ### Handler factory (GET collection)
 
 ```go
-func GetAll{Resource}(svc *application.{Service}) http.HandlerFunc {
+func GetAll{Resource}({aggregate}Service *application.{Service}) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		all, err := svc.GetAll()
+		all, err := {aggregate}Service.GetAll()
 		if err != nil {
 			response.WriteError(w, http.StatusInternalServerError, err.Error())
 			return
@@ -164,7 +165,7 @@ func GetAll{Resource}(svc *application.{Service}) http.HandlerFunc {
 ```go
 import "strings"
 
-func Get{Resource}(svc *application.{Service}) http.HandlerFunc {
+func Get{Resource}({aggregate}Service *application.{Service}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		if id == "" {
@@ -172,7 +173,7 @@ func Get{Resource}(svc *application.{Service}) http.HandlerFunc {
 			return
 		}
 
-		result, err := svc.GetByID(id)
+		result, err := {aggregate}Service.GetByID(id)
 		if err != nil {
 			if strings.Contains(err.Error(), "not found") {
 				response.WriteError(w, http.StatusNotFound, err.Error())
@@ -190,13 +191,13 @@ func Get{Resource}(svc *application.{Service}) http.HandlerFunc {
 ### Route registration (`server.go`)
 
 ```go
-func newAPIServer(lists *application.ListService /*, items *application.ItemService */) http.Handler {
+func newAPIServer(listService *application.ListService /*, itemService *application.ItemService */) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", handlers.Health)
-	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(lists))
-	mux.HandleFunc("GET /api/lists/{id}", handlers.GetList(lists))
-	mux.HandleFunc("POST /api/lists", handlers.CreateList(lists))
-	// mux.HandleFunc("POST /api/lists/{id}/items", handlers.DefineItem(items))
+	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))
+	mux.HandleFunc("GET /api/lists/{id}", handlers.GetList(listService))
+	mux.HandleFunc("POST /api/lists", handlers.CreateList(listService))
+	// mux.HandleFunc("POST /api/lists/{id}/items", handlers.DefineItem(itemService))
 	return mux
 }
 ```
@@ -260,13 +261,13 @@ Use `httptest` with stub repositories from `stubs_test.go`. Inject a real `appli
 ```go
 func TestCreateList(t *testing.T) {
 	// Arrange
-	svc := application.NewListService(&stubListRepository{}, &stubEventPublisher{})
+	listService := application.NewListService(&stubListRepository{}, &stubEventPublisher{})
 	body := bytes.NewBufferString(`{"name":"Next actions"}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/lists", body)
 	rec := httptest.NewRecorder()
 
 	// Act
-	CreateList(svc)(rec, req)
+	CreateList(listService)(rec, req)
 
 	// Assert
 	assert.Equal(t, http.StatusCreated, rec.Code)
@@ -287,7 +288,7 @@ req.SetPathValue("id", listID)
 
 ```go
 func TestGetList_NotFound(t *testing.T) {
-	svc := application.NewListService(&stubListRepository{
+	listService := application.NewListService(&stubListRepository{
 		getByIDFn: func(id string) (domain.List, error) {
 			return domain.List{}, fmt.Errorf("list %q not found", id)
 		},

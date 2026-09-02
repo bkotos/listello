@@ -10,7 +10,7 @@ import (
 	"github.com/bkotos/listello/cmd/server/response"
 )
 
-func GetList(lists *application.ListService) http.HandlerFunc {
+func GetList(listService *application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		if id == "" {
@@ -18,7 +18,7 @@ func GetList(lists *application.ListService) http.HandlerFunc {
 			return
 		}
 
-		list, err := lists.GetByID(id)
+		list, err := listService.GetByID(id)
 		if err != nil {
 			if strings.Contains(err.Error(), "not found") {
 				response.WriteError(w, http.StatusNotFound, err.Error())

@@ -34,3 +34,11 @@ func NewListService(db *adapter.SQLite, eventLog *os.File) *application.ListServ
 	events := adapter.NewLoggingEventPublisher(eventLog)
 	return application.NewListService(lists, events)
 }
+
+// NewItemService wires list and item persistence and event publishing into ItemService.
+func NewItemService(db *adapter.SQLite, eventLog *os.File) *application.ItemService {
+	listRepo := adapter.NewSQLiteListRepository(db)
+	itemRepo := adapter.NewSQLiteItemRepository(db)
+	events := adapter.NewLoggingEventPublisher(eventLog)
+	return application.NewItemService(listRepo, itemRepo, events)
+}

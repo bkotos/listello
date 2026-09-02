@@ -43,3 +43,14 @@ func (p *stubEventPublisher) Publish(event domain.Event) error {
 	}
 	return nil
 }
+
+type stubItemRepository struct {
+	saveFn func(item domain.Item) error
+}
+
+func (r *stubItemRepository) Save(item domain.Item) error {
+	if r.saveFn != nil {
+		return r.saveFn(item)
+	}
+	return nil
+}

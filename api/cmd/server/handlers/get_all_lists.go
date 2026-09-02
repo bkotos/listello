@@ -9,9 +9,9 @@ import (
 	"github.com/bkotos/listello/cmd/server/response"
 )
 
-func GetAllLists(lists *application.ListService) http.HandlerFunc {
+func GetAllLists(listService *application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		all, err := lists.GetAll()
+		all, err := listService.GetAll()
 		if err != nil {
 			response.WriteError(w, http.StatusInternalServerError, err.Error())
 			return

@@ -18,7 +18,7 @@ func TestGetList(t *testing.T) {
 	// Arrange
 	const listID = "LS_1"
 	expected := domain.List{ID: listID, Name: "Work"}
-	lists := application.NewListService(
+	listService := application.NewListService(
 		&stubListRepository{
 			getByIDFn: func(id string) (domain.List, error) {
 				assert.Equal(t, listID, id)
@@ -32,7 +32,7 @@ func TestGetList(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	// Act
-	GetList(lists)(rec, req)
+	GetList(listService)(rec, req)
 
 	// Assert
 	assert.Equal(t, http.StatusOK, rec.Code)
@@ -46,7 +46,7 @@ func TestGetList(t *testing.T) {
 func TestGetList_NotFound(t *testing.T) {
 	// Arrange
 	const listID = "LS_missing"
-	lists := application.NewListService(
+	listService := application.NewListService(
 		&stubListRepository{
 			getByIDFn: func(id string) (domain.List, error) {
 				return domain.List{}, fmt.Errorf("list %q not found", id)
@@ -59,7 +59,7 @@ func TestGetList_NotFound(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	// Act
-	GetList(lists)(rec, req)
+	GetList(listService)(rec, req)
 
 	// Assert
 	assert.Equal(t, http.StatusNotFound, rec.Code)

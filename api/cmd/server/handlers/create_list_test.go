@@ -15,13 +15,13 @@ import (
 
 func TestCreateList(t *testing.T) {
 	// Arrange
-	lists := application.NewListService(&stubListRepository{}, &stubEventPublisher{})
+	listService := application.NewListService(&stubListRepository{}, &stubEventPublisher{})
 	body := bytes.NewBufferString(`{"name":"Next actions"}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/lists", body)
 	rec := httptest.NewRecorder()
 
 	// Act
-	CreateList(lists)(rec, req)
+	CreateList(listService)(rec, req)
 
 	// Assert
 	assert.Equal(t, http.StatusCreated, rec.Code)

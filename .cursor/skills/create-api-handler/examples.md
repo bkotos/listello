@@ -31,7 +31,7 @@ var req viewdto.CreateListRequest
 if err := json.NewDecoder(r.Body).Decode(&req); err != nil { ... }
 if req.Name == "" { ... }
 
-list, err := lists.CreateList(req.Name)
+list, err := listService.CreateList(req.Name)
 response.WriteJSON(w, http.StatusCreated, viewdto.ListFromDomain(list))
 ```
 
@@ -44,7 +44,7 @@ response.WriteJSON(w, http.StatusCreated, viewdto.ListFromDomain(list))
 **File:** `api/cmd/server/handlers/create_list.go`
 
 ```go
-func CreateList(lists *application.ListService) http.HandlerFunc {
+func CreateList(listService *application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			Name string `json:"name"`
@@ -58,7 +58,7 @@ func CreateList(lists *application.ListService) http.HandlerFunc {
 			return
 		}
 
-		list, err := lists.CreateList(body.Name)
+		list, err := listService.CreateList(body.Name)
 		if err != nil {
 			response.WriteError(w, http.StatusBadRequest, err.Error())
 			return
@@ -89,9 +89,9 @@ Key points:
 **File:** `api/cmd/server/handlers/get_all_lists.go`
 
 ```go
-func GetAllLists(lists *application.ListService) http.HandlerFunc {
+func GetAllLists(listService *application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		all, err := lists.GetAll()
+		all, err := listService.GetAll()
 		if err != nil {
 			response.WriteError(w, http.StatusInternalServerError, err.Error())
 			return
@@ -118,7 +118,7 @@ Key points:
 **File:** `api/cmd/server/handlers/get_list.go`
 
 ```go
-func GetList(lists *application.ListService) http.HandlerFunc {
+func GetList(listService *application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		if id == "" {
@@ -126,7 +126,7 @@ func GetList(lists *application.ListService) http.HandlerFunc {
 			return
 		}
 
-		list, err := lists.GetByID(id)
+		list, err := listService.GetByID(id)
 		if err != nil {
 			if strings.Contains(err.Error(), "not found") {
 				response.WriteError(w, http.StatusNotFound, err.Error())
@@ -171,12 +171,12 @@ getByIDFn: func(id string) (domain.List, error) {
 **File:** `api/cmd/server/server.go`
 
 ```go
-func newAPIServer(lists *application.ListService) http.Handler {
+func newAPIServer(listService *application.ListService) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", handlers.Health)
-	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(lists))
-	mux.HandleFunc("GET /api/lists/{id}", handlers.GetList(lists))
-	mux.HandleFunc("POST /api/lists", handlers.CreateList(lists))
+	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))
+	mux.HandleFunc("GET /api/lists/{id}", handlers.GetList(listService))
+	mux.HandleFunc("POST /api/lists", handlers.CreateList(listService))
 	return mux
 }
 ```
@@ -247,7 +247,7 @@ Given `ItemService.DefineItem(listID, title string)`:
    - `ItemFromDomain(item domain.Item) ItemResponse`
    - Tests in `item_test.go` for `ItemFromDomain`
 2. **Route:** `POST /api/lists/{id}/items`
-3. **Handler:** `define_item.go` — `r.PathValue("id")`, decode `viewdto.DefineItemRequest`, call `items.DefineItem(id, req.Title)`, return `viewdto.ItemFromDomain(item)`
-4. **server.go:** add `items *application.ItemService` param and route
+3. **Handler:** `define_item.go` — `r.PathValue("id")`, decode `viewdto.DefineItemRequest`, call `itemService.DefineItem(id, req.Title)`, return `viewdto.ItemFromDomain(item)`
+4. **server.go:** add `itemService *application.ItemService` param and route
 5. **`make api-types`** — exports new request/response types to the UI
 6. **Follow-up:** `main.go` bootstrap to construct `ItemService` (out of skill scope unless asked)

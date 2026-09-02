@@ -24,10 +24,11 @@ func main() {
 			eventLog := bootstrap.MustOpenEventLog("domain_events.log")
 			defer eventLog.Close()
 
-			lists := bootstrap.NewListService(db, eventLog)
+			listService := bootstrap.NewListService(db, eventLog)
+			itemService := bootstrap.NewItemService(db, eventLog)
 			addr := fmt.Sprintf("%s:%d", host, port)
 			cmd.Printf("listening on http://%s\n", addr)
-			return http.ListenAndServe(addr, newAPIServer(lists))
+			return http.ListenAndServe(addr, newAPIServer(listService, itemService))
 		},
 	}
 
