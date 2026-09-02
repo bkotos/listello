@@ -1,0 +1,20 @@
+meta {
+  name: Define Item
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{apiBase}}/api/lists/LS_1/items
+  body: json
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "title": "Buy milk"
+  }
+}
