@@ -93,4 +93,22 @@ describe("ContentArea", () => {
     // Assert
     expect(onOpenSidebar).toHaveBeenCalledOnce();
   });
+
+  it("clears the capture input after Enter submits a title", () => {
+    // Arrange
+    const onCaptureSubmit = vi.fn();
+    renderContentArea({
+      capturePlaceholder: "Add to Work…",
+      onCaptureSubmit,
+    });
+
+    // Act
+    const input = screen.getByPlaceholderText("Add to Work…");
+    fireEvent.change(input, { target: { value: "Buy milk" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    expect(onCaptureSubmit).toHaveBeenCalledWith("Buy milk");
+    expect(input).toHaveValue("");
+  });
 });
