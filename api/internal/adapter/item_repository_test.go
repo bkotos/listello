@@ -87,3 +87,28 @@ func TestSQLiteItemRepository_GetAll_ReturnsItemsForList(t *testing.T) {
 	require.Len(t, got, 2)
 	assert.Equal(t, []domain.Item{buyMilk, callDentist}, got)
 }
+
+func TestSQLiteItemRepository_SaveAndGetByID(t *testing.T) {
+	// Arrange
+	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = db.Close() })
+
+	listRepo := adapter.NewSQLiteListRepository(db)
+	itemRepo := adapter.NewSQLiteItemRepository(db)
+
+	list, _, err := domain.CreateList("Next actions")
+	require.NoError(t, err)
+	require.NoError(t, listRepo.Save(list))
+
+	item, _, err := domain.DefineItem(list, "Buy milk")
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(item))
+
+	// Act
+	got, err := itemRepo.GetByID(item.ID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, item, got)
+}

@@ -31,6 +31,25 @@ ON CONFLICT(id) DO UPDATE SET
 	return nil
 }
 
+// GetByID returns the item with the given ID.
+func (r *SQLiteItemRepository) GetByID(id string) (domain.Item, error) {
+	const q = `SELECT id, list_id, title, state FROM items WHERE id = ?`
+	var itemID, listID, title, state string
+	err := r.db.QueryRow(q, id).Scan(&itemID, &listID, &title, &state)
+	if err == sql.ErrNoRows {
+		return domain.Item{}, fmt.Errorf("item %q not found", id)
+	}
+	if err != nil {
+		return domain.Item{}, fmt.Errorf("find item: %w", err)
+	}
+	return domain.Item{
+		ID:     itemID,
+		ListID: listID,
+		Title:  title,
+		State:  domain.ItemState(state),
+	}, nil
+}
+
 // GetAll returns all items for the given list in insertion order.
 func (r *SQLiteItemRepository) GetAll(listID string) ([]domain.Item, error) {
 	const q = `SELECT id, list_id, title, state FROM items WHERE list_id = ? ORDER BY rowid`
