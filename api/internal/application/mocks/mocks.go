@@ -36,6 +36,66 @@ func (_m *MockItemService) EXPECT() *MockItemService_Expecter {
 	return &MockItemService_Expecter{mock: &_m.Mock}
 }
 
+// CompleteItem provides a mock function for the type MockItemService
+func (_mock *MockItemService) CompleteItem(itemID string) (domain.Item, error) {
+	ret := _mock.Called(itemID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CompleteItem")
+	}
+
+	var r0 domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (domain.Item, error)); ok {
+		return returnFunc(itemID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) domain.Item); ok {
+		r0 = returnFunc(itemID)
+	} else {
+		r0 = ret.Get(0).(domain.Item)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(itemID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemService_CompleteItem_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CompleteItem'
+type MockItemService_CompleteItem_Call struct {
+	*mock.Call
+}
+
+// CompleteItem is a helper method to define mock.On call
+//   - itemID string
+func (_e *MockItemService_Expecter) CompleteItem(itemID any) *MockItemService_CompleteItem_Call {
+	return &MockItemService_CompleteItem_Call{Call: _e.mock.On("CompleteItem", itemID)}
+}
+
+func (_c *MockItemService_CompleteItem_Call) Run(run func(itemID string)) *MockItemService_CompleteItem_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_CompleteItem_Call) Return(item domain.Item, err error) *MockItemService_CompleteItem_Call {
+	_c.Call.Return(item, err)
+	return _c
+}
+
+func (_c *MockItemService_CompleteItem_Call) RunAndReturn(run func(itemID string) (domain.Item, error)) *MockItemService_CompleteItem_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DefineItem provides a mock function for the type MockItemService
 func (_mock *MockItemService) DefineItem(listID string, title string) (domain.Item, error) {
 	ret := _mock.Called(listID, title)

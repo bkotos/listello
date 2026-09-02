@@ -103,3 +103,67 @@ func TestItemService_GetAll_ReturnsItemsFromRepository(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, expected, received)
 }
+
+func TestItemService_CompleteItem_PersistsItem(t *testing.T) {
+	// Arrange
+	const itemID = "IT_1"
+	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, publisher)
+
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Save(mock.MatchedBy(func(saved domain.Item) bool {
+			return saved.ID == itemID && saved.IsComplete()
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("domain.Event")).
+		Return(nil)
+
+	// Act
+	result, err := svc.CompleteItem(itemID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.True(t, result.IsComplete())
+}
+
+func TestItemService_CompleteItem_PublishesEvent(t *testing.T) {
+	// Arrange
+	const itemID = "IT_1"
+	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, publisher)
+
+	var published domain.Event
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Save(mock.AnythingOfType("domain.Item")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			metadata, ok := event.Metadata.(domain.EventMetadataItemCompleted)
+			return event.Name == domain.EventItemCompleted && ok && metadata.ID == itemID
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.CompleteItem(itemID)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataItemCompleted)
+	require.True(t, ok)
+	assert.Equal(t, itemID, metadata.ID)
+	assert.NotEmpty(t, published.Timestamp)
+}
