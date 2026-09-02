@@ -18,8 +18,11 @@ This repo includes Cursor configuration that guides agents working on Listello: 
     ├── create-api-handler/
     │   ├── SKILL.md                         # HTTP handlers and routes
     │   └── examples.md
-    └── create-cli-command/
-        ├── SKILL.md                         # Cobra CLI commands
+    ├── create-cli-command/
+    │   ├── SKILL.md                         # Cobra CLI commands
+    │   └── examples.md
+    └── create-api-client/
+        ├── SKILL.md                         # UI API client + React Query
         └── examples.md
 ```
 
@@ -235,6 +238,54 @@ After tests pass, the agent may mention `main.go` bootstrap wiring as a follow-u
 
 See [.cursor/skills/create-cli-command/examples.md](../.cursor/skills/create-cli-command/examples.md) for annotated `list create` patterns.
 
+### `create-api-client`
+
+Adds UI client code in `ui/src/lib/api/`: typed fetch wrappers, Vitest specs, React Query hooks, and cache invalidation.
+
+**In scope:** `{resource}-client.ts`, `{resource}-client.spec.ts`, `{resource}-queries.ts`, `{resource}-queries.spec.ts`.
+
+**Out of scope** (unless you ask separately): Go API handlers/DTOs, pages/components, App context, Bruno.
+
+**Prerequisite:** HTTP endpoint exists and `api-types` is current — use `create-api-handler` + `make api-types` if not.
+
+Skill details: [.cursor/skills/create-api-client/SKILL.md](../.cursor/skills/create-api-client/SKILL.md).
+
+#### How to invoke
+
+| Mode | What to say |
+|------|-------------|
+| **Explicit** | `@create-api-client` or *"use the create-api-client skill"* |
+| **Auto-discover** | Describe the task — e.g. *"Add UI client for DefineItem"* or *"Wire up the frontend to POST /api/lists"* |
+
+Example prompts:
+
+- *"Add a client function to call POST /api/lists"*
+- *"Create React Query hooks for items"*
+- *"@create-api-client add defineItem client"*
+
+#### What the agent will do
+
+```mermaid
+flowchart TD
+    start[Your request] --> readApi[Confirm endpoint + api-types]
+    readApi --> typesExist{Types in api-types?}
+    typesExist -->|no| stopTypes[Stop — use create-api-handler + make api-types]
+    typesExist -->|yes| red[Write failing client test]
+    red --> stop[STOP — summarize spec for your review]
+    stop --> approved{You approve?}
+    approved -->|yes| green[Implement client + query hooks]
+    approved -->|no| red
+    green --> done[Tests green — UI client layer only]
+```
+
+Client functions use the shared `request` helper and `api-types`. Tests mock `request` (client) or the client module (queries).
+
+After tests pass, the agent may mention wiring into pages or AppContext as a follow-up but will not implement unless you ask.
+
+#### Reference implementation
+
+See [.cursor/skills/create-api-client/examples.md](../.cursor/skills/create-api-client/examples.md) for annotated `list-client` and `list-queries` patterns.
+
 ## Adding more skills
 
 Follow the same structure:
@@ -249,5 +300,5 @@ Follow the same structure:
 
 - **Approve red before green** — The TDD rule requires a stop after failing specs. Say *"approved, implement"* when you're ready for production code.
 - **Scope requests** — Application and adapter skills stop at their layer. Name bootstrap, handlers, or CLI explicitly if you want them in the same task.
-- **Layer order** — For a full vertical slice: domain → application → adapter → bootstrap → handlers/CLI → UI client.
+- **Layer order** — For a full vertical slice: domain → application → adapter → bootstrap → handlers/CLI → **api-types** → UI client → pages/context.
 - **Reload if needed** — After adding or changing skills, start a new chat or reload the window so Cursor picks up new project skills.
