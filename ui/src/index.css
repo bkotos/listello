@@ -129,3 +129,33 @@ body {
   background-color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l) / 0.12);
   color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l));
 }
+
+.task-row {
+  border: 1px solid transparent;
+  border-radius: var(--bulma-radius);
+  background-color: hsl(0deg 0% 100%);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.check-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 2px solid hsl(0deg 0% 70%);
+  background: transparent;
+  color: transparent;
+  cursor: default;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.check-toggle.is-checked {
+  border-color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l));
+  background-color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l));
+  color: hsl(0deg 0% 100%);
+}
+
+.line-through {
+  text-decoration: line-through;
+}

@@ -49,6 +49,23 @@ describe("ContentArea", () => {
     expect(container.querySelector('[aria-label="Inbox icon"]')).toBeInTheDocument();
   });
 
+  it("renders an optional item count with an accessible label", () => {
+    // Arrange
+    renderContentArea({ count: 2 });
+
+    // Assert
+    expect(screen.getByLabelText("2 items")).toBeInTheDocument();
+  });
+
+  it("uses singular item count label when count is 1", () => {
+    // Arrange
+    renderContentArea({ count: 1 });
+
+    // Assert
+    expect(screen.getByLabelText("1 item")).toBeInTheDocument();
+    expect(screen.queryByLabelText("1 items")).not.toBeInTheDocument();
+  });
+
   it("does not show the open menu button without onOpenSidebar", () => {
     // Arrange
     renderContentArea();

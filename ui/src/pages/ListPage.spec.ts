@@ -15,6 +15,31 @@ vi.mock("../lib/api/item-client.ts", () => ({
 import { getAllItems } from "../lib/api/item-client.ts";
 import { getList } from "../lib/api/list-client.ts";
 
+const sampleItems = [
+  {
+    ID: "IT_1",
+    ListID: "LS_1",
+    ParentID: "",
+    Title: "Buy windshield wipers for truck",
+    Description: "",
+    DueDate: "",
+    Tags: [],
+    Priority: "",
+    State: "outstanding",
+  },
+  {
+    ID: "IT_2",
+    ListID: "LS_1",
+    ParentID: "",
+    Title: "Draft weekly status update",
+    Description: "",
+    DueDate: "",
+    Tags: [],
+    Priority: "",
+    State: "outstanding",
+  },
+];
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
@@ -60,6 +85,38 @@ describe("ListPage", () => {
     });
     expect(screen.getByRole("heading", { name: "List" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Add to List…")).toBeInTheDocument();
+  });
+
+  it("renders items from the API", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+    expect(screen.getByText("Draft weekly status update")).toBeInTheDocument();
+    expect(screen.queryByText("No items yet.")).not.toBeInTheDocument();
+  });
+
+  it("renders the item count in the header", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByLabelText("2 items")).toBeInTheDocument();
+    });
   });
 
   it("calls openSidebar when the open menu button is clicked", async () => {

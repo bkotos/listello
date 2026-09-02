@@ -3,6 +3,7 @@ import { PanelLeft, Plus } from "lucide-react";
 
 export type ContentAreaProps = {
   title: string;
+  count?: number;
   icon?: ReactNode;
   capturePlaceholder: string;
   onOpenSidebar?: () => void;
@@ -11,6 +12,7 @@ export type ContentAreaProps = {
 
 export function ContentArea({
   title,
+  count,
   icon,
   capturePlaceholder,
   onOpenSidebar,
@@ -36,6 +38,14 @@ export function ContentArea({
         <div className="is-flex is-align-items-center" style={{ gap: "0.5rem" }}>
           {icon}
           <h1 className="is-size-4 has-text-weight-semibold mb-0">{title}</h1>
+          {count !== undefined && (
+            <span
+              className="is-family-code muted"
+              aria-label={`${count} ${count === 1 ? "item" : "items"}`}
+            >
+              {count}
+            </span>
+          )}
         </div>
       </header>
 
