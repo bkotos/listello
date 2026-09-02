@@ -21,7 +21,7 @@ func newItemListTestRoot(itemService application.ItemService) *cobra.Command {
 		SilenceErrors: true,
 	}
 	itemCmd := &cobra.Command{Use: "item"}
-	itemCmd.AddCommand(NewItemList(itemService))
+	itemCmd.AddCommand(NewItemList(testContainer{item: itemService}))
 	root.AddCommand(itemCmd)
 	return root
 }

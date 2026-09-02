@@ -20,7 +20,7 @@ func newItemTestRoot(itemService application.ItemService) *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.AddCommand(NewItem(itemService))
+	root.AddCommand(NewItem(testContainer{item: itemService}))
 	return root
 }
 

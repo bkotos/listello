@@ -19,7 +19,7 @@ func newTestRoot(listService application.ListService) *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.AddCommand(NewList(listService))
+	root.AddCommand(NewList(testContainer{list: listService}))
 	return root
 }
 

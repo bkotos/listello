@@ -6,19 +6,45 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bkotos/listello/cmd/cli/commands"
-	application "github.com/bkotos/listello/internal/application"
+	"github.com/bkotos/listello/internal/bootstrap"
 )
 
-func newRoot(listService application.ListService, itemService application.ItemService) *cobra.Command {
+func newRoot() (*cobra.Command, func()) {
+	var dbPath string
+	var cleanup func()
+
+	c := &container{}
 	root := &cobra.Command{
 		Use:           "listello",
 		Short:         "Listello command-line interface",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.AddCommand(commands.NewList(listService))
-	root.AddCommand(commands.NewItem(itemService))
-	return root
+	root.PersistentFlags().StringVar(&dbPath, "db", "listello.db", "SQLite database path")
+
+	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if c.list != nil {
+			return nil
+		}
+
+		db := bootstrap.MustOpenDB(dbPath)
+		eventLog := bootstrap.MustOpenEventLog("domain_events.log")
+		c.list = bootstrap.NewListService(db, eventLog)
+		c.item = bootstrap.NewItemService(db, eventLog)
+		cleanup = func() {
+			db.Close()
+			eventLog.Close()
+		}
+		return nil
+	}
+
+	root.AddCommand(commands.NewList(c))
+	root.AddCommand(commands.NewItem(c))
+	return root, func() {
+		if cleanup != nil {
+			cleanup()
+		}
+	}
 }
 
 func run(root *cobra.Command) error {

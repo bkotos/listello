@@ -4,17 +4,15 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
-	application "github.com/bkotos/listello/internal/application"
 )
 
-func NewListCreate(listService application.ListService) *cobra.Command {
+func NewListCreate(container Container) *cobra.Command {
 	return &cobra.Command{
 		Use:   "create <name>",
 		Short: "Create a list",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			list, err := listService.CreateList(args[0])
+			list, err := container.ListService().CreateList(args[0])
 			if err != nil {
 				return err
 			}

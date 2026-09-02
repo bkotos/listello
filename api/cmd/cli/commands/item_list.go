@@ -5,11 +5,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	application "github.com/bkotos/listello/internal/application"
 	domain "github.com/bkotos/listello/internal/domain"
 )
 
-func NewItemList(itemService application.ItemService) *cobra.Command {
+func NewItemList(container Container) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list <list-id>",
 		Short: "List items on a list",
@@ -17,7 +16,7 @@ func NewItemList(itemService application.ItemService) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			listID := args[0]
 
-			items, err := itemService.GetAll(listID)
+			items, err := container.ItemService().GetAll(listID)
 			if err != nil {
 				return err
 			}

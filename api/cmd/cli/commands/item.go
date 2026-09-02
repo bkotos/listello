@@ -2,16 +2,14 @@ package commands
 
 import (
 	"github.com/spf13/cobra"
-
-	application "github.com/bkotos/listello/internal/application"
 )
 
-func NewItem(itemService application.ItemService) *cobra.Command {
+func NewItem(container Container) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "item",
 		Short: "Manage items",
 	}
-	cmd.AddCommand(NewItemDefine(itemService))
-	cmd.AddCommand(NewItemList(itemService))
+	cmd.AddCommand(NewItemDefine(container))
+	cmd.AddCommand(NewItemList(container))
 	return cmd
 }

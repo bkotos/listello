@@ -2,15 +2,13 @@ package commands
 
 import (
 	"github.com/spf13/cobra"
-
-	application "github.com/bkotos/listello/internal/application"
 )
 
-func NewList(listService application.ListService) *cobra.Command {
+func NewList(container Container) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "Manage lists",
 	}
-	cmd.AddCommand(NewListCreate(listService))
+	cmd.AddCommand(NewListCreate(container))
 	return cmd
 }

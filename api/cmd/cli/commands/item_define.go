@@ -4,11 +4,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
-	application "github.com/bkotos/listello/internal/application"
 )
 
-func NewItemDefine(itemService application.ItemService) *cobra.Command {
+func NewItemDefine(container Container) *cobra.Command {
 	return &cobra.Command{
 		Use:   "define <list-id> <title>",
 		Short: "Define an item on a list",
@@ -17,7 +15,7 @@ func NewItemDefine(itemService application.ItemService) *cobra.Command {
 			listID := args[0]
 			title := args[1]
 
-			item, err := itemService.DefineItem(listID, title)
+			item, err := container.ItemService().DefineItem(listID, title)
 			if err != nil {
 				return err
 			}
