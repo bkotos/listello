@@ -10,6 +10,7 @@ func NewItem(container Container) *cobra.Command {
 		Short: "Manage items",
 	}
 	cmd.AddCommand(NewItemDefine(container))
+	cmd.AddCommand(NewItemComplete(container))
 	cmd.AddCommand(NewItemList(container))
 	return cmd
 }

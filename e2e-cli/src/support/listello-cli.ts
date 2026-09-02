@@ -45,3 +45,11 @@ export function parseCreatedListId(output: string): string {
   }
   return match[1];
 }
+
+export function parseDefinedItemId(output: string): string {
+  const match = output.match(/Defined item ".+" \((IT_[^)]+)\)/);
+  if (!match) {
+    throw new Error(`could not parse item id from output: ${output}`);
+  }
+  return match[1];
+}

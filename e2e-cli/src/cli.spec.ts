@@ -5,6 +5,7 @@ import {
   createWorkdir,
   dbPathFor,
   parseCreatedListId,
+  parseDefinedItemId,
   removeWorkdir,
   runListello,
 } from "./support/listello-cli";
@@ -66,6 +67,33 @@ describe("listello cli", () => {
       expect(result.stdout).toMatch(
         new RegExp(`^Defined item "Buy milk" \\(IT_[^)]+\\) on list ${listId}$`),
       );
+    });
+  });
+
+  describe("item complete", () => {
+    it("completes an item", async () => {
+      // Arrange
+      const createResult = await runListello(dbPath, [
+        "list",
+        "create",
+        "Groceries",
+      ]);
+      const listId = parseCreatedListId(createResult.stdout);
+      const defineResult = await runListello(dbPath, [
+        "item",
+        "define",
+        listId,
+        "Buy milk",
+      ]);
+      const itemId = parseDefinedItemId(defineResult.stdout);
+
+      // Act
+      const result = await runListello(dbPath, ["item", "complete", itemId]);
+
+      // Assert
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toBe("");
+      expect(result.stdout).toBe(`Completed item "Buy milk" (${itemId})`);
     });
   });
 
