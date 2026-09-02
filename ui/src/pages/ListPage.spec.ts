@@ -170,6 +170,48 @@ describe("ListPage", () => {
     expect(defineItem).toHaveBeenCalledWith("LS_1", { title: "Buy milk" });
   });
 
+  it("reloads items after Enter is pressed in the capture input", async () => {
+    // Arrange
+    const updatedItems = [
+      {
+        ID: "IT_3",
+        ListID: "LS_1",
+        ParentID: "",
+        Title: "Buy milk",
+        Description: "",
+        DueDate: "",
+        Tags: [],
+        Priority: "",
+        State: "outstanding",
+      },
+    ];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(updatedItems);
+    vi.mocked(defineItem).mockResolvedValue(updatedItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Work" })).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+
+    // Act
+    const input = screen.getByPlaceholderText("Add to Work…");
+    fireEvent.change(input, { target: { value: "Buy milk" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it("calls openSidebar when the open menu button is clicked", async () => {
     // Arrange
     vi.mocked(getList).mockResolvedValue({ ID: "LS_2", Name: "Personal" });

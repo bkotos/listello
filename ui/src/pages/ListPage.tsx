@@ -1,24 +1,27 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { ContentArea } from "../components/ContentArea";
 import { ItemRow } from "../components/ItemRow";
 import { defineItem } from "../lib/api/item-client";
-import { useAllItemsQuery } from "../lib/api/item-queries";
+import { itemQueryKeys, useAllItemsQuery } from "../lib/api/item-queries";
 import { useListQuery } from "../lib/api/list-queries";
 import { useShellContext } from "../lib/useShellContext";
 
 function ListPage() {
   const { listId } = useParams();
+  const queryClient = useQueryClient();
   const { openSidebar } = useShellContext();
   const { data: list } = useListQuery(listId);
   const { data: items } = useAllItemsQuery(listId);
   const title = list?.Name ?? "List";
 
-  function handleCaptureSubmit(itemTitle: string) {
+  async function handleCaptureSubmit(itemTitle: string) {
     if (!listId) {
       return;
     }
 
-    void defineItem(listId, { title: itemTitle });
+    await defineItem(listId, { title: itemTitle });
+    await queryClient.invalidateQueries({ queryKey: itemQueryKeys.byList(listId) });
   }
 
   return (
