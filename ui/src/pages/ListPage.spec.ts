@@ -8,6 +8,11 @@ vi.mock("../lib/api/list-client.ts", () => ({
   getList: vi.fn(),
 }));
 
+vi.mock("../lib/api/item-client.ts", () => ({
+  getAllItems: vi.fn(),
+}));
+
+import { getAllItems } from "../lib/api/item-client.ts";
 import { getList } from "../lib/api/list-client.ts";
 
 afterEach(() => {
@@ -19,6 +24,7 @@ describe("ListPage", () => {
   it("renders the list title from the API", async () => {
     // Arrange
     vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue([]);
     renderPageWithShellContext(createElement(ListPage), {
       path: "lists/:listId",
       initialEntry: "/lists/LS_1",
@@ -39,6 +45,7 @@ describe("ListPage", () => {
   it("renders a generic title when the list cannot be loaded", async () => {
     // Arrange
     vi.mocked(getList).mockRejectedValue(new Error("not found"));
+    vi.mocked(getAllItems).mockResolvedValue([]);
     renderPageWithShellContext(createElement(ListPage), {
       path: "lists/:listId",
       initialEntry: "/lists/LS_missing",
@@ -58,6 +65,7 @@ describe("ListPage", () => {
   it("calls openSidebar when the open menu button is clicked", async () => {
     // Arrange
     vi.mocked(getList).mockResolvedValue({ ID: "LS_2", Name: "Personal" });
+    vi.mocked(getAllItems).mockResolvedValue([]);
     const { openSidebar } = renderPageWithShellContext(createElement(ListPage), {
       path: "lists/:listId",
       initialEntry: "/lists/LS_2",
