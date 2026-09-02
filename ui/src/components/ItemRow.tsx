@@ -2,6 +2,7 @@ import type { ItemDto } from "api-types";
 
 export type ItemRowProps = {
   item: ItemDto;
+  onComplete: (itemId: string) => void;
 };
 
 function CheckIcon() {
@@ -22,7 +23,7 @@ function isComplete(item: ItemDto): boolean {
   return item.State === "complete";
 }
 
-export function ItemRow({ item }: ItemRowProps) {
+export function ItemRow({ item, onComplete }: ItemRowProps) {
   const completed = isComplete(item);
 
   return (
@@ -35,6 +36,13 @@ export function ItemRow({ item }: ItemRowProps) {
         aria-label={completed ? "Mark incomplete" : "Mark complete"}
         className={`check-toggle${completed ? " is-checked" : ""}`}
         style={{ height: "1.25rem", width: "1.25rem", marginTop: "0.125rem" }}
+        onClick={
+          !completed
+            ? () => {
+                onComplete(item.ID);
+              }
+            : undefined
+        }
       >
         {completed ? <CheckIcon /> : null}
       </button>

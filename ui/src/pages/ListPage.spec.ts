@@ -11,9 +11,10 @@ vi.mock("../lib/api/list-client", () => ({
 vi.mock("../lib/api/item-client", () => ({
   getAllItems: vi.fn(),
   defineItem: vi.fn(),
+  completeItem: vi.fn(),
 }));
 
-import { defineItem, getAllItems } from "../lib/api/item-client";
+import { completeItem, defineItem, getAllItems } from "../lib/api/item-client";
 import { getList } from "../lib/api/list-client";
 
 const sampleItems = [
@@ -229,5 +230,59 @@ describe("ListPage", () => {
 
     // Assert
     expect(openSidebar).toHaveBeenCalledOnce();
+  });
+
+  it("calls completeItem when the checkbox is clicked", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(completeItem).mockResolvedValue({
+      ...sampleItems[0],
+      State: "complete",
+    });
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getAllByRole("button", { name: "Mark complete" })[0]);
+
+    // Assert
+    expect(completeItem).toHaveBeenCalledWith("IT_1");
+  });
+
+  it("reloads items after completeItem is called", async () => {
+    // Arrange
+    const updatedItems = [
+      { ...sampleItems[0], State: "complete" },
+      sampleItems[1],
+    ];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(sampleItems)
+      .mockResolvedValueOnce(updatedItems);
+    vi.mocked(completeItem).mockResolvedValue(updatedItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+
+    // Act
+    fireEvent.click(screen.getAllByRole("button", { name: "Mark complete" })[0]);
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
   });
 });

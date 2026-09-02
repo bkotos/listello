@@ -1,7 +1,7 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import type { ItemDto } from "api-types";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ItemRow } from "./ItemRow";
 
 const baseItem: ItemDto = {
@@ -23,7 +23,7 @@ afterEach(() => {
 describe("ItemRow", () => {
   it("renders an outstanding item without completed styling", () => {
     // Arrange
-    render(createElement(ItemRow, { item: baseItem }));
+    render(createElement(ItemRow, { item: baseItem, onComplete: vi.fn() }));
 
     // Assert
     const toggle = screen.getByRole("button", { name: "Mark complete" });
@@ -41,6 +41,7 @@ describe("ItemRow", () => {
     render(
       createElement(ItemRow, {
         item: { ...baseItem, State: "complete" },
+        onComplete: vi.fn(),
       }),
     );
 
@@ -55,6 +56,7 @@ describe("ItemRow", () => {
     render(
       createElement(ItemRow, {
         item: { ...baseItem, State: "complete" },
+        onComplete: vi.fn(),
       }),
     );
 
@@ -63,5 +65,17 @@ describe("ItemRow", () => {
     expect(title).toHaveClass("is-size-6");
     expect(title).toHaveClass("muted");
     expect(title).toHaveClass("line-through");
+  });
+
+  it("calls onComplete when the checkbox is clicked", () => {
+    // Arrange
+    const onComplete = vi.fn();
+    render(createElement(ItemRow, { item: baseItem, onComplete }));
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
+
+    // Assert
+    expect(onComplete).toHaveBeenCalledWith("IT_1");
   });
 });
