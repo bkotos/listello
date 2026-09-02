@@ -17,3 +17,9 @@ export async function defineItem(
     body: JSON.stringify(body),
   });
 }
+
+export async function completeItem(itemId: string): Promise<ItemDto> {
+  return request<ItemDto>(`/api/items/${itemId}/complete`, {
+    method: "POST",
+  });
+}
