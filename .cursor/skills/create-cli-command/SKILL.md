@@ -2,8 +2,9 @@
 name: create-cli-command
 description: >-
   Scaffolds and wires Cobra CLI commands in api/cmd/cli/ that call application
-  services. Use when adding or extending CLI commands, cobra subcommands, root
-  wiring, or listello list/item commands following Listello hexagonal architecture.
+  services, plus e2e tests in e2e-cli/ (Vitest + zx). Use when adding or
+  extending CLI commands, cobra subcommands, root wiring, or listello list/item
+  commands following Listello hexagonal architecture.
 ---
 
 # Create CLI Command
@@ -30,7 +31,7 @@ Adapter repository is **not** required for this skill (command tests use mock se
 
 ## Scope
 
-**In scope:** Cobra command factory, command test (`cobra.Execute` + `SetArgs`), wiring on parent command or `root.go`, stdout/stderr assertions.
+**In scope:** Cobra command factory, command test (`cobra.Execute` + `SetArgs`), wiring on parent command or `root.go`, stdout/stderr assertions, e2e test in `e2e-cli/` (Vitest + zx, isolated `--db` path).
 
 **Out of scope** (mention as follow-ups only; do not implement unless asked):
 
@@ -48,7 +49,7 @@ Adapter repository is **not** required for this skill (command tests use mock se
 - Mutating commands print a one-line confirmation to `cmd.OutOrStdout()`.
 - Return application/domain errors from `RunE`; root prints `error: %v` to stderr and exits non-zero.
 - Do not print domain events in CLI output (events go to the event log via the application layer).
-- Factory accepts the service **interface**: `func NewListCreate(listService application.ListService) *cobra.Command`.
+- Factory accepts the shared **`commands.Container`** interface (see `api/cmd/cli/commands/container.go`); leaf commands call `container.{Aggregate}Service().{Method}(...)`.
 
 ## Do not duplicate domain logic
 
@@ -99,6 +100,8 @@ Task progress:
 - [ ] Wire command on parent (AddCommand) or root.go
 - [ ] Update newRoot signature if new service dependency
 - [ ] Re-run tests — confirm green
+- [ ] Add e2e test in `e2e-cli/src/cli.spec.ts` (Vitest + zx, `--db` to temp sqlite file)
+- [ ] Re-run e2e tests — confirm green
 ```
 
 ## Naming conventions
@@ -109,12 +112,14 @@ Task progress:
 | Leaf command file | `{resource}_{action}.go` (e.g. `list_create.go`, `item_define.go`) |
 | Test file | `{resource}_{action}_test.go` |
 | Test package | `commands` (same package) |
-| Parent factory | `New{Resource}(svc) *cobra.Command` |
-| Leaf factory | `New{Resource}{Action}(svc) *cobra.Command` |
+| Parent factory | `New{Resource}(container) *cobra.Command` |
+| Leaf factory | `New{Resource}{Action}(container) *cobra.Command` |
 | Test name | `Test{Resource}{Action}_{Behavior}` |
 | Test helper | `new{Resource}TestRoot(svc) *cobra.Command` in test file |
 | Service mocks | `appmocks "github.com/bkotos/listello/internal/application/mocks"` (mockery-generated) |
-| Service param | `{aggregate}Service` — type is `application.{Aggregate}Service` interface |
+| E2e spec | `e2e-cli/src/cli.spec.ts` (extend existing file or add `{resource}_{action}.spec.ts`) |
+| E2e helper | `e2e-cli/src/support/listello-cli.ts` — `runListello(dbPath, args)` |
+| Service param | `container` — type is `commands.Container` |
 
 ## Code templates
 
@@ -129,12 +134,12 @@ import (
 	application "github.com/bkotos/listello/internal/application"
 )
 
-func New{Resource}({aggregate}Service application.{Service}) *cobra.Command {
+func New{Resource}(container Container) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "{resource}",
 		Short: "Manage {resources}",
 	}
-	cmd.AddCommand(New{Resource}{Action}({aggregate}Service))
+	cmd.AddCommand(New{Resource}{Action}(container))
 	return cmd
 }
 ```
@@ -148,17 +153,15 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
-	application "github.com/bkotos/listello/internal/application"
 )
 
-func New{Resource}{Action}({aggregate}Service application.{Service}) *cobra.Command {
+func New{Resource}{Action}(container Container) *cobra.Command {
 	return &cobra.Command{
 		Use:   "{action} <arg>",
 		Short: "{Action} a {resource}",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			result, err := {aggregate}Service.{Method}(args[0] /* map other args/flags */)
+			result, err := container.{Aggregate}Service().{Method}(args[0] /* map other args/flags */)
 			if err != nil {
 				return err
 			}
@@ -175,26 +178,14 @@ func New{Resource}{Action}({aggregate}Service application.{Service}) *cobra.Comm
 Use:   "{action} <list-id> <title>",
 Args:  cobra.ExactArgs(2),
 RunE: func(cmd *cobra.Command, args []string) error {
-	item, err := {aggregate}Service.{Method}(args[0], args[1])
+	item, err := container.{Aggregate}Service().{Method}(args[0], args[1])
 	// ...
 },
 ```
 
 ### Root wiring (`root.go`)
 
-```go
-func newRoot(listService application.ListService, itemService application.ItemService) *cobra.Command {
-	root := &cobra.Command{
-		Use:           "listello",
-		Short:         "Listello command-line interface",
-		SilenceUsage:  true,
-		SilenceErrors: true,
-	}
-	root.AddCommand(commands.NewList(listService))
-	root.AddCommand(commands.NewItem(itemService))
-	return root
-}
-```
+Commands receive the runtime `container` from `main`; bootstrap opens SQLite using the root `--db` flag (default `listello.db`) in `PersistentPreRunE`. See `api/cmd/cli/root.go`.
 
 ## Test templates
 
@@ -236,6 +227,54 @@ func Test{Resource}{Action}_PrintsConfirmation(t *testing.T) {
 
 One behavioral concern per test. Mock the service interface — do **not** stub repository ports. Do **not** add command tests for domain validation failures.
 
+## E2E tests (`e2e-cli/`)
+
+After command unit tests are green, add an e2e test that runs the real CLI process end to end.
+
+**Stack:** Vitest (test runner) + [zx](https://google.github.io/zx/) (spawn CLI, capture stdout/stderr). Package: `e2e-cli/` at repo root.
+
+**Isolation:** Always pass `--db` with an absolute path to a temp sqlite file. Use helpers in `e2e-cli/src/support/listello-cli.ts`:
+
+- `createWorkdir()` / `removeWorkdir()` — temp directory per test
+- `dbPathFor(workdir)` — sqlite path inside that directory
+- `runListello(dbPath, args)` — runs `go run ./cmd/cli --db <path> ...` from `api/`
+
+Do **not** rely on the default `listello.db` in e2e tests.
+
+**What to test:**
+
+- Happy-path integration: invoke the command, assert exit code 0, assert confirmation on stdout, assert stderr is empty
+- Read/query commands: assert human-readable output format
+- Multi-step flows when needed (e.g. `list create` then `item define` — reuse helpers like `parseCreatedListId`)
+
+**What not to test in e2e** (same boundaries as unit command tests):
+
+- Domain validation failures (e.g. create list named "Inbox") — those belong in `internal/domain`
+- Re-testing every field on returned aggregates — assert CLI output only
+
+**Structure:** Arrange / Act / Assert comments in each test; `beforeEach` creates workdir + db path; `afterEach` removes workdir; `beforeAll` sets `$.verbose = false`.
+
+### E2E template
+
+```typescript
+describe("{resource} {action}", () => {
+  it("{does the thing}", async () => {
+    // Arrange
+    const args = ["{resource}", "{action}", /* args */];
+
+    // Act
+    const result = await runListello(dbPath, args);
+
+    // Assert
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toMatch(/Expected confirmation/);
+  });
+});
+```
+
+Add new scenarios to `e2e-cli/src/cli.spec.ts` (or a new `*.spec.ts` under `e2e-cli/src/`). Reuse `listello-cli.ts`; add parse helpers there when a test needs IDs from prior command output.
+
 ## Output conventions
 
 | Situation | Behavior |
@@ -264,6 +303,13 @@ cd api && go test ./cmd/cli/commands/...
 
 # Full API tests
 make -C api test
+
+# CLI e2e tests (Vitest + zx, isolated --db)
+npm test -w e2e-cli
+# or: make test-e2e-cli
+
+# All tests (API + UI + e2e-cli) — also runs in CI via .github/workflows/test.yml
+make test
 
 # Manual smoke test (after bootstrap wiring)
 make -C api run ARGS='list create "Next actions"'
