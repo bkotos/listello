@@ -102,6 +102,68 @@ func (_c *MockItemService_DefineItem_Call) RunAndReturn(run func(listID string, 
 	return _c
 }
 
+// GetAll provides a mock function for the type MockItemService
+func (_mock *MockItemService) GetAll(listID string) ([]domain.Item, error) {
+	ret := _mock.Called(listID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAll")
+	}
+
+	var r0 []domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) ([]domain.Item, error)); ok {
+		return returnFunc(listID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) []domain.Item); ok {
+		r0 = returnFunc(listID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.Item)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(listID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemService_GetAll_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAll'
+type MockItemService_GetAll_Call struct {
+	*mock.Call
+}
+
+// GetAll is a helper method to define mock.On call
+//   - listID string
+func (_e *MockItemService_Expecter) GetAll(listID any) *MockItemService_GetAll_Call {
+	return &MockItemService_GetAll_Call{Call: _e.mock.On("GetAll", listID)}
+}
+
+func (_c *MockItemService_GetAll_Call) Run(run func(listID string)) *MockItemService_GetAll_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_GetAll_Call) Return(items []domain.Item, err error) *MockItemService_GetAll_Call {
+	_c.Call.Return(items, err)
+	return _c
+}
+
+func (_c *MockItemService_GetAll_Call) RunAndReturn(run func(listID string) ([]domain.Item, error)) *MockItemService_GetAll_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockListService creates a new instance of MockListService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockListService(t interface {

@@ -7,11 +7,13 @@ import (
 // ItemRepository persists items and their list membership.
 type ItemRepository interface {
 	Save(item domain.Item) error
+	GetAll(listID string) ([]domain.Item, error)
 }
 
 // ItemService defines item application operations.
 type ItemService interface {
 	DefineItem(listID, title string) (domain.Item, error)
+	GetAll(listID string) ([]domain.Item, error)
 }
 
 type itemService struct {
@@ -48,4 +50,9 @@ func (s *itemService) DefineItem(listID, title string) (domain.Item, error) {
 		return domain.Item{}, err
 	}
 	return item, nil
+}
+
+// GetAll returns all items for the given list from persistence.
+func (s *itemService) GetAll(listID string) ([]domain.Item, error) {
+	return s.itemRepository.GetAll(listID)
 }

@@ -114,6 +114,68 @@ func (_m *MockItemRepository) EXPECT() *MockItemRepository_Expecter {
 	return &MockItemRepository_Expecter{mock: &_m.Mock}
 }
 
+// GetAll provides a mock function for the type MockItemRepository
+func (_mock *MockItemRepository) GetAll(listID string) ([]domain.Item, error) {
+	ret := _mock.Called(listID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAll")
+	}
+
+	var r0 []domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) ([]domain.Item, error)); ok {
+		return returnFunc(listID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) []domain.Item); ok {
+		r0 = returnFunc(listID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.Item)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(listID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemRepository_GetAll_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAll'
+type MockItemRepository_GetAll_Call struct {
+	*mock.Call
+}
+
+// GetAll is a helper method to define mock.On call
+//   - listID string
+func (_e *MockItemRepository_Expecter) GetAll(listID any) *MockItemRepository_GetAll_Call {
+	return &MockItemRepository_GetAll_Call{Call: _e.mock.On("GetAll", listID)}
+}
+
+func (_c *MockItemRepository_GetAll_Call) Run(run func(listID string)) *MockItemRepository_GetAll_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemRepository_GetAll_Call) Return(items []domain.Item, err error) *MockItemRepository_GetAll_Call {
+	_c.Call.Return(items, err)
+	return _c
+}
+
+func (_c *MockItemRepository_GetAll_Call) RunAndReturn(run func(listID string) ([]domain.Item, error)) *MockItemRepository_GetAll_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Save provides a mock function for the type MockItemRepository
 func (_mock *MockItemRepository) Save(item domain.Item) error {
 	ret := _mock.Called(item)
