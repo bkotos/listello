@@ -7,6 +7,9 @@
   ],
   "scripts": {
     "start": "npm run dev -w ui",
-    "test": "npm test --workspaces --if-present"
+    "test": "npm test --workspaces --if-present",
+    "test:api": "make -C api test",
+    "test:ui": "npm test -w ui",
+    "test:e2e-cli": "npm test -w e2e-cli"
   }
 }
