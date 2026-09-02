@@ -1,24 +1,11 @@
 import { useState } from "react";
+import { Check } from "lucide-react";
 import type { ItemDto } from "api-types";
 
 export type ItemRowProps = {
   item: ItemDto;
   onComplete: (itemId: string) => void;
 };
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 12 12" width={12} height={12} fill="none" aria-hidden="true">
-      <path
-        d="M2.5 6.2 5 8.5 9.5 3.5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function isComplete(item: ItemDto): boolean {
   return item.State === "complete";
@@ -47,7 +34,7 @@ export function ItemRow({ item, onComplete }: ItemRowProps) {
             : undefined
         }
       >
-        {completed ? <CheckIcon /> : null}
+        {completed ? <Check size={12} strokeWidth={2} aria-hidden /> : null}
       </button>
 
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
