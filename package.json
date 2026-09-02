@@ -2,6 +2,7 @@
   "private": true,
   "workspaces": [
     "api-types",
+    "e2e-cli",
     "ui"
   ],
   "scripts": {
