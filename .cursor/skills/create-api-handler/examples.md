@@ -34,6 +34,8 @@ response.WriteJSON(w, http.StatusCreated, viewdto.ItemFromDomain(item))
 
 Do **not** add handler-level validation for fields the domain already validates (e.g. empty `title` on `DefineItem`). Let the service return an error and map it to 400.
 
+Do **not** add handler tests that assert domain validation failures — those scenarios belong in `internal/domain` godog features.
+
 **DTO tests** in `view-dtos/{resource}_test.go` cover `FromDomain` mappers. Run `make api-types` after adding or changing DTOs.
 
 ## 1. POST `DefineItem` — write endpoint with path param

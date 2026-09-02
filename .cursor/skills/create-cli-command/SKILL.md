@@ -20,13 +20,13 @@ Before starting, verify:
 
 | Check | How |
 |-------|-----|
-| Service method exists | `(s *{Service}) {Method}(...)` in `internal/application/` |
+| Service method exists | `{Method}(...)` on `{Aggregate}Service` interface in `internal/application/` |
 | Method is implemented | Not `return ..., fmt.Errorf("not implemented")` |
 | Application tests pass | `go test ./internal/application/...` green for that method |
 
 If any check fails → **stop**. Tell the user to use `create-application-service` first and get green tests. Do not write command tests or Cobra wiring.
 
-Adapter repository is **not** required for this skill (command tests use stub repositories).
+Adapter repository is **not** required for this skill (command tests use mock service interfaces).
 
 ## Scope
 
@@ -42,13 +42,30 @@ Adapter repository is **not** required for this skill (command tests use stub re
 
 ## Architecture constraints
 
-- Commands depend on application services — never call domain or adapters directly.
+- Commands depend on application **service interfaces** — never call domain or adapters directly.
 - Use Cobra `RunE` (return errors; do not `os.Exit` in commands).
 - Shape: `listello <noun> <verb>` — parent group per aggregate (`list`, `item`), leaf command per action (`create`, `define`).
 - Mutating commands print a one-line confirmation to `cmd.OutOrStdout()`.
 - Return application/domain errors from `RunE`; root prints `error: %v` to stderr and exits non-zero.
 - Do not print domain events in CLI output (events go to the event log via the application layer).
-- Factory accepts the application service: `func NewListCreate(lists *application.ListService) *cobra.Command`.
+- Factory accepts the service **interface**: `func NewListCreate(listService application.ListService) *cobra.Command`.
+
+## Do not duplicate domain logic
+
+Domain rules live in `internal/domain` (Gherkin + godog). CLI commands are thin adapters — do not re-implement or re-test domain behavior here.
+
+**In command code:**
+
+- Do not validate args or flags that the domain/application layer already validates.
+- Parse positional args/flags; pass values to the service; return errors unchanged from `RunE`.
+- Do not add command-only business rules.
+
+**In command tests:**
+
+- Mock the **service interface** (`appmocks.NewMock{Service}Service`); assert `EXPECT().{Method}(...)` was called with correct arguments.
+- Split into separate tests for **calls service** and **prints confirmation** — one concern per test.
+- Do **not** add tests for domain validation failures (e.g. define on inbox, create list named "Inbox") — those belong in `internal/domain`.
+- Do **not** re-assert domain field semantics on returned aggregates — only verify the command uses the service result in its confirmation output.
 
 ## Preconditions
 
@@ -95,8 +112,9 @@ Task progress:
 | Parent factory | `New{Resource}(svc) *cobra.Command` |
 | Leaf factory | `New{Resource}{Action}(svc) *cobra.Command` |
 | Test name | `Test{Resource}{Action}_{Behavior}` |
-| Test helper | `newTestRoot(svc) *cobra.Command` in test file |
-| Stubs | `stubListRepository`, `stubEventPublisher` in `stubs_test.go` |
+| Test helper | `new{Resource}TestRoot(svc) *cobra.Command` in test file |
+| Service mocks | `appmocks "github.com/bkotos/listello/internal/application/mocks"` (mockery-generated) |
+| Service param | `{aggregate}Service` — type is `application.{Aggregate}Service` interface |
 
 ## Code templates
 
@@ -111,12 +129,12 @@ import (
 	application "github.com/bkotos/listello/internal/application"
 )
 
-func New{Resource}(svc *application.{Service}) *cobra.Command {
+func New{Resource}({aggregate}Service application.{Service}) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "{resource}",
 		Short: "Manage {resources}",
 	}
-	cmd.AddCommand(New{Resource}{Action}(svc))
+	cmd.AddCommand(New{Resource}{Action}({aggregate}Service))
 	return cmd
 }
 ```
@@ -134,13 +152,13 @@ import (
 	application "github.com/bkotos/listello/internal/application"
 )
 
-func New{Resource}{Action}(svc *application.{Service}) *cobra.Command {
+func New{Resource}{Action}({aggregate}Service application.{Service}) *cobra.Command {
 	return &cobra.Command{
 		Use:   "{action} <arg>",
 		Short: "{Action} a {resource}",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			result, err := svc.{Method}(args[0] /* map other args/flags */)
+			result, err := {aggregate}Service.{Method}(args[0] /* map other args/flags */)
 			if err != nil {
 				return err
 			}
@@ -157,7 +175,7 @@ func New{Resource}{Action}(svc *application.{Service}) *cobra.Command {
 Use:   "{action} <list-id> <title>",
 Args:  cobra.ExactArgs(2),
 RunE: func(cmd *cobra.Command, args []string) error {
-	item, err := svc.{Method}(args[0], args[1])
+	item, err := {aggregate}Service.{Method}(args[0], args[1])
 	// ...
 },
 ```
@@ -165,71 +183,58 @@ RunE: func(cmd *cobra.Command, args []string) error {
 ### Root wiring (`root.go`)
 
 ```go
-func newRoot(lists *application.ListService /*, items *application.ItemService */) *cobra.Command {
+func newRoot(listService application.ListService, itemService application.ItemService) *cobra.Command {
 	root := &cobra.Command{
 		Use:           "listello",
 		Short:         "Listello command-line interface",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.AddCommand(commands.NewList(lists))
-	// root.AddCommand(commands.NewItem(items))
+	root.AddCommand(commands.NewList(listService))
+	root.AddCommand(commands.NewItem(itemService))
 	return root
 }
 ```
 
 ## Test templates
 
-Use `newTestRoot` with stub repositories. Capture stdout/stderr with `bytes.Buffer`.
+Use mock service interfaces from `internal/application/mocks`. Capture stdout/stderr with `bytes.Buffer`. Split **calls service** and **prints confirmation** into separate tests.
 
-### Success — calls service and prints confirmation
+### Calls application
 
 ```go
-func Test{Resource}{Action}_CallsApplicationAndPrintsConfirmation(t *testing.T) {
-	// Arrange
-	var saved domain.{Aggregate}
-	svc := application.New{Service}(
-		&stub{Aggregate}Repository{
-			saveFn: func(/* args */) error {
-				saved = /* capture */
-				return nil
-			},
-		},
-		&stubEventPublisher{},
-	)
-	stdout := &bytes.Buffer{}
-	stderr := &bytes.Buffer{}
-	root := newTestRoot(svc)
-	root.SetOut(stdout)
-	root.SetErr(stderr)
-	root.SetArgs([]string{"{resource}", "{action}", "arg value"})
+func Test{Resource}{Action}_CallsApplication(t *testing.T) {
+	{aggregate}Service := appmocks.NewMock{Service}Service(t)
+	{aggregate}Service.EXPECT().{Method}(/* args */).Return(domain.{Aggregate}{ID: "IT_1"}, nil)
 
-	// Act
+	root := new{Resource}TestRoot({aggregate}Service)
+	root.SetOut(&bytes.Buffer{})
+	root.SetArgs([]string{"{resource}", "{action}", /* args */})
+
 	err := root.Execute()
-
-	// Assert
 	require.NoError(t, err)
-	assert.Equal(t, "expected value", saved.Name)
-	assert.Contains(t, stdout.String(), `Created {resource} "arg value" (`)
-	assert.Contains(t, stdout.String(), saved.ID)
-	assert.Empty(t, stderr.String())
 }
 ```
 
-### Domain error — returns error, no stdout
+### Prints confirmation
 
 ```go
-func Test{Resource}{Action}_PrintsDomainError(t *testing.T) {
-	svc := application.New{Service}(&stub{Aggregate}Repository{}, &stubEventPublisher{})
-	// ... setup root, SetArgs with invalid input
-	err := root.Execute()
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "expected domain message")
-	assert.Empty(t, stdout.String())
+func Test{Resource}{Action}_PrintsConfirmation(t *testing.T) {
+	expected := domain.{Aggregate}{ID: "IT_1", Title: "Buy milk"}
+	{aggregate}Service := appmocks.NewMock{Service}Service(t)
+	{aggregate}Service.EXPECT().{Method}(/* args */).Return(expected, nil)
+
+	stdout := &bytes.Buffer{}
+	root := new{Resource}TestRoot({aggregate}Service)
+	root.SetOut(stdout)
+	root.SetArgs([]string{"{resource}", "{action}", /* args */})
+
+	require.NoError(t, root.Execute())
+	assert.Contains(t, stdout.String(), `Expected confirmation line`)
 }
 ```
 
-One behavioral concern per test. Add stubs to `stubs_test.go` when a new repository port is needed.
+One behavioral concern per test. Mock the service interface — do **not** stub repository ports. Do **not** add command tests for domain validation failures.
 
 ## Output conventions
 

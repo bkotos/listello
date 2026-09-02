@@ -2,17 +2,17 @@
 
 Annotated references from the Listello codebase. Read when implementing a new Cobra command.
 
-## 1. Parent group: `list`
+## 1. Parent group: `item`
 
-**File:** `api/cmd/cli/commands/list.go`
+**File:** `api/cmd/cli/commands/item.go`
 
 ```go
-func NewList(lists *application.ListService) *cobra.Command {
+func NewItem(itemService application.ItemService) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "Manage lists",
+		Use:   "item",
+		Short: "Manage items",
 	}
-	cmd.AddCommand(NewListCreate(lists))
+	cmd.AddCommand(NewItemDefine(itemService))
 	return cmd
 }
 ```
@@ -21,24 +21,27 @@ Key points:
 
 - One parent command per aggregate (`list`, `item`, …).
 - Parent has no `RunE` — only groups subcommands.
-- Register leaf commands with `AddCommand`.
+- Factory accepts `application.ItemService` **interface**.
 
-## 2. Leaf command: `list create`
+## 2. Leaf command: `item define`
 
-**File:** `api/cmd/cli/commands/list_create.go`
+**File:** `api/cmd/cli/commands/item_define.go`
 
 ```go
-func NewListCreate(lists *application.ListService) *cobra.Command {
+func NewItemDefine(itemService application.ItemService) *cobra.Command {
 	return &cobra.Command{
-		Use:   "create <name>",
-		Short: "Create a list",
-		Args:  cobra.ExactArgs(1),
+		Use:   "define <list-id> <title>",
+		Short: "Define an item on a list",
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			list, err := lists.CreateList(args[0])
+			listID := args[0]
+			title := args[1]
+
+			item, err := itemService.DefineItem(listID, title)
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Created list %q (%s)\n", list.Name, list.ID)
+			fmt.Fprintf(cmd.OutOrStdout(), "Defined item %q (%s) on list %s\n", item.Title, item.ID, listID)
 			return nil
 		},
 	}
@@ -47,8 +50,8 @@ func NewListCreate(lists *application.ListService) *cobra.Command {
 
 Key points:
 
-- `Args: cobra.ExactArgs(1)` — one positional arg (`<name>`).
-- Call application service; propagate errors unchanged.
+- `Args: cobra.ExactArgs(2)` — list ID and title as positional args.
+- Call application service; propagate errors unchanged (no command-level validation of title, etc.).
 - Print confirmation to `cmd.OutOrStdout()`, not `fmt.Println`.
 - Do not mention domain events in output.
 
@@ -57,131 +60,79 @@ Key points:
 **File:** `api/cmd/cli/root.go`
 
 ```go
-func newRoot(lists *application.ListService) *cobra.Command {
-	root := &cobra.Command{
-		Use:           "listello",
-		Short:         "Listello command-line interface",
-		SilenceUsage:  true,
-		SilenceErrors: true,
-	}
-	root.AddCommand(commands.NewList(lists))
+func newRoot(listService application.ListService, itemService application.ItemService) *cobra.Command {
+	root := &cobra.Command{ ... }
+	root.AddCommand(commands.NewList(listService))
+	root.AddCommand(commands.NewItem(itemService))
 	return root
 }
 ```
 
-**File:** `api/cmd/cli/main.go` (out of skill scope — follow-up)
+**File:** `api/cmd/cli/main.go`
 
 ```go
 listService := bootstrap.NewListService(db, eventLog)
-run(newRoot(listService))
+itemService := bootstrap.NewItemService(db, eventLog)
+run(newRoot(listService, itemService))
 ```
 
-Adding `ItemService` commands requires `newRoot` to accept `items *application.ItemService` and `main.go` to construct it.
+## 4. Tests: `item define` (preferred pattern)
 
-## 4. Test: success path
+**File:** `api/cmd/cli/commands/item_define_test.go`
+
+Split **calls service** and **prints confirmation** into separate tests. Mock the service interface — do not stub repositories. Do **not** test domain validation failures here (covered in `internal/domain`).
+
+### Calls application
+
+```go
+func TestItemDefine_CallsApplication(t *testing.T) {
+	itemService := appmocks.NewMockItemService(t)
+	itemService.EXPECT().DefineItem("LS_1", "Buy milk").Return(domain.Item{ID: "IT_1"}, nil)
+
+	root := newItemTestRoot(itemService)
+	root.SetOut(&bytes.Buffer{})
+	root.SetArgs([]string{"item", "define", "LS_1", "Buy milk"})
+
+	require.NoError(t, root.Execute())
+}
+```
+
+### Prints confirmation
+
+```go
+func TestItemDefine_PrintsConfirmation(t *testing.T) {
+	expected := domain.Item{ID: "IT_1", ListID: "LS_1", Title: "Buy milk"}
+	itemService := appmocks.NewMockItemService(t)
+	itemService.EXPECT().DefineItem("LS_1", "Buy milk").Return(expected, nil)
+
+	stdout := &bytes.Buffer{}
+	root := newItemTestRoot(itemService)
+	root.SetOut(stdout)
+	root.SetArgs([]string{"item", "define", "LS_1", "Buy milk"})
+
+	require.NoError(t, root.Execute())
+	assert.Contains(t, stdout.String(), `Defined item "Buy milk" (IT_1) on list LS_1`)
+}
+```
+
+## 5. Legacy: `list create` tests
 
 **File:** `api/cmd/cli/commands/list_create_test.go`
 
-```go
-func newTestRoot(lists *application.ListService) *cobra.Command {
-	root := &cobra.Command{
-		Use:           "listello",
-		Short:         "Listello command-line interface",
-		SilenceUsage:  true,
-		SilenceErrors: true,
-	}
-	root.AddCommand(NewList(lists))
-	return root
-}
+Older commands may still use `application.NewListService` with stub repositories in one combined test. New commands should use mock service interfaces and split concerns as in §4.
 
-func TestListCreate_CallsApplicationAndPrintsConfirmation(t *testing.T) {
-	var saved domain.List
-	svc := application.NewListService(
-		&stubListRepository{
-			saveFn: func(list domain.List) error {
-				saved = list
-				return nil
-			},
-		},
-		&stubEventPublisher{},
-	)
-	stdout := &bytes.Buffer{}
-	stderr := &bytes.Buffer{}
-	root := newTestRoot(svc)
-	root.SetOut(stdout)
-	root.SetErr(stderr)
-	root.SetArgs([]string{"list", "create", "Next actions"})
+Do **not** add new domain-error command tests (e.g. `TestListCreate_PrintsDomainError`) — domain validation belongs in godog features.
 
-	err := root.Execute()
-
-	require.NoError(t, err)
-	assert.Equal(t, "Next actions", saved.Name)
-	assert.Contains(t, stdout.String(), `Created list "Next actions" (`)
-	assert.Contains(t, stdout.String(), saved.ID)
-	assert.Empty(t, stderr.String())
-}
-```
-
-Key points:
-
-- `SetArgs` uses the full command path: `list`, `create`, then args.
-- Stub captures what the service persisted.
-- Assert stdout confirmation and empty stderr.
-- Real `application.NewListService` with stubbed ports — not mockery.
-
-## 5. Test: domain error
-
-```go
-func TestListCreate_PrintsDomainError(t *testing.T) {
-	svc := application.NewListService(&stubListRepository{}, &stubEventPublisher{})
-	// ... setup buffers and root
-	root.SetArgs([]string{"list", "create", "Inbox"})
-
-	err := root.Execute()
-
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "cannot create a list named Inbox")
-	assert.Empty(t, stdout.String())
-}
-```
-
-Key points:
-
-- Domain validation fails through the real service (no stub override needed).
-- Error returned from `Execute()` — root's `run()` would print it to stderr in production.
-- No stdout on failure.
-
-## 6. Test stubs
-
-**File:** `api/cmd/cli/commands/stubs_test.go`
-
-Hand-rolled stubs implement application ports (same pattern as HTTP handler stubs):
-
-```go
-type stubListRepository struct {
-	saveFn    func(list domain.List) error
-	getAllFn  func() ([]domain.List, error)
-	getByIDFn func(id string) (domain.List, error)
-}
-```
-
-Add `stubItemRepository` when wiring item commands.
-
-## 7. CLI design reference
+## 6. CLI design reference
 
 **File:** `listello-cli-design.md`
-
-Command tree shape:
 
 ```text
 listello
 ├── list
-│   ├── create
-│   └── show
+│   └── create
 ├── item
-│   ├── capture
-│   ├── define
-│   └── complete
+│   └── define
 ```
 
 Conventions:
@@ -189,18 +140,4 @@ Conventions:
 - `listello <noun> <verb>` — reads like domain language.
 - IDs: `LS_…` for lists, `IT_…` for items.
 - Mutating commands: one-line confirmation in plain language.
-- Errors: domain message verbatim, non-zero exit.
-
-## 8. Next command example: `item define`
-
-Given `ItemService.DefineItem(listID, title string)`:
-
-1. **Parent:** `item.go` with `NewItem(items *application.ItemService)` if not exists.
-2. **Leaf:** `item_define.go`:
-   - `Use: "define <list-id> <title>"`
-   - `Args: cobra.ExactArgs(2)`
-   - `items.DefineItem(args[0], args[1])`
-   - `fmt.Fprintf(cmd.OutOrStdout(), "Defined item %q (%s) on list %s\n", item.Title, item.ID, listID)`
-3. **Wire:** `NewItem` → `AddCommand(NewItemDefine(items))`; register `NewItem` in `root.go`.
-4. **Test:** `TestItemDefine_CallsApplicationAndPrintsConfirmation` with `SetArgs([]string{"item", "define", "LS_1", "Buy milk"})`.
-5. **Follow-up:** `main.go` bootstrap for `ItemService` (out of skill scope unless asked).
+- Errors: domain message verbatim via `RunE` return (root prints to stderr).

@@ -52,6 +52,25 @@ Adapter repository is **not** required for this skill (handler tests use mock se
 - One handler file per endpoint (`create_list.go`, `get_list.go`, …).
 - Handler factory accepts the service **interface**: `func CreateList(listService application.ListService) http.HandlerFunc`.
 
+## Do not duplicate domain logic
+
+Domain rules live in `internal/domain` (Gherkin + godog). Handlers are thin transport adapters — do not re-implement or re-test domain behavior here.
+
+**In handler code:**
+
+- Do not validate fields the domain already validates (e.g. no `if req.Title == ""` when domain rejects empty titles).
+- Decode JSON and read path params; pass values to the service; map errors to HTTP status.
+- Propagate service/domain errors to the client — do not add handler-only business rules.
+
+**In handler tests:**
+
+- Mock the **service interface**; assert `EXPECT().{Method}(...)` was called with the correct arguments.
+- Assert HTTP concerns: status code, response shape/mapping from the value the mock returns.
+- Do **not** add tests for domain validation failures (e.g. define on inbox, empty title) — those belong in `internal/domain`.
+- Do **not** re-assert domain field semantics on the returned aggregate (outstanding state, ID prefixes, etc.) — only verify the handler forwards the service result into the response DTO.
+
+HTTP-specific behavior (e.g. mapping `"not found"` in an error to 404) is fair game — that is transport logic, not domain logic.
+
 ## Preconditions
 
 These duplicate the upstream gate — all must pass:
@@ -301,7 +320,7 @@ func TestGetList_NotFound(t *testing.T) {
 }
 ```
 
-One behavioral concern per test. Do **not** stub repository ports in handler tests — mock the service interface instead.
+One behavioral concern per test. Do **not** stub repository ports in handler tests — mock the service interface instead. Do **not** add handler tests for domain validation failures.
 
 ## HTTP status conventions
 
