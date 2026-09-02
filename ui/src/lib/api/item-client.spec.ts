@@ -4,7 +4,7 @@ vi.mock("./util.ts", () => ({
   request: vi.fn(),
 }));
 
-import { defineItem } from "./item-client.ts";
+import { defineItem, getAllItems } from "./item-client.ts";
 import { request } from "./util.ts";
 
 afterEach(() => {
@@ -36,5 +36,44 @@ describe("defineItem", () => {
       body: JSON.stringify({ title: "Buy milk" }),
     });
     expect(result).toEqual(item);
+  });
+});
+
+describe("getAllItems", () => {
+  it("requests all items for a list from the API", async () => {
+    // Arrange
+    const expected = [
+      {
+        ID: "IT_1",
+        ListID: "LS_1",
+        ParentID: "",
+        Title: "Buy milk",
+        Description: "",
+        DueDate: "",
+        Tags: [],
+        Priority: "",
+        State: "outstanding",
+      },
+      {
+        ID: "IT_2",
+        ListID: "LS_1",
+        ParentID: "",
+        Title: "Call dentist",
+        Description: "",
+        DueDate: "",
+        Tags: [],
+        Priority: "",
+        State: "outstanding",
+      },
+    ];
+    const init = { signal: new AbortController().signal };
+    vi.mocked(request).mockResolvedValue(expected);
+
+    // Act
+    const result = await getAllItems("LS_1", init);
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/lists/LS_1/items", init);
+    expect(result).toEqual(expected);
   });
 });
