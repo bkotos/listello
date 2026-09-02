@@ -12,5 +12,6 @@ func NewItem(itemService application.ItemService) *cobra.Command {
 		Short: "Manage items",
 	}
 	cmd.AddCommand(NewItemDefine(itemService))
+	cmd.AddCommand(NewItemList(itemService))
 	return cmd
 }
