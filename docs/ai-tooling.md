@@ -15,8 +15,11 @@ This repo includes Cursor configuration that guides agents working on Listello: 
     ├── create-adapter-repository/
     │   ├── SKILL.md                         # SQLite repository adapters
     │   └── examples.md
-    └── create-api-handler/
-        ├── SKILL.md                         # HTTP handlers and routes
+    ├── create-api-handler/
+    │   ├── SKILL.md                         # HTTP handlers and routes
+    │   └── examples.md
+    └── create-cli-command/
+        ├── SKILL.md                         # Cobra CLI commands
         └── examples.md
 ```
 
@@ -182,6 +185,55 @@ After tests pass, the agent may mention `main.go` bootstrap wiring as a follow-u
 #### Reference implementation
 
 See [.cursor/skills/create-api-handler/examples.md](../.cursor/skills/create-api-handler/examples.md) for annotated `CreateList`, `GetList`, and `GetAllLists` patterns.
+
+### `create-cli-command`
+
+Wires Cobra commands in `api/cmd/cli/`: leaf command factory, parent group, `cobra.Execute` tests, and registration in `root.go`.
+
+**In scope:** `commands/{resource}.go`, `commands/{resource}_{action}.go`, command tests, `root.go` wiring.
+
+**Out of scope** (unless you ask separately): application services, adapters, bootstrap/`main.go`, HTTP handlers, view DTOs.
+
+**Prerequisite:** the application service method must exist — use `create-application-service` if it does not.
+
+CLI design reference: [listello-cli-design.md](../listello-cli-design.md). Skill details: [.cursor/skills/create-cli-command/SKILL.md](../.cursor/skills/create-cli-command/SKILL.md).
+
+#### How to invoke
+
+| Mode | What to say |
+|------|-------------|
+| **Explicit** | `@create-cli-command` or *"use the create-cli-command skill"* |
+| **Auto-discover** | Describe the task — e.g. *"Add listello item define command"* or *"Wire up DefineItem as a CLI command"* |
+
+Example prompts:
+
+- *"Add a CLI command for DefineItem"*
+- *"Wire listello list create"*
+- *"@create-cli-command add item define"*
+
+#### What the agent will do
+
+```mermaid
+flowchart TD
+    start[Your request] --> readSvc[Read application service method]
+    readSvc --> svcExists{Method exists?}
+    svcExists -->|no| stopSvc[Stop — use create-application-service first]
+    svcExists -->|yes| group[Create or extend parent group command]
+    group --> red[Write failing cobra test]
+    red --> stop[STOP — summarize spec for your review]
+    stop --> approved{You approve?}
+    approved -->|yes| green[Implement leaf command + wiring]
+    approved -->|no| red
+    green --> done[Tests green — CLI layer only]
+```
+
+Commands call application services via `RunE`, print one-line confirmations to stdout, and return errors for non-zero exit. Tests use `SetArgs` with stub repositories.
+
+After tests pass, the agent may mention `main.go` bootstrap wiring as a follow-up but will not implement it unless you ask.
+
+#### Reference implementation
+
+See [.cursor/skills/create-cli-command/examples.md](../.cursor/skills/create-cli-command/examples.md) for annotated `list create` patterns.
 
 ## Adding more skills
 
