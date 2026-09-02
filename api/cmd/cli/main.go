@@ -14,7 +14,8 @@ func main() {
 	defer eventLog.Close()
 
 	listService := bootstrap.NewListService(db, eventLog)
-	if err := run(newRoot(listService)); err != nil {
+	itemService := bootstrap.NewItemService(db, eventLog)
+	if err := run(newRoot(listService, itemService)); err != nil {
 		os.Exit(1)
 	}
 }
