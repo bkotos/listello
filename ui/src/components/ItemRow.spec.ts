@@ -78,4 +78,32 @@ describe("ItemRow", () => {
     // Assert
     expect(onComplete).toHaveBeenCalledWith("IT_1");
   });
+
+  it("immediately marks the checkbox as checked when clicked", () => {
+    // Arrange
+    const onComplete = vi.fn(() => new Promise<void>(() => {}));
+    render(createElement(ItemRow, { item: baseItem, onComplete }));
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
+
+    // Assert
+    const toggle = screen.getByRole("button", { name: "Mark incomplete" });
+    expect(toggle).toHaveClass("is-checked");
+    expect(toggle.querySelector("svg")).toBeInTheDocument();
+  });
+
+  it("immediately strikes through the title when the checkbox is clicked", () => {
+    // Arrange
+    const onComplete = vi.fn(() => new Promise<void>(() => {}));
+    render(createElement(ItemRow, { item: baseItem, onComplete }));
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
+
+    // Assert
+    const title = screen.getByText("Idea: weekly review template");
+    expect(title).toHaveClass("muted");
+    expect(title).toHaveClass("line-through");
+  });
 });

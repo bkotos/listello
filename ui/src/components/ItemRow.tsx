@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { ItemDto } from "api-types";
 
 export type ItemRowProps = {
@@ -24,7 +25,8 @@ function isComplete(item: ItemDto): boolean {
 }
 
 export function ItemRow({ item, onComplete }: ItemRowProps) {
-  const completed = isComplete(item);
+  const [optimisticallyComplete, setOptimisticallyComplete] = useState(false);
+  const completed = isComplete(item) || optimisticallyComplete;
 
   return (
     <div
@@ -39,6 +41,7 @@ export function ItemRow({ item, onComplete }: ItemRowProps) {
         onClick={
           !completed
             ? () => {
+                setOptimisticallyComplete(true);
                 onComplete(item.ID);
               }
             : undefined
