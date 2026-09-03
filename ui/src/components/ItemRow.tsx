@@ -26,16 +26,14 @@ export function ItemRow({ item, onComplete, onUncomplete }: ItemRowProps) {
         aria-label={completed ? "Mark incomplete" : "Mark complete"}
         className={`check-toggle${completed ? " is-checked" : ""}`}
         style={{ height: "1.25rem", width: "1.25rem", marginTop: "0.125rem" }}
-        onClick={
-          !completed
-            ? () => {
-                setOptimisticallyComplete(true);
-                onComplete(item.ID);
-              }
-            : () => {
-                onUncomplete(item.ID);
-              }
-        }
+        onClick={() => {
+          if (!completed) {
+            setOptimisticallyComplete(true);
+            onComplete(item.ID);
+            return;
+          }
+          onUncomplete(item.ID);
+        }}
       >
         {completed ? <Check size={12} strokeWidth={2} aria-hidden /> : null}
       </button>
