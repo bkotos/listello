@@ -339,4 +339,46 @@ describe("ListPage", () => {
       expect(getAllItems).toHaveBeenCalledTimes(2);
     });
   });
+
+  it("shows the item as outstanding after completing then uncompleting without a page reload", async () => {
+    // Arrange
+    const completedItems = [
+      { ...sampleItems[0], State: "complete" },
+      sampleItems[1],
+    ];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(sampleItems)
+      .mockResolvedValueOnce(completedItems)
+      .mockResolvedValueOnce(sampleItems);
+    vi.mocked(completeItem).mockResolvedValue(completedItems[0]);
+    vi.mocked(uncompleteItem).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+
+    // Act
+    fireEvent.click(screen.getAllByRole("button", { name: "Mark complete" })[0]);
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Mark incomplete" }));
+
+    // Assert
+    expect(uncompleteItem).toHaveBeenCalledWith("IT_1");
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(3);
+    });
+    expect(screen.queryByRole("button", { name: "Mark incomplete" })).not.toBeInTheDocument();
+    const title = screen.getByText("Buy windshield wipers for truck");
+    expect(title).not.toHaveClass("muted");
+    expect(title).not.toHaveClass("line-through");
+  });
 });

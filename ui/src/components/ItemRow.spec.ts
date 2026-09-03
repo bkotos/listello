@@ -126,4 +126,37 @@ describe("ItemRow", () => {
     expect(title).toHaveClass("muted");
     expect(title).toHaveClass("line-through");
   });
+
+  it("immediately unchecks the checkbox when clicked after completing", () => {
+    // Arrange
+    const onComplete = vi.fn();
+    const onUncomplete = vi.fn();
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete }));
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mark incomplete" }));
+
+    // Assert
+    expect(onUncomplete).toHaveBeenCalledWith("IT_1");
+    const toggle = screen.getByRole("button", { name: "Mark complete" });
+    expect(toggle).not.toHaveClass("is-checked");
+    expect(toggle.querySelector("svg")).not.toBeInTheDocument();
+  });
+
+  it("immediately removes the strikethrough when the checkbox is clicked after completing", () => {
+    // Arrange
+    const onComplete = vi.fn();
+    const onUncomplete = vi.fn();
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete }));
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mark incomplete" }));
+
+    // Assert
+    const title = screen.getByText("Idea: weekly review template");
+    expect(title).not.toHaveClass("muted");
+    expect(title).not.toHaveClass("line-through");
+  });
 });

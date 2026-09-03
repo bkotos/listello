@@ -32,6 +32,7 @@ export function ItemRow({ item, onComplete, onUncomplete }: ItemRowProps) {
             onComplete(item.ID);
             return;
           }
+          setOptimisticallyComplete(false);
           onUncomplete(item.ID);
         }}
       >
