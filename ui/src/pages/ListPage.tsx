@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { ContentArea } from "../components/ContentArea";
 import { ItemRow } from "../components/ItemRow";
-import { defineItem, completeItem } from "../lib/api/item-client";
+import { defineItem, completeItem, uncompleteItem } from "../lib/api/item-client";
 import { itemQueryKeys, useAllItemsQuery } from "../lib/api/item-queries";
 import { useListQuery } from "../lib/api/list-queries";
 import { useShellContext } from "../lib/useShellContext";
@@ -31,6 +31,13 @@ function ListPage() {
     }
   }
 
+  async function handleUncomplete(itemId: string) {
+    await uncompleteItem(itemId);
+    if (listId) {
+      await queryClient.invalidateQueries({ queryKey: itemQueryKeys.byList(listId) });
+    }
+  }
+
   return (
     <ContentArea
       title={title}
@@ -46,7 +53,7 @@ function ListPage() {
         >
           <div className="is-flex is-flex-direction-column" style={{ gap: "0.375rem" }}>
             {items.map((item) => (
-              <ItemRow key={item.ID} item={item} onComplete={handleComplete} />
+              <ItemRow key={item.ID} item={item} onComplete={handleComplete} onUncomplete={handleUncomplete} />
             ))}
           </div>
         </div>

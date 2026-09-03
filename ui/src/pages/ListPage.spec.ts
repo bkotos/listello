@@ -12,9 +12,10 @@ vi.mock("../lib/api/item-client", () => ({
   getAllItems: vi.fn(),
   defineItem: vi.fn(),
   completeItem: vi.fn(),
+  uncompleteItem: vi.fn(),
 }));
 
-import { completeItem, defineItem, getAllItems } from "../lib/api/item-client";
+import { completeItem, defineItem, getAllItems, uncompleteItem } from "../lib/api/item-client";
 import { getList } from "../lib/api/list-client";
 
 const sampleItems = [
@@ -279,6 +280,59 @@ describe("ListPage", () => {
 
     // Act
     fireEvent.click(screen.getAllByRole("button", { name: "Mark complete" })[0]);
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("calls uncompleteItem when the checked checkbox is clicked", async () => {
+    // Arrange
+    const completedItems = [{ ...sampleItems[0], State: "complete" }];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(completedItems);
+    vi.mocked(uncompleteItem).mockResolvedValue({
+      ...completedItems[0],
+      State: "outstanding",
+    });
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Mark incomplete" }));
+
+    // Assert
+    expect(uncompleteItem).toHaveBeenCalledWith("IT_1");
+  });
+
+  it("reloads items after uncompleteItem is called", async () => {
+    // Arrange
+    const completedItems = [{ ...sampleItems[0], State: "complete" }];
+    const updatedItems = [{ ...sampleItems[0], State: "outstanding" }];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(completedItems)
+      .mockResolvedValueOnce(updatedItems);
+    vi.mocked(uncompleteItem).mockResolvedValue(updatedItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Mark incomplete" }));
 
     // Assert
     await waitFor(() => {

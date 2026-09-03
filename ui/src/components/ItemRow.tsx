@@ -5,13 +5,14 @@ import type { ItemDto } from "api-types";
 export type ItemRowProps = {
   item: ItemDto;
   onComplete: (itemId: string) => void;
+  onUncomplete: (itemId: string) => void;
 };
 
 function isComplete(item: ItemDto): boolean {
   return item.State === "complete";
 }
 
-export function ItemRow({ item, onComplete }: ItemRowProps) {
+export function ItemRow({ item, onComplete, onUncomplete }: ItemRowProps) {
   const [optimisticallyComplete, setOptimisticallyComplete] = useState(false);
   const completed = isComplete(item) || optimisticallyComplete;
 
@@ -31,7 +32,9 @@ export function ItemRow({ item, onComplete }: ItemRowProps) {
                 setOptimisticallyComplete(true);
                 onComplete(item.ID);
               }
-            : undefined
+            : () => {
+                onUncomplete(item.ID);
+              }
         }
       >
         {completed ? <Check size={12} strokeWidth={2} aria-hidden /> : null}
