@@ -224,6 +224,66 @@ func (_c *MockItemService_GetAll_Call) RunAndReturn(run func(listID string) ([]d
 	return _c
 }
 
+// UncompleteItem provides a mock function for the type MockItemService
+func (_mock *MockItemService) UncompleteItem(itemID string) (domain.Item, error) {
+	ret := _mock.Called(itemID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UncompleteItem")
+	}
+
+	var r0 domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (domain.Item, error)); ok {
+		return returnFunc(itemID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) domain.Item); ok {
+		r0 = returnFunc(itemID)
+	} else {
+		r0 = ret.Get(0).(domain.Item)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(itemID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemService_UncompleteItem_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UncompleteItem'
+type MockItemService_UncompleteItem_Call struct {
+	*mock.Call
+}
+
+// UncompleteItem is a helper method to define mock.On call
+//   - itemID string
+func (_e *MockItemService_Expecter) UncompleteItem(itemID any) *MockItemService_UncompleteItem_Call {
+	return &MockItemService_UncompleteItem_Call{Call: _e.mock.On("UncompleteItem", itemID)}
+}
+
+func (_c *MockItemService_UncompleteItem_Call) Run(run func(itemID string)) *MockItemService_UncompleteItem_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_UncompleteItem_Call) Return(item domain.Item, err error) *MockItemService_UncompleteItem_Call {
+	_c.Call.Return(item, err)
+	return _c
+}
+
+func (_c *MockItemService_UncompleteItem_Call) RunAndReturn(run func(itemID string) (domain.Item, error)) *MockItemService_UncompleteItem_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockListService creates a new instance of MockListService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockListService(t interface {
