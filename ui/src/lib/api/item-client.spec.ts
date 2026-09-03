@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { completeItem, defineItem, getAllItems } from "./item-client";
+import { completeItem, defineItem, getAllItems, uncompleteItem } from "./item-client";
 import { request } from "./util";
 
 vi.mock(import("./util"), () => ({
@@ -98,6 +98,33 @@ describe("completeItem", () => {
 
     // Assert
     expect(request).toHaveBeenCalledWith("/api/items/IT_1/complete", {
+      method: "POST",
+    });
+    expect(result).toEqual(item);
+  });
+});
+
+describe("uncompleteItem", () => {
+  it("posts an uncomplete action for an item to the API", async () => {
+    // Arrange
+    const item = {
+      ID: "IT_1",
+      ListID: "LS_1",
+      ParentID: "",
+      Title: "Buy milk",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    vi.mocked(request).mockResolvedValue(item);
+
+    // Act
+    const result = await uncompleteItem("IT_1");
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/items/IT_1/uncomplete", {
       method: "POST",
     });
     expect(result).toEqual(item);
