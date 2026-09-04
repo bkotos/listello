@@ -97,6 +97,38 @@ describe("listello cli", () => {
     });
   });
 
+  describe("item title", () => {
+    it("changes an item's title", async () => {
+      // Arrange
+      const createResult = await runListello(dbPath, [
+        "list",
+        "create",
+        "Groceries",
+      ]);
+      const listId = parseCreatedListId(createResult.stdout);
+      const defineResult = await runListello(dbPath, [
+        "item",
+        "define",
+        listId,
+        "Buy milk",
+      ]);
+      const itemId = parseDefinedItemId(defineResult.stdout);
+
+      // Act
+      const result = await runListello(dbPath, [
+        "item",
+        "title",
+        itemId,
+        "Schedule dentist",
+      ]);
+
+      // Assert
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toBe("");
+      expect(result.stdout).toBe(`Renamed ${itemId} to "Schedule dentist"`);
+    });
+  });
+
   describe("item delete", () => {
     it("deletes an item", async () => {
       // Arrange

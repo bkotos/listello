@@ -12,6 +12,7 @@ func NewItem(container Container) *cobra.Command {
 	cmd.AddCommand(NewItemDefine(container))
 	cmd.AddCommand(NewItemComplete(container))
 	cmd.AddCommand(NewItemDelete(container))
+	cmd.AddCommand(NewItemTitle(container))
 	cmd.AddCommand(NewItemList(container))
 	return cmd
 }
