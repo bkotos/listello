@@ -16,6 +16,7 @@ function isComplete(item: ItemDto): boolean {
 export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowProps) {
   const [optimisticallyComplete, setOptimisticallyComplete] = useState(false);
   const [optimisticallyDeleted, setOptimisticallyDeleted] = useState(false);
+  const [renaming, setRenaming] = useState(false);
   const completed = isComplete(item) || optimisticallyComplete;
 
   if (optimisticallyDeleted) {
@@ -49,59 +50,69 @@ export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowPro
 
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
-          <p
-            className={`is-size-6 mb-0${completed ? " muted line-through" : ""}`}
-          >
-            {item.Title}
-          </p>
-        </div>
-        <div
-          className="is-flex is-flex-wrap-wrap is-align-items-center mt-2 is-size-7 muted"
-          style={{ gap: "0.5rem" }}
-        >
-          <span
-            className="is-inline-flex is-align-items-center hover-reveal"
-            style={{ gap: "0.25rem" }}
-          >
-            <button
-              type="button"
-              aria-label="Set date"
-              title="Set date"
-              className="icon-btn"
-              style={{ height: "1.5rem", padding: "0 0.375rem", gap: "0.25rem" }}
+          {renaming ? (
+            <input className="input is-small" defaultValue={item.Title} />
+          ) : (
+            <p
+              className={`is-size-6 mb-0${completed ? " muted line-through" : ""}`}
             >
-              <Calendar size={14} />
-            </button>
-            <button
-              type="button"
-              aria-label="Add comment"
-              title="Add comment"
-              className="icon-btn"
-              style={{ height: "1.5rem", padding: "0 0.375rem", gap: "0.25rem" }}
-            >
-              <MessageSquare size={14} />
-            </button>
-          </span>
+              {item.Title}
+            </p>
+          )}
         </div>
+        {renaming ? null : (
+          <div
+            className="is-flex is-flex-wrap-wrap is-align-items-center mt-2 is-size-7 muted"
+            style={{ gap: "0.5rem" }}
+          >
+            <span
+              className="is-inline-flex is-align-items-center hover-reveal"
+              style={{ gap: "0.25rem" }}
+            >
+              <button
+                type="button"
+                aria-label="Set date"
+                title="Set date"
+                className="icon-btn"
+                style={{ height: "1.5rem", padding: "0 0.375rem", gap: "0.25rem" }}
+              >
+                <Calendar size={14} />
+              </button>
+              <button
+                type="button"
+                aria-label="Add comment"
+                title="Add comment"
+                className="icon-btn"
+                style={{ height: "1.5rem", padding: "0 0.375rem", gap: "0.25rem" }}
+              >
+                <MessageSquare size={14} />
+              </button>
+            </span>
+          </div>
+        )}
       </div>
 
-      <TaskOptions
-        itemId={item.ID}
-        onDelete={(itemId) => {
-          setOptimisticallyDeleted(true);
-          onDelete(itemId);
-        }}
-      />
+      {renaming ? null : (
+        <TaskOptions
+          itemId={item.ID}
+          onRename={() => setRenaming(true)}
+          onDelete={(itemId) => {
+            setOptimisticallyDeleted(true);
+            onDelete(itemId);
+          }}
+        />
+      )}
     </div>
   );
 }
 
 type TaskOptionsProps = {
   itemId: string;
+  onRename: () => void;
   onDelete: (itemId: string) => void;
 };
 
-function TaskOptions({ itemId, onDelete }: TaskOptionsProps) {
+function TaskOptions({ itemId, onRename, onDelete }: TaskOptionsProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -143,6 +154,7 @@ function TaskOptions({ itemId, onDelete }: TaskOptionsProps) {
               role="menuitem"
               className="dropdown-item is-flex is-align-items-center"
               style={{ gap: "0.625rem" }}
+              onClick={onRename}
             >
               <span style={{ display: "inline-flex", color: "hsl(0deg 0% 45%)" }}>
                 <Pencil size={16} />

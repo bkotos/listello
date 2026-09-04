@@ -298,4 +298,36 @@ describe("ItemRow", () => {
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
   });
+
+  describe("when Rename is clicked", () => {
+    beforeEach(() => {
+      render(
+        createElement(ItemRow, {
+          item: { ...baseItem, Title: "Reply to the venue about the offsite" },
+          onComplete: vi.fn(),
+          onUncomplete: vi.fn(),
+          onDelete: vi.fn(),
+        }),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Task options" }));
+      fireEvent.click(screen.getByRole("menuitem", { name: "Rename" }));
+    });
+
+    it("renders a small title input with the current title", () => {
+      // Assert
+      const input = screen.getByDisplayValue("Reply to the venue about the offsite");
+      expect(input).toHaveClass("input", "is-small");
+    });
+
+    it("keeps the Mark complete toggle", () => {
+      // Assert
+      const toggle = screen.getByRole("button", { name: "Mark complete" });
+      expect(toggle).toHaveClass("check-toggle");
+    });
+
+    it("hides Task options", () => {
+      // Assert
+      expect(screen.queryByRole("button", { name: "Task options" })).not.toBeInTheDocument();
+    });
+  });
 });
