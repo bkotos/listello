@@ -275,6 +275,72 @@ func (_c *MockItemService_GetAll_Call) RunAndReturn(run func(listID string) ([]d
 	return _c
 }
 
+// ModifyItemTitle provides a mock function for the type MockItemService
+func (_mock *MockItemService) ModifyItemTitle(itemID string, title string) (domain.Item, error) {
+	ret := _mock.Called(itemID, title)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ModifyItemTitle")
+	}
+
+	var r0 domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, string) (domain.Item, error)); ok {
+		return returnFunc(itemID, title)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, string) domain.Item); ok {
+		r0 = returnFunc(itemID, title)
+	} else {
+		r0 = ret.Get(0).(domain.Item)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = returnFunc(itemID, title)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemService_ModifyItemTitle_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ModifyItemTitle'
+type MockItemService_ModifyItemTitle_Call struct {
+	*mock.Call
+}
+
+// ModifyItemTitle is a helper method to define mock.On call
+//   - itemID string
+//   - title string
+func (_e *MockItemService_Expecter) ModifyItemTitle(itemID any, title any) *MockItemService_ModifyItemTitle_Call {
+	return &MockItemService_ModifyItemTitle_Call{Call: _e.mock.On("ModifyItemTitle", itemID, title)}
+}
+
+func (_c *MockItemService_ModifyItemTitle_Call) Run(run func(itemID string, title string)) *MockItemService_ModifyItemTitle_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_ModifyItemTitle_Call) Return(item domain.Item, err error) *MockItemService_ModifyItemTitle_Call {
+	_c.Call.Return(item, err)
+	return _c
+}
+
+func (_c *MockItemService_ModifyItemTitle_Call) RunAndReturn(run func(itemID string, title string) (domain.Item, error)) *MockItemService_ModifyItemTitle_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UncompleteItem provides a mock function for the type MockItemService
 func (_mock *MockItemService) UncompleteItem(itemID string) (domain.Item, error) {
 	ret := _mock.Called(itemID)

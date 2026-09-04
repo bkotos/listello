@@ -292,3 +292,74 @@ func TestItemService_DeleteItem_PublishesEvent(t *testing.T) {
 	assert.Equal(t, itemID, metadata.Item.ID)
 	assert.NotEmpty(t, published.Timestamp)
 }
+
+func TestItemService_ModifyItemTitle_PersistsItem(t *testing.T) {
+	// Arrange
+	const (
+		itemID = "IT_1"
+		title  = "Schedule dentist"
+	)
+	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "dentist", State: domain.ItemOutstanding}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, publisher)
+
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Save(mock.MatchedBy(func(saved domain.Item) bool {
+			return saved.ID == itemID && saved.Title == title
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("domain.Event")).
+		Return(nil)
+
+	// Act
+	result, err := svc.ModifyItemTitle(itemID, title)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, title, result.Title)
+}
+
+func TestItemService_ModifyItemTitle_PublishesEvent(t *testing.T) {
+	// Arrange
+	const (
+		itemID = "IT_1"
+		title  = "Schedule dentist"
+	)
+	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "dentist", State: domain.ItemOutstanding}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, publisher)
+
+	var published domain.Event
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Save(mock.AnythingOfType("domain.Item")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			metadata, ok := event.Metadata.(domain.EventMetadataItemTitleChanged)
+			return event.Name == domain.EventItemTitleChanged && ok && metadata.ID == itemID && metadata.Title == title
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.ModifyItemTitle(itemID, title)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataItemTitleChanged)
+	require.True(t, ok)
+	assert.Equal(t, itemID, metadata.ID)
+	assert.Equal(t, title, metadata.Title)
+	assert.NotEmpty(t, published.Timestamp)
+}

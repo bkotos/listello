@@ -18,6 +18,7 @@ type ItemService interface {
 	CompleteItem(itemID string) (domain.Item, error)
 	UncompleteItem(itemID string) (domain.Item, error)
 	DeleteItem(itemID string) error
+	ModifyItemTitle(itemID, title string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
 }
 
@@ -114,4 +115,23 @@ func (s *itemService) DeleteItem(itemID string) error {
 		return err
 	}
 	return s.eventPublisher.Publish(event)
+}
+
+// ModifyItemTitle changes an item's title via the domain and persists it.
+func (s *itemService) ModifyItemTitle(itemID, title string) (domain.Item, error) {
+	item, err := s.itemRepository.GetByID(itemID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	event, err := (&item).ModifyTitle(title)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.itemRepository.Save(item); err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.Item{}, err
+	}
+	return item, nil
 }
