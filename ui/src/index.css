@@ -137,6 +137,17 @@ body {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.hover-reveal {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.hover-parent:hover .hover-reveal,
+.hover-reveal:focus-within,
+.hover-reveal.is-visible {
+  opacity: 1;
+}
+
 .check-toggle {
   display: inline-flex;
   align-items: center;
