@@ -114,7 +114,7 @@ function TaskOptions() {
           aria-expanded={menuOpen}
           className={`icon-btn ${menuOpen ? "is-active" : "hover-reveal"}`}
           style={{ height: "1.75rem", width: "1.75rem" }}
-          onClick={() => setMenuOpen(true)}
+          onClick={() => setMenuOpen((open) => !open)}
         >
           <Ellipsis size={16} />
         </button>

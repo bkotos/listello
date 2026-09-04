@@ -281,5 +281,16 @@ describe("ItemRow", () => {
       expect(trigger.closest(".dropdown")).not.toHaveClass("is-active");
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
+
+    it("closes when the Task options button is clicked again", () => {
+      // Act
+      fireEvent.click(screen.getByRole("button", { name: "Task options" }));
+
+      // Assert
+      const trigger = screen.getByRole("button", { name: "Task options" });
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(trigger.closest(".dropdown")).not.toHaveClass("is-active");
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    });
   });
 });
