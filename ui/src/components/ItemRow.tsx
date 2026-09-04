@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Calendar, Check, Ellipsis, MessageSquare, Pencil, Trash2 } from "lucide-react";
 import type { ItemDto } from "api-types";
 
@@ -86,9 +86,26 @@ export function ItemRow({ item, onComplete, onUncomplete }: ItemRowProps) {
 
 function TaskOptions() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+    };
+  }, [menuOpen]);
 
   return (
-    <div className={`dropdown is-right${menuOpen ? " is-active" : ""}`}>
+    <div
+      ref={containerRef}
+      className={`dropdown is-right${menuOpen ? " is-active" : ""}`}
+    >
       <div className="dropdown-trigger">
         <button
           type="button"

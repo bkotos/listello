@@ -270,5 +270,16 @@ describe("ItemRow", () => {
       expect(children[1]).toHaveClass("dropdown-divider");
       expect(children[2]).toHaveTextContent("Delete");
     });
+
+    it("closes when clicking outside", () => {
+      // Act
+      fireEvent.mouseDown(document.body);
+
+      // Assert
+      const trigger = screen.getByRole("button", { name: "Task options" });
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(trigger.closest(".dropdown")).not.toHaveClass("is-active");
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    });
   });
 });
