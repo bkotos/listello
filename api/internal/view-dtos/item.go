@@ -7,6 +7,11 @@ type DefineItemRequest struct {
 	Title string `json:"title"`
 }
 
+// ModifyItemTitleRequest is the HTTP request body for changing an item's title.
+type ModifyItemTitleRequest struct {
+	Title string `json:"title"`
+}
+
 // ItemDto is the HTTP representation of an item.
 type ItemDto struct {
 	ID          string   `json:"ID"`
