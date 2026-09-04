@@ -15,6 +15,7 @@ flowchart TD
     handler[API handler<br/>create-api-handler]
     client[API client<br/>create-api-client]
     queries[React Query hooks<br/>create-api-queries]
+    ui[UI component<br/>create-ui-component]
 
     domain --> app
     app --> adapter
@@ -22,6 +23,7 @@ flowchart TD
     app --> handler
     handler --> client
     client --> queries
+    queries --> ui
 ```
 
 | Layer | Skill | Requires upstream |
@@ -32,8 +34,9 @@ flowchart TD
 | API handler | `create-api-handler` | Application service method (implemented) |
 | API client | `create-api-client` | API handler + route + `api-types` |
 | React Query hooks | `create-api-queries` | Client function in `{resource}-client.ts` |
+| UI component | `create-ui-component` | Existing props/DTOs; new API data → query hooks |
 
-Adapter and CLI/handler are **not** prerequisites for each other. Handler tests use stub repositories; CLI tests use stub repositories. Adapter is required for production/bootstrap wiring but not for handler or CLI skills.
+Adapter and CLI/handler are **not** prerequisites for each other. Handler tests use stub repositories; CLI tests use stub repositories. Adapter is required for production/bootstrap wiring but not for handler or CLI skills. UI components that only use existing props do not require new query hooks.
 
 ## Stop rule
 
@@ -106,6 +109,16 @@ If types missing → stop, use `create-api-handler` (DTOs + `make api-types`).
 
 If client function missing → stop, use `create-api-client`.
 
+### UI component (`create-ui-component`)
+
+| Check | How to verify |
+|-------|---------------|
+| New API data needed? | Component would have to call a missing client/hook |
+| Query/mutation exists (if needed) | `{verb}{Resource}` hook in `ui/src/lib/api/{resource}-queries.ts` |
+
+If the UI only uses existing DTOs/callbacks (hover chrome, dropdown open/close) → proceed.
+If it needs a new read/write → stop, use `create-api-queries` (which requires `create-api-client`).
+
 ## Full vertical slice order
 
 When building end to end, work in this order:
@@ -118,4 +131,4 @@ When building end to end, work in this order:
 6. `make api-types` (after handler DTOs)
 7. API client (`create-api-client`)
 8. React Query hooks (`create-api-queries`)
-9. UI pages / context (no skill yet)
+9. UI components / pages (`create-ui-component`)

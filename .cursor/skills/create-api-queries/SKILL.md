@@ -37,7 +37,7 @@ Do not write query hook tests or hooks until the client function is implemented.
 
 - Client functions (`{resource}-client.ts`) — use [create-api-client](../create-api-client/SKILL.md)
 - Go API handlers and DTOs — use [create-api-handler](../create-api-handler/SKILL.md)
-- React pages, components, routes (`ui/src/pages/`, `ui/src/components/`)
+- React pages, components, routes (`ui/src/pages/`, `ui/src/components/`) — use [create-ui-component](../create-ui-component/SKILL.md)
 - App context (`ui/src/contexts/`)
 
 ## Architecture constraints
@@ -260,4 +260,4 @@ cd ui && npm test -- src/lib/api/
 
 ## Further reading
 
-Annotated walkthroughs of `list-queries` and `item-queries`: [examples.md](examples.md)
+Annotated walkthroughs of `list-queries` and `item-queries`: [examples.md](examples.md). For pages and components, see [create-ui-component](../create-ui-component/SKILL.md).

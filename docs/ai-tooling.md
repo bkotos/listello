@@ -22,8 +22,14 @@ This repo includes Cursor configuration that guides agents working on Listello: 
     ├── create-cli-command/
     │   ├── SKILL.md                         # Cobra CLI commands
     │   └── examples.md
-    └── create-api-client/
-        ├── SKILL.md                         # UI API client + React Query
+    ├── create-api-client/
+    │   ├── SKILL.md                         # UI API client
+    │   └── examples.md
+    ├── create-api-queries/
+    │   ├── SKILL.md                         # React Query hooks
+    │   └── examples.md
+    └── create-ui-component/
+        ├── SKILL.md                         # React components + TDD
         └── examples.md
 ```
 
@@ -51,12 +57,16 @@ flowchart TD
     cli[create-cli-command]
     handler[create-api-handler]
     client[create-api-client]
+    queries[create-api-queries]
+    ui[create-ui-component]
 
     domain --> app
     app --> adapter
     app --> cli
     app --> handler
     handler --> client
+    client --> queries
+    queries --> ui
 ```
 
 | Skill | Stop if upstream missing |
@@ -66,8 +76,10 @@ flowchart TD
 | `create-cli-command` | Application service method (implemented, tests green) |
 | `create-api-handler` | Application service method (implemented, tests green) |
 | `create-api-client` | API handler + route + `api-types` |
+| `create-api-queries` | Client function in `{resource}-client.ts` |
+| `create-ui-component` | Existing props/DTOs; new API data → query hooks |
 
-Adapter is **not** required before handler or CLI (those tests use stubs). Handler **is** required before API client.
+Adapter is **not** required before handler or CLI (those tests use stubs). Handler **is** required before API client. Presentational UI on existing props does **not** require new query hooks.
 
 When upstream code is missing, agents must **stop**, name the upstream skill, and not write tests or code for the downstream layer.
 
@@ -319,6 +331,55 @@ After tests pass, the agent may mention wiring into pages or AppContext as a fol
 
 See [.cursor/skills/create-api-client/examples.md](../.cursor/skills/create-api-client/examples.md) for annotated `list-client` and `list-queries` patterns.
 
+### `create-ui-component`
+
+Adds or extends React UI in `ui/src/components/` and `ui/src/pages/` with Vitest + Testing Library, following the same red → stop → green loop as the other skills.
+
+**In scope:** `{Component}.tsx`, `{Component}.spec.ts`, page files that render the component, CSS required by asserted classes, same-file child components after green.
+
+**Out of scope** (unless you ask separately): API clients, React Query hooks, Go layers, editing the Next.js mockup app.
+
+**Prerequisite:** Existing DTO props/callbacks are enough for presentational UI. If the UI needs a new API read/write, use `create-api-queries` first.
+
+Skill details: [.cursor/skills/create-ui-component/SKILL.md](../.cursor/skills/create-ui-component/SKILL.md).
+
+#### How to invoke
+
+| Mode | What to say |
+|------|-------------|
+| **Explicit** | `@create-ui-component` or *"use the create-ui-component skill"* |
+| **Auto-discover** | Describe the task — e.g. *"When I hover the item row, the DOM should look like this"* (paste mockup HTML) |
+
+Example prompts:
+
+- *"Using TDD, when I hover the item row, the DOM should look like this"* (paste HTML)
+- *"When I click the ellipsis, show this dropdown"* (paste HTML)
+- *"@create-ui-component add click-outside to close the task options menu"*
+
+#### What the agent will do
+
+```mermaid
+flowchart TD
+    start[Your request] --> html{Pasted mockup HTML?}
+    html -->|yes| split[Split each control into its own it under describe + beforeEach]
+    html -->|no| behavior[One describe per interaction]
+    split --> red[Write failing component spec]
+    behavior --> red
+    red --> stop[STOP — summarize spec for your review]
+    stop --> approved{You approve?}
+    approved -->|yes| green[Implement minimum UI + CSS]
+    approved -->|no| red
+    green --> done[Tests green — UI layer only]
+```
+
+Specs use Testing Library roles/names/classes, not HTML snapshots. Hover-reveal nodes are asserted in the DOM without simulating hover. One behavior per TDD cycle (hover chrome, then open menu, then click-outside, then toggle-close).
+
+After tests pass, the agent may extract a same-file child component if you ask, without opening a new file.
+
+#### Reference implementation
+
+See [.cursor/skills/create-ui-component/examples.md](../.cursor/skills/create-ui-component/examples.md) for the `ItemRow` hover-actions and Task options dropdown walkthrough.
+
 ## Adding more skills
 
 Follow the same structure:
@@ -334,5 +395,5 @@ Follow the same structure:
 - **Upstream gates** — Each skill verifies lower layers exist before proceeding. If you ask for an API client but the handler does not exist yet, the agent should stop and point you to `create-api-handler` first.
 - **Approve red before green** — The TDD rule requires a stop after failing specs. Say *"approved, implement"* when you're ready for production code.
 - **Scope requests** — Skills stop at their layer. Name bootstrap, pages, or context explicitly if you want them in the same task.
-- **Full vertical slice** — domain → application → adapter → bootstrap → handler or CLI → `make api-types` → API client → pages/context. Details in [LAYER-ORDER.md](../.cursor/skills/LAYER-ORDER.md).
+- **Full vertical slice** — domain → application → adapter → bootstrap → handler or CLI → `make api-types` → API client → query hooks → UI components. Details in [LAYER-ORDER.md](../.cursor/skills/LAYER-ORDER.md).
 - **Reload if needed** — After adding or changing skills, start a new chat or reload the window so Cursor picks up new project skills.

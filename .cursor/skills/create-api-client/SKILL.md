@@ -42,7 +42,7 @@ Do not write client tests or fetch wrappers until the handler is implemented.
 
 - Go API handlers and DTOs (`api/cmd/server/`, `api/internal/view-dtos/`) — use [create-api-handler](../create-api-handler/SKILL.md)
 - Application / adapter layers
-- React pages, components, routes (`ui/src/pages/`, `ui/src/components/`)
+- React pages, components, routes (`ui/src/pages/`, `ui/src/components/`) — use [create-ui-component](../create-ui-component/SKILL.md)
 - App context (`ui/src/contexts/`) — wire queries into context separately if needed
 - Bruno collection (`bruno/`)
 
@@ -86,6 +86,7 @@ Task progress:
 - [ ] (After approval) Implement client function(s)
 - [ ] Re-run tests — confirm green
 - [ ] (Follow-up) React Query hooks — use [create-api-queries](../create-api-queries/SKILL.md)
+- [ ] (Follow-up) Pages/components — use [create-ui-component](../create-ui-component/SKILL.md)
 ```
 
 ## Naming conventions
@@ -181,7 +182,7 @@ Follow `.cursor/rules/tdd.mdc`:
 
 Do not write client implementation in the same turn as a new failing spec.
 
-For React Query hooks after the client is green, use [create-api-queries](../create-api-queries/SKILL.md).
+For React Query hooks after the client is green, use [create-api-queries](../create-api-queries/SKILL.md). For pages and components, use [create-ui-component](../create-ui-component/SKILL.md).
 
 ## Verification
 
