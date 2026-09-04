@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { completeItem, defineItem, getAllItems, uncompleteItem } from "./item-client";
+import { completeItem, defineItem, deleteItem, getAllItems, uncompleteItem } from "./item-client";
 import { request } from "./util";
 
 vi.mock(import("./util"), () => ({
@@ -128,5 +128,21 @@ describe("uncompleteItem", () => {
       method: "POST",
     });
     expect(result).toEqual(item);
+  });
+});
+
+describe("deleteItem", () => {
+  it("deletes an item via the API", async () => {
+    // Arrange
+    vi.mocked(request).mockResolvedValue(undefined);
+
+    // Act
+    const result = await deleteItem("IT_1");
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/items/IT_1", {
+      method: "DELETE",
+    });
+    expect(result).toBeUndefined();
   });
 });

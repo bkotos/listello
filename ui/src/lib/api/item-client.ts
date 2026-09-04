@@ -29,3 +29,9 @@ export async function uncompleteItem(itemId: string): Promise<ItemDto> {
     method: "POST",
   });
 }
+
+export async function deleteItem(itemId: string): Promise<void> {
+  return request<void>(`/api/items/${itemId}`, {
+    method: "DELETE",
+  });
+}
