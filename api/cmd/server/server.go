@@ -18,5 +18,6 @@ func newAPIServer(listService application.ListService, itemService application.I
 	mux.HandleFunc("GET /api/lists/{id}/items", handlers.GetAllItems(itemService))
 	mux.HandleFunc("POST /api/items/{id}/complete", handlers.CompleteItem(itemService))
 	mux.HandleFunc("POST /api/items/{id}/uncomplete", handlers.UncompleteItem(itemService))
+	mux.HandleFunc("DELETE /api/items/{id}", handlers.DeleteItem(itemService))
 	return mux
 }
