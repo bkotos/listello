@@ -13,9 +13,10 @@ vi.mock("../lib/api/item-client", () => ({
   defineItem: vi.fn(),
   completeItem: vi.fn(),
   uncompleteItem: vi.fn(),
+  deleteItem: vi.fn(),
 }));
 
-import { completeItem, defineItem, getAllItems, uncompleteItem } from "../lib/api/item-client";
+import { completeItem, defineItem, deleteItem, getAllItems, uncompleteItem } from "../lib/api/item-client";
 import { getList } from "../lib/api/list-client";
 
 const sampleItems = [
@@ -380,5 +381,55 @@ describe("ListPage", () => {
     const title = screen.getByText("Buy windshield wipers for truck");
     expect(title).not.toHaveClass("muted");
     expect(title).not.toHaveClass("line-through");
+  });
+
+  it("calls deleteItem when Delete is clicked in Task options", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(deleteItem).mockResolvedValue(undefined);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getAllByRole("button", { name: "Task options" })[0]);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+
+    // Assert
+    expect(deleteItem).toHaveBeenCalledWith("IT_1");
+  });
+
+  it("reloads items after deleteItem is called", async () => {
+    // Arrange
+    const remainingItems = [sampleItems[1]];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(sampleItems)
+      .mockResolvedValueOnce(remainingItems);
+    vi.mocked(deleteItem).mockResolvedValue(undefined);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+
+    // Act
+    fireEvent.click(screen.getAllByRole("button", { name: "Task options" })[0]);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
   });
 });

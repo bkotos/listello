@@ -6,13 +6,14 @@ export type ItemRowProps = {
   item: ItemDto;
   onComplete: (itemId: string) => void;
   onUncomplete: (itemId: string) => void;
+  onDelete: (itemId: string) => void;
 };
 
 function isComplete(item: ItemDto): boolean {
   return item.State === "complete";
 }
 
-export function ItemRow({ item, onComplete, onUncomplete }: ItemRowProps) {
+export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowProps) {
   const [optimisticallyComplete, setOptimisticallyComplete] = useState(false);
   const completed = isComplete(item) || optimisticallyComplete;
 
@@ -79,12 +80,17 @@ export function ItemRow({ item, onComplete, onUncomplete }: ItemRowProps) {
         </div>
       </div>
 
-      <TaskOptions />
+      <TaskOptions itemId={item.ID} onDelete={onDelete} />
     </div>
   );
 }
 
-function TaskOptions() {
+type TaskOptionsProps = {
+  itemId: string;
+  onDelete: (itemId: string) => void;
+};
+
+function TaskOptions({ itemId, onDelete }: TaskOptionsProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -137,6 +143,7 @@ function TaskOptions() {
               role="menuitem"
               className="dropdown-item is-flex is-align-items-center"
               style={{ gap: "0.625rem", color: "hsl(348deg 86% 43%)" }}
+              onClick={() => onDelete(itemId)}
             >
               <span style={{ display: "inline-flex", color: "hsl(348deg 86% 43%)" }}>
                 <Trash2 size={16} />

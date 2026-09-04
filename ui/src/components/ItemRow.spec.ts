@@ -23,7 +23,7 @@ afterEach(() => {
 describe("ItemRow", () => {
   it("renders an outstanding item without completed styling", () => {
     // Arrange
-    render(createElement(ItemRow, { item: baseItem, onComplete: vi.fn(), onUncomplete: vi.fn() }));
+    render(createElement(ItemRow, { item: baseItem, onComplete: vi.fn(), onUncomplete: vi.fn(), onDelete: vi.fn() }));
 
     // Assert
     const toggle = screen.getByRole("button", { name: "Mark complete" });
@@ -43,6 +43,7 @@ describe("ItemRow", () => {
         item: { ...baseItem, State: "complete" },
         onComplete: vi.fn(),
         onUncomplete: vi.fn(),
+        onDelete: vi.fn(),
       }),
     );
 
@@ -59,6 +60,7 @@ describe("ItemRow", () => {
         item: { ...baseItem, State: "complete" },
         onComplete: vi.fn(),
         onUncomplete: vi.fn(),
+        onDelete: vi.fn(),
       }),
     );
 
@@ -72,7 +74,7 @@ describe("ItemRow", () => {
   it("calls onComplete when the checkbox is clicked", () => {
     // Arrange
     const onComplete = vi.fn();
-    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn() }));
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn(), onDelete: vi.fn() }));
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
@@ -89,6 +91,7 @@ describe("ItemRow", () => {
         item: { ...baseItem, State: "complete" },
         onComplete: vi.fn(),
         onUncomplete,
+        onDelete: vi.fn(),
       }),
     );
 
@@ -102,7 +105,7 @@ describe("ItemRow", () => {
   it("immediately marks the checkbox as checked when clicked", () => {
     // Arrange
     const onComplete = vi.fn(() => new Promise<void>(() => {}));
-    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn() }));
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn(), onDelete: vi.fn() }));
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
@@ -116,7 +119,7 @@ describe("ItemRow", () => {
   it("immediately strikes through the title when the checkbox is clicked", () => {
     // Arrange
     const onComplete = vi.fn(() => new Promise<void>(() => {}));
-    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn() }));
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn(), onDelete: vi.fn() }));
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
@@ -131,7 +134,7 @@ describe("ItemRow", () => {
     // Arrange
     const onComplete = vi.fn();
     const onUncomplete = vi.fn();
-    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete }));
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete, onDelete: vi.fn() }));
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
@@ -148,7 +151,7 @@ describe("ItemRow", () => {
     // Arrange
     const onComplete = vi.fn();
     const onUncomplete = vi.fn();
-    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete }));
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete, onDelete: vi.fn() }));
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
@@ -167,6 +170,7 @@ describe("ItemRow", () => {
           item: { ...baseItem, Title: "Reply to the venue about the offsite" },
           onComplete: vi.fn(),
           onUncomplete: vi.fn(),
+          onDelete: vi.fn(),
         }),
       );
     });
@@ -229,6 +233,7 @@ describe("ItemRow", () => {
           item: { ...baseItem, Title: "Reply to the venue about the offsite" },
           onComplete: vi.fn(),
           onUncomplete: vi.fn(),
+          onDelete: vi.fn(),
         }),
       );
       fireEvent.click(screen.getByRole("button", { name: "Task options" }));
