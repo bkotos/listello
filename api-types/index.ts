@@ -10,6 +10,12 @@ export interface DefineItemRequest {
   title: string;
 }
 /**
+ * ModifyItemTitleRequest is the HTTP request body for changing an item's title.
+ */
+export interface ModifyItemTitleRequest {
+  title: string;
+}
+/**
  * ItemDto is the HTTP representation of an item.
  */
 export interface ItemDto {
