@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { completeItem, defineItem, deleteItem, getAllItems, uncompleteItem } from "./item-client";
+import { completeItem, defineItem, deleteItem, getAllItems, modifyItemTitle, uncompleteItem } from "./item-client";
 import { request } from "./util";
 
 vi.mock(import("./util"), () => ({
@@ -144,5 +144,33 @@ describe("deleteItem", () => {
       method: "DELETE",
     });
     expect(result).toBeUndefined();
+  });
+});
+
+describe("modifyItemTitle", () => {
+  it("patches an item title via the API", async () => {
+    // Arrange
+    const item = {
+      ID: "IT_1",
+      ListID: "LS_1",
+      ParentID: "",
+      Title: "Schedule dentist",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    vi.mocked(request).mockResolvedValue(item);
+
+    // Act
+    const result = await modifyItemTitle("IT_1", { title: "Schedule dentist" });
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/items/IT_1/title", {
+      method: "PATCH",
+      body: JSON.stringify({ title: "Schedule dentist" }),
+    });
+    expect(result).toEqual(item);
   });
 });
