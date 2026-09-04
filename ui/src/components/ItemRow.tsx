@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Calendar, Check, Ellipsis, MessageSquare, Pencil, Trash2 } from "lucide-react";
 import type { ItemDto } from "api-types";
 
@@ -19,10 +19,52 @@ export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowPro
   const [renaming, setRenaming] = useState(false);
   const completed = isComplete(item) || optimisticallyComplete;
 
+  function handleToggle() {
+    if (!completed) {
+      setOptimisticallyComplete(true);
+      onComplete(item.ID);
+      return;
+    }
+    setOptimisticallyComplete(false);
+    onUncomplete(item.ID);
+  }
+
   if (optimisticallyDeleted) {
     return null;
   }
 
+  if (renaming) {
+    return <RenamingItemRow title={item.Title} completed={completed} onToggle={handleToggle} />;
+  }
+
+  return (
+    <ItemRowShell>
+      <CompleteToggle completed={completed} onToggle={handleToggle} />
+      <div style={{ minWidth: 0, flex: "1 1 0" }}>
+        <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
+          <p className={`is-size-6 mb-0${completed ? " muted line-through" : ""}`}>
+            {item.Title}
+          </p>
+        </div>
+        <HoverActions />
+      </div>
+      <TaskOptions
+        itemId={item.ID}
+        onRename={() => setRenaming(true)}
+        onDelete={(itemId) => {
+          setOptimisticallyDeleted(true);
+          onDelete(itemId);
+        }}
+      />
+    </ItemRowShell>
+  );
+}
+
+type ItemRowShellProps = {
+  children: ReactNode;
+};
+
+function ItemRowShell({ children }: ItemRowShellProps) {
   return (
     <div
       role="button"
@@ -30,78 +72,78 @@ export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowPro
       className="task-row hover-parent is-flex p-3"
       style={{ gap: "0.75rem", alignItems: "flex-start" }}
     >
-      <button
-        type="button"
-        aria-label={completed ? "Mark incomplete" : "Mark complete"}
-        className={`check-toggle${completed ? " is-checked" : ""}`}
-        style={{ height: "1.25rem", width: "1.25rem", marginTop: "0.125rem" }}
-        onClick={() => {
-          if (!completed) {
-            setOptimisticallyComplete(true);
-            onComplete(item.ID);
-            return;
-          }
-          setOptimisticallyComplete(false);
-          onUncomplete(item.ID);
-        }}
-      >
-        {completed ? <Check size={12} strokeWidth={2} aria-hidden /> : null}
-      </button>
+      {children}
+    </div>
+  );
+}
 
+type CompleteToggleProps = {
+  completed: boolean;
+  onToggle: () => void;
+};
+
+function CompleteToggle({ completed, onToggle }: CompleteToggleProps) {
+  return (
+    <button
+      type="button"
+      aria-label={completed ? "Mark incomplete" : "Mark complete"}
+      className={`check-toggle${completed ? " is-checked" : ""}`}
+      style={{ height: "1.25rem", width: "1.25rem", marginTop: "0.125rem" }}
+      onClick={onToggle}
+    >
+      {completed ? <Check size={12} strokeWidth={2} aria-hidden /> : null}
+    </button>
+  );
+}
+
+type RenamingItemRowProps = {
+  title: string;
+  completed: boolean;
+  onToggle: () => void;
+};
+
+function RenamingItemRow({ title, completed, onToggle }: RenamingItemRowProps) {
+  return (
+    <ItemRowShell>
+      <CompleteToggle completed={completed} onToggle={onToggle} />
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
-          {renaming ? (
-            <input className="input is-small" defaultValue={item.Title} />
-          ) : (
-            <p
-              className={`is-size-6 mb-0${completed ? " muted line-through" : ""}`}
-            >
-              {item.Title}
-            </p>
-          )}
+          <input className="input is-small" defaultValue={title} />
         </div>
-        {renaming ? null : (
-          <div
-            className="is-flex is-flex-wrap-wrap is-align-items-center mt-2 is-size-7 muted"
-            style={{ gap: "0.5rem" }}
-          >
-            <span
-              className="is-inline-flex is-align-items-center hover-reveal"
-              style={{ gap: "0.25rem" }}
-            >
-              <button
-                type="button"
-                aria-label="Set date"
-                title="Set date"
-                className="icon-btn"
-                style={{ height: "1.5rem", padding: "0 0.375rem", gap: "0.25rem" }}
-              >
-                <Calendar size={14} />
-              </button>
-              <button
-                type="button"
-                aria-label="Add comment"
-                title="Add comment"
-                className="icon-btn"
-                style={{ height: "1.5rem", padding: "0 0.375rem", gap: "0.25rem" }}
-              >
-                <MessageSquare size={14} />
-              </button>
-            </span>
-          </div>
-        )}
       </div>
+    </ItemRowShell>
+  );
+}
 
-      {renaming ? null : (
-        <TaskOptions
-          itemId={item.ID}
-          onRename={() => setRenaming(true)}
-          onDelete={(itemId) => {
-            setOptimisticallyDeleted(true);
-            onDelete(itemId);
-          }}
-        />
-      )}
+function HoverActions() {
+  return (
+    <div
+      className="is-flex is-flex-wrap-wrap is-align-items-center mt-2 is-size-7 muted"
+      style={{ gap: "0.5rem" }}
+    >
+      <span
+        className="is-inline-flex is-align-items-center hover-reveal"
+        style={{ gap: "0.25rem" }}
+      >
+        <button
+          type="button"
+          aria-label="Set date"
+          title="Set date"
+          className="icon-btn"
+          style={{ height: "1.5rem", padding: "0 0.375rem", gap: "0.25rem" }}
+        >
+          <Calendar size={14} />
+        </button>
+        <button
+          type="button"
+          aria-label="Add comment"
+          title="Add comment"
+          className="icon-btn"
+          style={{ height: "1.5rem", padding: "0 0.375rem", gap: "0.25rem" }}
+        >
+          <MessageSquare size={14} />
+        </button>
+      </span>
     </div>
   );
 }
