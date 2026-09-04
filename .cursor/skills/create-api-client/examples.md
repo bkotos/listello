@@ -157,6 +157,6 @@ export async function defineItem(
 
 2. **Client test:** assert path `/api/lists/LS_1/items`, method POST, body `{ title: "Buy milk" }`.
 
-3. **Queries:** add `useDefineItemMutation` via [create-api-queries](../create-api-queries/SKILL.md).
+3. **UI:** wire the page via [create-ui-component](../create-ui-component/SKILL.md) — call the client, then `invalidateQueries`. Do not add a mutation hook unless asked.
 
 4. **Prerequisite:** API handler + DTOs via `create-api-handler`, then `make api-types`.

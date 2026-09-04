@@ -68,8 +68,8 @@ If the endpoint or types are missing → **stop** and use `create-api-handler` f
 
 1. **New resource?** → Create `{resource}-client.ts` + spec.
 2. **New operation on existing resource?** → Add function to existing client.
-3. **GET (read)?** → Client function; then use [create-api-queries](../create-api-queries/SKILL.md) for the hook.
-4. **POST/PUT/PATCH (write)?** → Client function; then use [create-api-queries](../create-api-queries/SKILL.md) for the mutation hook.
+3. **GET (read)?** → Client function; then use [create-api-queries](../create-api-queries/SKILL.md) for the hook if the page does not already query that data.
+4. **POST/PUT/PATCH/DELETE (write)?** → Client function; then [create-ui-component](../create-ui-component/SKILL.md) (page calls the client + `invalidateQueries`). Do **not** add a mutation hook unless the user asks for [create-api-queries](../create-api-queries/SKILL.md).
 5. **Types missing in `api-types`?** → Stop; add Go DTOs and run `make api-types`.
 
 ## Scaffold checklist
@@ -85,8 +85,8 @@ Task progress:
 - [ ] STOP — summarize spec and failure for user review
 - [ ] (After approval) Implement client function(s)
 - [ ] Re-run tests — confirm green
-- [ ] (Follow-up) React Query hooks — use [create-api-queries](../create-api-queries/SKILL.md)
-- [ ] (Follow-up) Pages/components — use [create-ui-component](../create-ui-component/SKILL.md)
+- [ ] (Follow-up) Pages/components — use [create-ui-component](../create-ui-component/SKILL.md) (client + invalidate; no mutation hook)
+- [ ] (Follow-up) React Query **read** hooks — use [create-api-queries](../create-api-queries/SKILL.md) only for new reads
 ```
 
 ## Naming conventions
@@ -182,7 +182,7 @@ Follow `.cursor/rules/tdd.mdc`:
 
 Do not write client implementation in the same turn as a new failing spec.
 
-For React Query hooks after the client is green, use [create-api-queries](../create-api-queries/SKILL.md). For pages and components, use [create-ui-component](../create-ui-component/SKILL.md).
+For pages after the client is green, use [create-ui-component](../create-ui-component/SKILL.md) (call the client + `invalidateQueries`). Use [create-api-queries](../create-api-queries/SKILL.md) for **new reads**, or for a mutation hook only if the user asks.
 
 ## Verification
 

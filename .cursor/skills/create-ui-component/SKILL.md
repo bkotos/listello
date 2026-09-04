@@ -3,8 +3,9 @@ name: create-ui-component
 description: >-
   Scaffolds and extends React UI in ui/src/components/ and ui/src/pages/ with
   Vitest + Testing Library using TDD. Use when adding or changing ItemRow,
-  hover-reveal actions, dropdowns, mockup HTML, component specs, ListPage,
-  or frontend UI following Listello architecture.
+  hover-reveal actions, dropdowns, mockup HTML, ListPage, wiring Delete or
+  other menuitem clicks to API clients (deleteItem + invalidateQueries),
+  TaskOptionsProps, or frontend UI following Listello architecture.
 ---
 
 # Create UI Component
@@ -17,15 +18,17 @@ Architecture context: see [README.md](../../../README.md). Layer order: [LAYER-O
 
 Presentational markup and interaction on **existing props** can proceed immediately.
 
-**Stop and do not proceed** if the UI needs data or mutations that do not exist yet. See [LAYER-ORDER.md](../LAYER-ORDER.md).
+**Stop and do not proceed** if the UI needs an API call whose **client function** does not exist yet. See [LAYER-ORDER.md](../LAYER-ORDER.md).
 
 | Need | How to verify | If missing |
 |------|---------------|------------|
 | New read/write from the API | Client function in `ui/src/lib/api/{resource}-client.ts` | [create-api-client](../create-api-client/SKILL.md) |
-| Query/mutation hook | Hook in `ui/src/lib/api/{resource}-queries.ts` | [create-api-queries](../create-api-queries/SKILL.md) |
+| New **read** the page does not already query | Hook in `ui/src/lib/api/{resource}-queries.ts` (`useAllItemsQuery`, …) | [create-api-queries](../create-api-queries/SKILL.md) |
 | DTO fields on the item/list | Type in `api-types` | [create-api-handler](../create-api-handler/SKILL.md) + `make api-types` |
 
-Do not stub missing API in the component. Do not implement backend in this skill.
+**Do not require a mutation hook** for writes. `ListPage` calls the client (`deleteItem`, `completeItem`, …) then `invalidateQueries` with existing keys (`itemQueryKeys.byList`). Do not add `useDeleteItemMutation` (or similar) unless the user asks for [create-api-queries](../create-api-queries/SKILL.md).
+
+Do not stub a missing **client** in the component. Do not implement backend in this skill.
 
 ## Scope
 
@@ -34,7 +37,7 @@ Do not stub missing API in the component. Do not implement backend in this skill
 **Out of scope** (mention as follow-ups only; do not implement unless asked):
 
 - API clients (`{resource}-client.ts`) — use [create-api-client](../create-api-client/SKILL.md)
-- React Query hooks — use [create-api-queries](../create-api-queries/SKILL.md)
+- React Query **mutation** hooks — skip; pages call the client + invalidate. New **read** hooks — [create-api-queries](../create-api-queries/SKILL.md)
 - Go handlers, application, domain
 - The Next.js mockup app (`mockup/`) — read it; do not edit it to “make tests pass”
 
@@ -55,17 +58,18 @@ Do not stub missing API in the component. Do not implement backend in this skill
 2. **Static chrome (hover actions, layout)?** → `describe` + `beforeEach` that **renders**. One `it` per control.
 3. **Interaction (open, close, toggle)?** → Nested `describe("when …")` whose `beforeEach` renders **and** performs the shared act (e.g. click Task options). Extra acts stay in the `it`.
 4. **New widget vs extend existing?** → Prefer extending `ItemRow` / `ListPage` / `Sidebar`. New file only when it is a new route-level page or a clearly separate widget.
-5. **Subtree gained its own state (open menu, popover)?** → After green, extract a same-file component if the user asks or the parent is noisy.
-6. **One TDD loop per behavior.** Hover chrome, then open menu, then click-outside, then click-again-to-close are **separate** red → stop → green cycles. Do not spec the next interaction in the same red.
+5. **Subtree gained its own state (open menu, popover)?** → After green, extract a same-file component if the user asks or the parent is noisy. Named unexported `{Name}Props` — not an inline `{ … }` type.
+6. **Wire existing chrome to an API write?** (e.g. Delete in Task options) → Specs on the **page** (`ListPage.spec.ts`), not a new ItemRow `onDelete` unit test unless asked. Mock the client; assert it was called, then that the list query refetched. Callback on the row (`onDelete`); page handler calls the client + `invalidateQueries`.
+7. **One TDD loop per behavior.** Hover chrome, open menu, click-outside, and page-level API wiring are **separate** red → stop → green cycles. If the user names both “backend called” and “list reloaded”, that is two `it`s in one red (same as complete).
 
 ## Scaffold checklist
 
 ```
 Task progress:
-- [ ] Verify upstream if the UI needs new API data (stop if not — see LAYER-ORDER.md)
-- [ ] Read the existing component spec and mockup source (if HTML was pasted)
-- [ ] Decide: new describe vs new file; static chrome vs interaction
-- [ ] Write failing spec(s) — describe + beforeEach; one UI piece per it
+- [ ] Verify upstream: client exists for writes; query hook only if this is a new read (stop if client missing — see LAYER-ORDER.md)
+- [ ] Read the existing component/page spec and mockup source (if HTML was pasted)
+- [ ] Decide: component chrome vs page API wiring; new describe vs new file
+- [ ] Write failing spec(s) — describe + beforeEach; one UI piece per it (page: call + reload as two its)
 - [ ] Run tests — confirm failure is missing behavior (not a broken harness)
 - [ ] STOP — summarize each new spec and its failure for user review
 - [ ] (After approval) Implement the bare minimum production code + CSS the spec requires
@@ -81,11 +85,12 @@ Task progress:
 | Component spec | `{Name}.spec.ts` beside the component |
 | Exported component | `export function {Name}` |
 | Same-file child | unexported `function {Name}` in the same file |
+| Same-file child props | unexported `type {Name}Props` (not an inline object type) |
 | Nested describe (static) | `"hover actions"`, `"completed styling"` |
 | Nested describe (interaction) | `"when the {control} is clicked"` |
 | Test title | `"renders a {control}"` / `"closes when …"` |
 | Accessible name | Match `aria-label` / visible text from the mockup (`"Set date"`, `"Task options"`) |
-| Callback props | `onComplete`, `onUncomplete` — `vi.fn()` in specs |
+| Callback props | `onComplete`, `onUncomplete`, `onDelete` — `vi.fn()` in component specs |
 
 ## Translating mockup HTML
 
@@ -179,6 +184,31 @@ Mirror `AccountMenu`: outside click is `fireEvent.mouseDown(document.body)`.
 
 Keep `afterEach(cleanup)` at the file level. Reuse existing fixtures (`baseItem`) instead of inventing new DTO shapes.
 
+### Page — menuitem calls client, then list reloads
+
+Spec the **page**, mock `{resource}-client`, add the new fn to the existing `vi.mock`. Mirror complete/uncomplete: two tests, open the menu in the `it` (not a shared open-`beforeEach` unless several tests share it).
+
+```ts
+it("calls deleteItem when Delete is clicked in Task options", async () => {
+  // Arrange — getList + getAllItems + deleteItem mocks, render ListPage, wait for title
+  fireEvent.click(screen.getAllByRole("button", { name: "Task options" })[0]);
+  fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+  expect(deleteItem).toHaveBeenCalledWith("IT_1");
+});
+
+it("reloads items after deleteItem is called", async () => {
+  vi.mocked(getAllItems)
+    .mockResolvedValueOnce(sampleItems)
+    .mockResolvedValueOnce(remainingItems);
+  // same click path
+  await waitFor(() => {
+    expect(getAllItems).toHaveBeenCalledTimes(2);
+  });
+});
+```
+
+Red fails because the client was never called / `getAllItems` stayed at 1. Do not assert `useMutation`.
+
 ## Code templates
 
 ### Hover-reveal CSS (`ui/src/index.css`)
@@ -202,20 +232,38 @@ Add when specs assert `hover-parent` / `hover-reveal` (from mockup `globals.css`
 
 Match Bulma + `AccountMenu`: `dropdown is-right`, `dropdown-trigger`, `aria-haspopup="menu"`, `aria-expanded`, `icon-btn` + `hover-reveal` when closed / `is-active` when open. Render `dropdown-menu` only when open unless an existing component already always mounts it.
 
+### Page write handler (`ListPage.tsx`)
+
+Call the client, then invalidate the same query the page already uses. Do not introduce a mutation hook.
+
+```ts
+async function handleDelete(itemId: string) {
+  await deleteItem(itemId);
+  if (listId) {
+    await queryClient.invalidateQueries({ queryKey: itemQueryKeys.byList(listId) });
+  }
+}
+```
+
+Pass `onDelete={handleDelete}` into `ItemRow`. Adding a required callback means every existing `ItemRow` spec render needs `onDelete: vi.fn()`.
+
 ### Same-file extract (after green)
 
-Move state that belongs to the subtree into an unexported function in the same file:
+Move state that belongs to the subtree into an unexported function. Give it a named props type (unexported), not an inline `{ itemId, onDelete: … }`.
 
 ```tsx
-<TaskOptions />
+type TaskOptionsProps = {
+  itemId: string;
+  onDelete: (itemId: string) => void;
+};
 
-function TaskOptions() {
+function TaskOptions({ itemId, onDelete }: TaskOptionsProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   // …
 }
 ```
 
-Do not extract during red. Do not create a new file unless the user asks.
+Do not extract during red. Do not create a new file unless the user asks. Name the props type when the child gains props (or when the user points at the inline type).
 
 ## TDD workflow
 
@@ -223,7 +271,7 @@ Follow `.cursor/rules/tdd.mdc`:
 
 1. **Red** — Write the failing spec first. Confirm the failure is missing behavior (missing role/name, not a harness error).
 2. **Stop** — Summarize each new `it` and its failure. **Do not implement** until the user approves.
-3. **Green** — Implement the **bare minimum** to pass. No Escape-to-close, menuitem `onClick`, extra menu items, or popovers the current spec does not assert.
+3. **Green** — Implement the **bare minimum** to pass. Chrome-only cycles: no Escape-to-close, menuitem `onClick`, or extra menu items. Page-wiring cycles: menuitem `onClick` → callback → client + invalidate.
 4. **Refactor** — Only while green, and only if asked or needed to keep the change set small.
 
 Do not write production UI in the same turn as a new failing spec.
@@ -243,4 +291,4 @@ If browser tools are available and the change is user-visible, exercise the flow
 
 ## Further reading
 
-Annotated ItemRow TDD walkthrough: [examples.md](examples.md)
+Annotated ItemRow / ListPage TDD walkthrough: [examples.md](examples.md)

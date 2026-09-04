@@ -39,6 +39,7 @@ Do not write query hook tests or hooks until the client function is implemented.
 - Go API handlers and DTOs — use [create-api-handler](../create-api-handler/SKILL.md)
 - React pages, components, routes (`ui/src/pages/`, `ui/src/components/`) — use [create-ui-component](../create-ui-component/SKILL.md)
 - App context (`ui/src/contexts/`)
+- **Mutation hooks for page writes** — `ListPage` calls the client (`deleteItem`, `completeItem`) and `invalidateQueries`. Do not start this skill when the user is wiring a menuitem/button to an existing client.
 
 ## Architecture constraints
 

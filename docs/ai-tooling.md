@@ -66,6 +66,7 @@ flowchart TD
     app --> handler
     handler --> client
     client --> queries
+    client --> ui
     queries --> ui
 ```
 
@@ -77,9 +78,9 @@ flowchart TD
 | `create-api-handler` | Application service method (implemented, tests green) |
 | `create-api-client` | API handler + route + `api-types` |
 | `create-api-queries` | Client function in `{resource}-client.ts` |
-| `create-ui-component` | Existing props/DTOs; new API data → query hooks |
+| `create-ui-component` | Existing props/DTOs; new writes → client function; new reads → query hook |
 
-Adapter is **not** required before handler or CLI (those tests use stubs). Handler **is** required before API client. Presentational UI on existing props does **not** require new query hooks.
+Adapter is **not** required before handler or CLI (those tests use stubs). Handler **is** required before API client. Presentational UI on existing props does **not** require new query hooks. Page writes call the client and `invalidateQueries` — they do **not** require a mutation hook.
 
 When upstream code is missing, agents must **stop**, name the upstream skill, and not write tests or code for the downstream layer.
 
@@ -339,7 +340,7 @@ Adds or extends React UI in `ui/src/components/` and `ui/src/pages/` with Vitest
 
 **Out of scope** (unless you ask separately): API clients, React Query hooks, Go layers, editing the Next.js mockup app.
 
-**Prerequisite:** Existing DTO props/callbacks are enough for presentational UI. If the UI needs a new API read/write, use `create-api-queries` first.
+**Prerequisite:** Existing DTO props/callbacks are enough for presentational UI. New **writes** need the client function (`deleteItem`, …) — the page calls it and invalidates existing query keys. Do **not** require a mutation hook. New **reads** the page does not already query need `create-api-queries`.
 
 Skill details: [.cursor/skills/create-ui-component/SKILL.md](../.cursor/skills/create-ui-component/SKILL.md).
 
@@ -355,6 +356,7 @@ Example prompts:
 - *"Using TDD, when I hover the item row, the DOM should look like this"* (paste HTML)
 - *"When I click the ellipsis, show this dropdown"* (paste HTML)
 - *"@create-ui-component add click-outside to close the task options menu"*
+- *"When they click delete in the ellipsis menu, assert the backend is called and the list is reloaded"*
 
 #### What the agent will do
 
@@ -372,13 +374,13 @@ flowchart TD
     green --> done[Tests green — UI layer only]
 ```
 
-Specs use Testing Library roles/names/classes, not HTML snapshots. Hover-reveal nodes are asserted in the DOM without simulating hover. One behavior per TDD cycle (hover chrome, then open menu, then click-outside, then toggle-close).
+Specs use Testing Library roles/names/classes, not HTML snapshots. Hover-reveal nodes are asserted in the DOM without simulating hover. One behavior per TDD cycle (hover chrome, then open menu, then click-outside, then toggle-close). Page writes: two tests (client called, then `getAllItems` refetched) — same as complete/delete on `ListPage`.
 
-After tests pass, the agent may extract a same-file child component if you ask, without opening a new file.
+After tests pass, the agent may extract a same-file child component if you ask, without opening a new file. Child props use a named `{Name}Props` type, not an inline object type.
 
 #### Reference implementation
 
-See [.cursor/skills/create-ui-component/examples.md](../.cursor/skills/create-ui-component/examples.md) for the `ItemRow` hover-actions and Task options dropdown walkthrough.
+See [.cursor/skills/create-ui-component/examples.md](../.cursor/skills/create-ui-component/examples.md) for the `ItemRow` hover-actions, Task options dropdown, and ListPage delete-wiring walkthrough.
 
 ## Adding more skills
 

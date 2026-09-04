@@ -23,6 +23,7 @@ flowchart TD
     app --> handler
     handler --> client
     client --> queries
+    client --> ui
     queries --> ui
 ```
 
@@ -34,9 +35,9 @@ flowchart TD
 | API handler | `create-api-handler` | Application service method (implemented) |
 | API client | `create-api-client` | API handler + route + `api-types` |
 | React Query hooks | `create-api-queries` | Client function in `{resource}-client.ts` |
-| UI component | `create-ui-component` | Existing props/DTOs; new API data → query hooks |
+| UI component | `create-ui-component` | Existing props/DTOs; new writes → client function; new reads → query hook |
 
-Adapter and CLI/handler are **not** prerequisites for each other. Handler tests use stub repositories; CLI tests use stub repositories. Adapter is required for production/bootstrap wiring but not for handler or CLI skills. UI components that only use existing props do not require new query hooks.
+Adapter and CLI/handler are **not** prerequisites for each other. Handler tests use stub repositories; CLI tests use stub repositories. Adapter is required for production/bootstrap wiring but not for handler or CLI skills. Presentational UI on existing props does not require new query hooks. Page **writes** (complete, delete) call the client and `invalidateQueries` — they do **not** require a mutation hook.
 
 ## Stop rule
 
@@ -113,11 +114,14 @@ If client function missing → stop, use `create-api-client`.
 
 | Check | How to verify |
 |-------|---------------|
-| New API data needed? | Component would have to call a missing client/hook |
-| Query/mutation exists (if needed) | `{verb}{Resource}` hook in `ui/src/lib/api/{resource}-queries.ts` |
+| New write? | Client `{verb}{Resource}` in `ui/src/lib/api/{resource}-client.ts` |
+| New read the page does not already query? | Hook in `ui/src/lib/api/{resource}-queries.ts` |
+| Mutation hook? | **Not required.** Pages call the client then `invalidateQueries` (see `ListPage` complete/delete). |
 
 If the UI only uses existing DTOs/callbacks (hover chrome, dropdown open/close) → proceed.
-If it needs a new read/write → stop, use `create-api-queries` (which requires `create-api-client`).
+If it needs a new write and the **client** is missing → stop, use `create-api-client`.
+If it needs a new **read** and no query hook exists → stop, use `create-api-queries`.
+If the client exists for a write → **proceed**. Do not stop for a missing `use{Action}{Resource}Mutation`.
 
 ## Full vertical slice order
 
@@ -130,5 +134,5 @@ When building end to end, work in this order:
 5. API handler **or** CLI command (`create-api-handler` / `create-cli-command`)
 6. `make api-types` (after handler DTOs)
 7. API client (`create-api-client`)
-8. React Query hooks (`create-api-queries`)
+8. React Query hooks (`create-api-queries`) — **new reads** only; skip when the page already has a query key to invalidate after a write
 9. UI components / pages (`create-ui-component`)

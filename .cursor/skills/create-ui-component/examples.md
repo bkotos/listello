@@ -1,6 +1,6 @@
 # UI Component Examples
 
-Annotated references from the Listello UI TDD loop for `ItemRow`. Read when translating mockup HTML into specs or adding hover/dropdown chrome.
+Annotated references from the Listello UI TDD loop for `ItemRow` and `ListPage`. Read when translating mockup HTML into specs, adding hover/dropdown chrome, or wiring a menuitem to an existing client.
 
 ## 1. Mockup HTML → semantic specs (not a snapshot)
 
@@ -151,17 +151,22 @@ Key points:
 After the open-menu specs were green, extract the dropdown (and its `menuOpen` state) into an unexported `TaskOptions` in the same file. Parent `ItemRow` keeps complete/uncomplete. Specs still target the row; they do not import `TaskOptions`.
 
 ```tsx
-export function ItemRow({ item, onComplete, onUncomplete }: ItemRowProps) {
+export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowProps) {
   // complete toggle + title + hover actions …
   return (
     <div role="button" tabIndex={0} className="task-row hover-parent is-flex p-3">
       {/* … */}
-      <TaskOptions />
+      <TaskOptions itemId={item.ID} onDelete={onDelete} />
     </div>
   );
 }
 
-function TaskOptions() {
+type TaskOptionsProps = {
+  itemId: string;
+  onDelete: (itemId: string) => void;
+};
+
+function TaskOptions({ itemId, onDelete }: TaskOptionsProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -189,9 +194,55 @@ Key points:
 - Extract **after** green, in a separate turn if the user asks to refactor.
 - Stay green — re-run `ItemRow.spec.ts`.
 - Copy dropdown a11y from `AccountMenu` (`aria-haspopup`, `aria-expanded`, `role="menu"` / `menuitem`).
+- Child props: named unexported `{Name}Props`, not an inline type. Add it when the child gains props (or when the user points at the inline type).
 
 ## 5. What not to copy from the mockup
 
 `mockup/task-management-system-bulma/components/item-row.tsx` is richer than a single HTML dump: rename-in-place, date popover, comments, Move to Inbox, Escape, click-outside-to-close-popovers.
 
 Only implement what the **current** spec asserts. Later TDD loops add those behaviors one at a time.
+
+## 6. Wire Delete — page specs, no mutation hook
+
+The client `deleteItem` already exists. The user invoked UI and said **do not** add a query/mutation hook: click Delete in the ellipsis, assert the backend is called, then the list reloads.
+
+**Do not stop** for missing `useDeleteItemMutation`. `ListPage` already writes via the client (`completeItem`, `defineItem`) and `invalidateQueries({ queryKey: itemQueryKeys.byList(listId) })`.
+
+**Spec file:** `ui/src/pages/ListPage.spec.ts` (not a new ItemRow `onDelete` test unless asked). Add `deleteItem: vi.fn()` to the existing `item-client` mock.
+
+```ts
+it("calls deleteItem when Delete is clicked in Task options", async () => {
+  vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+  vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+  vi.mocked(deleteItem).mockResolvedValue(undefined);
+  renderPageWithShellContext(createElement(ListPage), {
+    path: "lists/:listId",
+    initialEntry: "/lists/LS_1",
+  });
+  await waitFor(() => {
+    expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getAllByRole("button", { name: "Task options" })[0]);
+  fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+
+  expect(deleteItem).toHaveBeenCalledWith("IT_1");
+});
+
+it("reloads items after deleteItem is called", async () => {
+  vi.mocked(getAllItems)
+    .mockResolvedValueOnce(sampleItems)
+    .mockResolvedValueOnce([sampleItems[1]]);
+  // same arrange + click path
+  await waitFor(() => {
+    expect(getAllItems).toHaveBeenCalledTimes(2);
+  });
+});
+```
+
+Key points:
+
+- Two `it`s, same split as complete/uncomplete. Red: `deleteItem` call count 0; `getAllItems` stays at 1.
+- Act is Task options then Delete — chrome already renders those controls.
+- Green: `onDelete` on `ItemRow` → `TaskOptions` menuitem `onClick` → `ListPage.handleDelete` awaits `deleteItem` then invalidates `itemQueryKeys.byList`. Required `onDelete` means existing ItemRow spec renders get `onDelete: vi.fn()`.
+- After green, if the user points at the inline `TaskOptions` props, extract `type TaskOptionsProps`.

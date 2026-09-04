@@ -189,7 +189,7 @@ vi.mock("../lib/api/item-client.ts", () => ({
 
 ## 6. Next example: define item mutation
 
-Given `defineItem(listId, body)` in `item-client.ts`:
+Only if the user asks for a mutation hook. `ListPage` currently calls `defineItem` / `deleteItem` and `invalidateQueries` instead — see [create-ui-component](../create-ui-component/SKILL.md).
 
 ```ts
 export function useDefineItemMutation(listId: string) {
