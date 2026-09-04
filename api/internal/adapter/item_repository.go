@@ -77,3 +77,12 @@ func (r *SQLiteItemRepository) GetAll(listID string) ([]domain.Item, error) {
 	}
 	return items, nil
 }
+
+// Delete removes the item with the given ID.
+func (r *SQLiteItemRepository) Delete(id string) error {
+	const q = `DELETE FROM items WHERE id = ?`
+	if _, err := r.db.Exec(q, id); err != nil {
+		return fmt.Errorf("delete item: %w", err)
+	}
+	return nil
+}

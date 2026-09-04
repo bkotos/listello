@@ -2,6 +2,7 @@ package adapter_test
 
 import (
 	"database/sql"
+	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -111,4 +112,31 @@ func TestSQLiteItemRepository_SaveAndGetByID(t *testing.T) {
 	// Assert
 	require.NoError(t, err)
 	assert.Equal(t, item, got)
+}
+
+func TestSQLiteItemRepository_Delete_RemovesItem(t *testing.T) {
+	// Arrange
+	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = db.Close() })
+
+	listRepo := adapter.NewSQLiteListRepository(db)
+	itemRepo := adapter.NewSQLiteItemRepository(db)
+
+	list, _, err := domain.CreateList("Next actions")
+	require.NoError(t, err)
+	require.NoError(t, listRepo.Save(list))
+
+	item, _, err := domain.DefineItem(list, "Buy milk")
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(item))
+
+	// Act
+	err = itemRepo.Delete(item.ID)
+
+	// Assert
+	require.NoError(t, err)
+	_, err = itemRepo.GetByID(item.ID)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, fmt.Sprintf("item %q not found", item.ID))
 }
