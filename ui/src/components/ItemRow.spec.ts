@@ -221,4 +221,54 @@ describe("ItemRow", () => {
       expect(options.closest(".dropdown")).toHaveClass("is-right");
     });
   });
+
+  describe("when the Task options button is clicked", () => {
+    beforeEach(() => {
+      render(
+        createElement(ItemRow, {
+          item: { ...baseItem, Title: "Reply to the venue about the offsite" },
+          onComplete: vi.fn(),
+          onUncomplete: vi.fn(),
+        }),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Task options" }));
+    });
+
+    it("opens the dropdown", () => {
+      // Assert
+      const trigger = screen.getByRole("button", { name: "Task options" });
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+      expect(trigger.closest(".dropdown")).toHaveClass("is-right", "is-active");
+    });
+
+    it("marks the trigger as active", () => {
+      // Assert
+      const trigger = screen.getByRole("button", { name: "Task options" });
+      expect(trigger).toHaveClass("icon-btn", "is-active");
+      expect(trigger).not.toHaveClass("hover-reveal");
+    });
+
+    it("renders a Rename menuitem", () => {
+      // Assert
+      const rename = screen.getByRole("menuitem", { name: "Rename" });
+      expect(rename).toHaveClass("dropdown-item", "is-flex", "is-align-items-center");
+      expect(rename.querySelector("svg.lucide-pencil")).toBeInTheDocument();
+    });
+
+    it("renders a Delete menuitem", () => {
+      // Assert
+      const remove = screen.getByRole("menuitem", { name: "Delete" });
+      expect(remove).toHaveClass("dropdown-item", "is-flex", "is-align-items-center");
+      expect(remove.querySelector("svg.lucide-trash-2")).toBeInTheDocument();
+    });
+
+    it("separates Rename and Delete with a divider", () => {
+      // Assert
+      const content = screen.getByRole("menu").querySelector(".dropdown-content");
+      const children = [...(content?.children ?? [])];
+      expect(children[0]).toHaveTextContent("Rename");
+      expect(children[1]).toHaveClass("dropdown-divider");
+      expect(children[2]).toHaveTextContent("Delete");
+    });
+  });
 });

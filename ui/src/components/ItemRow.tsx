@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Check, Ellipsis, MessageSquare } from "lucide-react";
+import { Calendar, Check, Ellipsis, MessageSquare, Pencil, Trash2 } from "lucide-react";
 import type { ItemDto } from "api-types";
 
 export type ItemRowProps = {
@@ -14,6 +14,7 @@ function isComplete(item: ItemDto): boolean {
 
 export function ItemRow({ item, onComplete, onUncomplete }: ItemRowProps) {
   const [optimisticallyComplete, setOptimisticallyComplete] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const completed = isComplete(item) || optimisticallyComplete;
 
   return (
@@ -79,19 +80,47 @@ export function ItemRow({ item, onComplete, onUncomplete }: ItemRowProps) {
         </div>
       </div>
 
-      <div className="dropdown is-right">
+      <div className={`dropdown is-right${menuOpen ? " is-active" : ""}`}>
         <div className="dropdown-trigger">
           <button
             type="button"
             aria-label="Task options"
             aria-haspopup="menu"
-            aria-expanded="false"
-            className="icon-btn hover-reveal"
+            aria-expanded={menuOpen}
+            className={`icon-btn ${menuOpen ? "is-active" : "hover-reveal"}`}
             style={{ height: "1.75rem", width: "1.75rem" }}
+            onClick={() => setMenuOpen(true)}
           >
             <Ellipsis size={16} />
           </button>
         </div>
+        {menuOpen ? (
+          <div className="dropdown-menu" role="menu">
+            <div className="dropdown-content">
+              <a
+                role="menuitem"
+                className="dropdown-item is-flex is-align-items-center"
+                style={{ gap: "0.625rem" }}
+              >
+                <span style={{ display: "inline-flex", color: "hsl(0deg 0% 45%)" }}>
+                  <Pencil size={16} />
+                </span>
+                <span>Rename</span>
+              </a>
+              <hr className="dropdown-divider" />
+              <a
+                role="menuitem"
+                className="dropdown-item is-flex is-align-items-center"
+                style={{ gap: "0.625rem", color: "hsl(348deg 86% 43%)" }}
+              >
+                <span style={{ display: "inline-flex", color: "hsl(348deg 86% 43%)" }}>
+                  <Trash2 size={16} />
+                </span>
+                <span>Delete</span>
+              </a>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
