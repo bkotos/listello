@@ -15,7 +15,12 @@ function isComplete(item: ItemDto): boolean {
 
 export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowProps) {
   const [optimisticallyComplete, setOptimisticallyComplete] = useState(false);
+  const [optimisticallyDeleted, setOptimisticallyDeleted] = useState(false);
   const completed = isComplete(item) || optimisticallyComplete;
+
+  if (optimisticallyDeleted) {
+    return null;
+  }
 
   return (
     <div
@@ -80,7 +85,13 @@ export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowPro
         </div>
       </div>
 
-      <TaskOptions itemId={item.ID} onDelete={onDelete} />
+      <TaskOptions
+        itemId={item.ID}
+        onDelete={(itemId) => {
+          setOptimisticallyDeleted(true);
+          onDelete(itemId);
+        }}
+      />
     </div>
   );
 }

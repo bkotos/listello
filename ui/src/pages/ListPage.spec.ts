@@ -432,4 +432,25 @@ describe("ListPage", () => {
       expect(getAllItems).toHaveBeenCalledTimes(2);
     });
   });
+
+  it("removes the item from the list after Delete is clicked", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(deleteItem).mockImplementation(() => new Promise(() => {}));
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getAllByRole("button", { name: "Task options" })[0]);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+
+    // Assert
+    expect(screen.queryByText("Buy windshield wipers for truck")).not.toBeInTheDocument();
+  });
 });
