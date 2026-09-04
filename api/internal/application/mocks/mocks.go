@@ -162,6 +162,57 @@ func (_c *MockItemService_DefineItem_Call) RunAndReturn(run func(listID string, 
 	return _c
 }
 
+// DeleteItem provides a mock function for the type MockItemService
+func (_mock *MockItemService) DeleteItem(itemID string) error {
+	ret := _mock.Called(itemID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteItem")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(string) error); ok {
+		r0 = returnFunc(itemID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockItemService_DeleteItem_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteItem'
+type MockItemService_DeleteItem_Call struct {
+	*mock.Call
+}
+
+// DeleteItem is a helper method to define mock.On call
+//   - itemID string
+func (_e *MockItemService_Expecter) DeleteItem(itemID any) *MockItemService_DeleteItem_Call {
+	return &MockItemService_DeleteItem_Call{Call: _e.mock.On("DeleteItem", itemID)}
+}
+
+func (_c *MockItemService_DeleteItem_Call) Run(run func(itemID string)) *MockItemService_DeleteItem_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_DeleteItem_Call) Return(err error) *MockItemService_DeleteItem_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockItemService_DeleteItem_Call) RunAndReturn(run func(itemID string) error) *MockItemService_DeleteItem_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetAll provides a mock function for the type MockItemService
 func (_mock *MockItemService) GetAll(listID string) ([]domain.Item, error) {
 	ret := _mock.Called(listID)

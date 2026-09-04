@@ -231,3 +231,64 @@ func TestItemService_UncompleteItem_PublishesEvent(t *testing.T) {
 	assert.Equal(t, itemID, metadata.ID)
 	assert.NotEmpty(t, published.Timestamp)
 }
+
+func TestItemService_DeleteItem_DeletesItem(t *testing.T) {
+	// Arrange
+	const itemID = "IT_1"
+	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, publisher)
+
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Delete(itemID).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("domain.Event")).
+		Return(nil)
+
+	// Act
+	err := svc.DeleteItem(itemID)
+
+	// Assert
+	require.NoError(t, err)
+}
+
+func TestItemService_DeleteItem_PublishesEvent(t *testing.T) {
+	// Arrange
+	const itemID = "IT_1"
+	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, publisher)
+
+	var published domain.Event
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Delete(itemID).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			metadata, ok := event.Metadata.(domain.EventMetadataItemDeleted)
+			return event.Name == domain.EventItemDeleted && ok && metadata.Item.ID == itemID
+		})).
+		Return(nil)
+
+	// Act
+	err := svc.DeleteItem(itemID)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataItemDeleted)
+	require.True(t, ok)
+	assert.Equal(t, itemID, metadata.Item.ID)
+	assert.NotEmpty(t, published.Timestamp)
+}

@@ -7,6 +7,7 @@ import (
 // ItemRepository persists items and their list membership.
 type ItemRepository interface {
 	Save(item domain.Item) error
+	Delete(id string) error
 	GetByID(id string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
 }
@@ -16,6 +17,7 @@ type ItemService interface {
 	DefineItem(listID, title string) (domain.Item, error)
 	CompleteItem(itemID string) (domain.Item, error)
 	UncompleteItem(itemID string) (domain.Item, error)
+	DeleteItem(itemID string) error
 	GetAll(listID string) ([]domain.Item, error)
 }
 
@@ -96,4 +98,20 @@ func (s *itemService) UncompleteItem(itemID string) (domain.Item, error) {
 // GetAll returns all items for the given list from persistence.
 func (s *itemService) GetAll(listID string) ([]domain.Item, error) {
 	return s.itemRepository.GetAll(listID)
+}
+
+// DeleteItem deletes an item via the domain and removes it from persistence.
+func (s *itemService) DeleteItem(itemID string) error {
+	item, err := s.itemRepository.GetByID(itemID)
+	if err != nil {
+		return err
+	}
+	event, err := (&item).Delete()
+	if err != nil {
+		return err
+	}
+	if err := s.itemRepository.Delete(itemID); err != nil {
+		return err
+	}
+	return s.eventPublisher.Publish(event)
 }
