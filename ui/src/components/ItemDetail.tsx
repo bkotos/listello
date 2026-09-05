@@ -16,9 +16,10 @@ export type ItemDetailProps = {
   item: ItemDto;
   listName: string;
   onClose: () => void;
+  onModifyTitle: (itemId: string, title: string) => void;
 };
 
-export function ItemDetail({ item, listName, onClose }: ItemDetailProps) {
+export function ItemDetail({ item, listName, onClose, onModifyTitle }: ItemDetailProps) {
   return (
     <aside className="app-detail is-hidden-touch">
       <div
@@ -70,6 +71,7 @@ export function ItemDetail({ item, listName, onClose }: ItemDetailProps) {
                 rows={1}
                 defaultValue={item.Title}
                 className="textarea is-shadowless"
+                onBlur={(e) => onModifyTitle(item.ID, e.currentTarget.value)}
                 style={{
                   flex: "1 1 0",
                   resize: "none",

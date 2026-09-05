@@ -547,6 +547,63 @@ describe("ListPage", () => {
     });
   });
 
+  it("calls modifyItemTitle when the detail title is blurred", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(modifyItemTitle).mockResolvedValue({
+      ...sampleItems[0],
+      Title: "Schedule dentist",
+    });
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText("Buy windshield wipers for truck"));
+
+    // Act
+    const title = screen.getByDisplayValue("Buy windshield wipers for truck");
+    fireEvent.change(title, { target: { value: "Schedule dentist" } });
+    fireEvent.blur(title);
+
+    // Assert
+    expect(modifyItemTitle).toHaveBeenCalledWith("IT_1", { title: "Schedule dentist" });
+  });
+
+  it("reloads items after the detail title is blurred", async () => {
+    // Arrange
+    const updatedItems = [{ ...sampleItems[0], Title: "Schedule dentist" }, sampleItems[1]];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(sampleItems)
+      .mockResolvedValueOnce(updatedItems);
+    vi.mocked(modifyItemTitle).mockResolvedValue(updatedItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+    fireEvent.click(screen.getByText("Buy windshield wipers for truck"));
+
+    // Act
+    const title = screen.getByDisplayValue("Buy windshield wipers for truck");
+    fireEvent.change(title, { target: { value: "Schedule dentist" } });
+    fireEvent.blur(title);
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it("does not show the detail panel before an item is clicked", async () => {
     // Arrange
     vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
