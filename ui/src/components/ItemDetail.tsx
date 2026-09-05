@@ -1,4 +1,4 @@
-import type { KeyboardEvent, ReactNode } from "react";
+import type { ClipboardEvent, KeyboardEvent, ReactNode } from "react";
 import type { ItemDto } from "api-types";
 import {
   Calendar,
@@ -73,6 +73,7 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle }: ItemDetai
                 className="textarea is-shadowless"
                 onBlur={(e) => onModifyTitle(item.ID, e.currentTarget.value)}
                 onKeyDown={preventNewlines}
+                onPaste={stripPastedNewlines}
                 style={{
                   flex: "1 1 0",
                   resize: "none",
@@ -209,6 +210,11 @@ function preventNewlines(event: KeyboardEvent<HTMLTextAreaElement>) {
   if (event.key === "Enter") {
     event.preventDefault();
   }
+}
+
+function stripPastedNewlines(event: ClipboardEvent<HTMLTextAreaElement>) {
+  event.preventDefault();
+  event.currentTarget.value = (event.clipboardData?.getData("text") ?? "").replace(/\n/g, "");
 }
 
 type PropertyRowProps = {

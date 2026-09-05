@@ -70,6 +70,16 @@ describe("ItemDetail", () => {
     expect(proceeded).toBe(false);
   });
 
+  it("strips newlines from pasted title content", () => {
+    const title = screen.getByDisplayValue("Buy windshield wipers for truck") as HTMLTextAreaElement;
+    fireEvent.paste(title, {
+      clipboardData: {
+        getData: () => "Line one\nLine two",
+      },
+    });
+    expect(title.value).toBe("Line oneLine two");
+  });
+
   it("renders a Due date field", () => {
     expect(screen.getByText("Due date").querySelector("svg.lucide-calendar")).toBeInTheDocument();
     const dateInput = document.querySelector('input[type="date"]');
