@@ -562,5 +562,14 @@ describe("ListPage", () => {
       // Assert
       expect(document.querySelector("aside.app-detail")).not.toBeInTheDocument();
     });
+
+    it("unmarks the clicked row as active when the Close button is clicked", () => {
+      // Act
+      fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+      // Assert
+      const row = screen.getByText("Buy windshield wipers for truck").closest(".task-row");
+      expect(row).not.toHaveClass("is-active");
+    });
   });
 });
