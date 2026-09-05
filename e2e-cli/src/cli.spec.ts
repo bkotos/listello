@@ -156,6 +156,47 @@ describe("listello cli", () => {
     });
   });
 
+  describe("item move", () => {
+    it("moves an item to another list", async () => {
+      // Arrange
+      const sourceResult = await runListello(dbPath, [
+        "list",
+        "create",
+        "Groceries",
+      ]);
+      const sourceId = parseCreatedListId(sourceResult.stdout);
+      const destResult = await runListello(dbPath, [
+        "list",
+        "create",
+        "Next actions",
+      ]);
+      const destId = parseCreatedListId(destResult.stdout);
+      const defineResult = await runListello(dbPath, [
+        "item",
+        "define",
+        sourceId,
+        "Schedule dentist",
+      ]);
+      const itemId = parseDefinedItemId(defineResult.stdout);
+
+      // Act
+      const result = await runListello(dbPath, [
+        "item",
+        "move",
+        itemId,
+        "--to",
+        destId,
+      ]);
+
+      // Assert
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toBe("");
+      expect(result.stdout).toBe(
+        `Moved item "Schedule dentist" (${itemId}) to list ${destId}`,
+      );
+    });
+  });
+
   describe("item list", () => {
     it("lists items on a list", async () => {
       // Arrange
