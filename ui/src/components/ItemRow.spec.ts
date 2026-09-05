@@ -23,7 +23,7 @@ afterEach(() => {
 describe("ItemRow", () => {
   it("renders an outstanding item without completed styling", () => {
     // Arrange
-    render(createElement(ItemRow, { item: baseItem, onComplete: vi.fn(), onUncomplete: vi.fn(), onDelete: vi.fn() }));
+    render(createElement(ItemRow, { item: baseItem, onComplete: vi.fn(), onUncomplete: vi.fn(), onDelete: vi.fn(), onModifyTitle: vi.fn() }));
 
     // Assert
     const toggle = screen.getByRole("button", { name: "Mark complete" });
@@ -44,6 +44,7 @@ describe("ItemRow", () => {
         onComplete: vi.fn(),
         onUncomplete: vi.fn(),
         onDelete: vi.fn(),
+        onModifyTitle: vi.fn(),
       }),
     );
 
@@ -61,6 +62,7 @@ describe("ItemRow", () => {
         onComplete: vi.fn(),
         onUncomplete: vi.fn(),
         onDelete: vi.fn(),
+        onModifyTitle: vi.fn(),
       }),
     );
 
@@ -74,7 +76,7 @@ describe("ItemRow", () => {
   it("calls onComplete when the checkbox is clicked", () => {
     // Arrange
     const onComplete = vi.fn();
-    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn(), onDelete: vi.fn() }));
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn(), onDelete: vi.fn(), onModifyTitle: vi.fn() }));
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
@@ -92,6 +94,7 @@ describe("ItemRow", () => {
         onComplete: vi.fn(),
         onUncomplete,
         onDelete: vi.fn(),
+        onModifyTitle: vi.fn(),
       }),
     );
 
@@ -105,7 +108,7 @@ describe("ItemRow", () => {
   it("immediately marks the checkbox as checked when clicked", () => {
     // Arrange
     const onComplete = vi.fn(() => new Promise<void>(() => {}));
-    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn(), onDelete: vi.fn() }));
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn(), onDelete: vi.fn(), onModifyTitle: vi.fn() }));
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
@@ -119,7 +122,7 @@ describe("ItemRow", () => {
   it("immediately strikes through the title when the checkbox is clicked", () => {
     // Arrange
     const onComplete = vi.fn(() => new Promise<void>(() => {}));
-    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn(), onDelete: vi.fn() }));
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete: vi.fn(), onDelete: vi.fn(), onModifyTitle: vi.fn() }));
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
@@ -134,7 +137,7 @@ describe("ItemRow", () => {
     // Arrange
     const onComplete = vi.fn();
     const onUncomplete = vi.fn();
-    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete, onDelete: vi.fn() }));
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete, onDelete: vi.fn(), onModifyTitle: vi.fn() }));
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
@@ -151,7 +154,7 @@ describe("ItemRow", () => {
     // Arrange
     const onComplete = vi.fn();
     const onUncomplete = vi.fn();
-    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete, onDelete: vi.fn() }));
+    render(createElement(ItemRow, { item: baseItem, onComplete, onUncomplete, onDelete: vi.fn(), onModifyTitle: vi.fn() }));
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
@@ -171,6 +174,7 @@ describe("ItemRow", () => {
           onComplete: vi.fn(),
           onUncomplete: vi.fn(),
           onDelete: vi.fn(),
+        onModifyTitle: vi.fn(),
         }),
       );
     });
@@ -234,6 +238,7 @@ describe("ItemRow", () => {
           onComplete: vi.fn(),
           onUncomplete: vi.fn(),
           onDelete: vi.fn(),
+        onModifyTitle: vi.fn(),
         }),
       );
       fireEvent.click(screen.getByRole("button", { name: "Task options" }));
@@ -307,6 +312,7 @@ describe("ItemRow", () => {
           onComplete: vi.fn(),
           onUncomplete: vi.fn(),
           onDelete: vi.fn(),
+        onModifyTitle: vi.fn(),
         }),
       );
       fireEvent.click(screen.getByRole("button", { name: "Task options" }));
@@ -319,6 +325,11 @@ describe("ItemRow", () => {
       expect(input).toHaveClass("input", "is-small");
     });
 
+    it("focuses the title input", () => {
+      // Assert
+      expect(screen.getByDisplayValue("Reply to the venue about the offsite")).toHaveFocus();
+    });
+
     it("keeps the Mark complete toggle", () => {
       // Assert
       const toggle = screen.getByRole("button", { name: "Mark complete" });
@@ -328,6 +339,43 @@ describe("ItemRow", () => {
     it("hides Task options", () => {
       // Assert
       expect(screen.queryByRole("button", { name: "Task options" })).not.toBeInTheDocument();
+    });
+  });
+
+  describe("when the renamed title is committed with Enter", () => {
+    const onModifyTitle = vi.fn(() => new Promise<void>(() => {}));
+
+    beforeEach(() => {
+      onModifyTitle.mockClear();
+      render(
+        createElement(ItemRow, {
+          item: { ...baseItem, Title: "Reply to the venue about the offsite" },
+          onComplete: vi.fn(),
+          onUncomplete: vi.fn(),
+          onDelete: vi.fn(),
+          onModifyTitle,
+        }),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Task options" }));
+      fireEvent.click(screen.getByRole("menuitem", { name: "Rename" }));
+      const input = screen.getByDisplayValue("Reply to the venue about the offsite");
+      fireEvent.change(input, { target: { value: "Schedule dentist" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+    });
+
+    it("calls onModifyTitle with the new title", () => {
+      // Assert
+      expect(onModifyTitle).toHaveBeenCalledWith("IT_1", "Schedule dentist");
+    });
+
+    it("hides the title input", () => {
+      // Assert
+      expect(screen.queryByDisplayValue("Schedule dentist")).not.toBeInTheDocument();
+    });
+
+    it("shows the new title", () => {
+      // Assert
+      expect(screen.getByText("Schedule dentist")).toBeInTheDocument();
     });
   });
 });

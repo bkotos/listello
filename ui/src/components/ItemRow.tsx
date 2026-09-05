@@ -7,17 +7,20 @@ export type ItemRowProps = {
   onComplete: (itemId: string) => void;
   onUncomplete: (itemId: string) => void;
   onDelete: (itemId: string) => void;
+  onModifyTitle: (itemId: string, title: string) => void;
 };
 
 function isComplete(item: ItemDto): boolean {
   return item.State === "complete";
 }
 
-export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowProps) {
+export function ItemRow({ item, onComplete, onUncomplete, onDelete, onModifyTitle }: ItemRowProps) {
   const [optimisticallyComplete, setOptimisticallyComplete] = useState(false);
   const [optimisticallyDeleted, setOptimisticallyDeleted] = useState(false);
+  const [optimisticTitle, setOptimisticTitle] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
   const completed = isComplete(item) || optimisticallyComplete;
+  const title = optimisticTitle ?? item.Title;
 
   function handleToggle() {
     if (!completed) {
@@ -34,7 +37,18 @@ export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowPro
   }
 
   if (renaming) {
-    return <RenamingItemRow title={item.Title} completed={completed} onToggle={handleToggle} />;
+    return (
+      <RenamingItemRow
+        title={title}
+        completed={completed}
+        onToggle={handleToggle}
+        onCommit={(nextTitle) => {
+          setOptimisticTitle(nextTitle);
+          setRenaming(false);
+          onModifyTitle(item.ID, nextTitle);
+        }}
+      />
+    );
   }
 
   return (
@@ -43,7 +57,7 @@ export function ItemRow({ item, onComplete, onUncomplete, onDelete }: ItemRowPro
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
           <p className={`is-size-6 mb-0${completed ? " muted line-through" : ""}`}>
-            {item.Title}
+            {title}
           </p>
         </div>
         <HoverActions />
@@ -100,15 +114,28 @@ type RenamingItemRowProps = {
   title: string;
   completed: boolean;
   onToggle: () => void;
+  onCommit: (title: string) => void;
 };
 
-function RenamingItemRow({ title, completed, onToggle }: RenamingItemRowProps) {
+function RenamingItemRow({ title, completed, onToggle, onCommit }: RenamingItemRowProps) {
+  const [draft, setDraft] = useState(title);
+
   return (
     <ItemRowShell>
       <CompleteToggle completed={completed} onToggle={onToggle} />
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
-          <input className="input is-small" defaultValue={title} />
+          <input
+            className="input is-small"
+            value={draft}
+            autoFocus
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                onCommit(draft);
+              }
+            }}
+          />
         </div>
       </div>
     </ItemRowShell>

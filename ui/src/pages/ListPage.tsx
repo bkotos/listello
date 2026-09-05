@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { ContentArea } from "../components/ContentArea";
 import { ItemRow } from "../components/ItemRow";
-import { defineItem, completeItem, uncompleteItem, deleteItem } from "../lib/api/item-client";
+import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle } from "../lib/api/item-client";
 import { itemQueryKeys, useAllItemsQuery } from "../lib/api/item-queries";
 import { useListQuery } from "../lib/api/list-queries";
 import { useShellContext } from "../lib/useShellContext";
@@ -45,6 +45,13 @@ function ListPage() {
     }
   }
 
+  async function handleModifyTitle(itemId: string, itemTitle: string) {
+    await modifyItemTitle(itemId, { title: itemTitle });
+    if (listId) {
+      await queryClient.invalidateQueries({ queryKey: itemQueryKeys.byList(listId) });
+    }
+  }
+
   return (
     <ContentArea
       title={title}
@@ -66,6 +73,7 @@ function ListPage() {
                 onComplete={handleComplete}
                 onUncomplete={handleUncomplete}
                 onDelete={handleDelete}
+                onModifyTitle={handleModifyTitle}
               />
             ))}
           </div>
