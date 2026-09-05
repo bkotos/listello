@@ -12,6 +12,11 @@ type ModifyItemTitleRequest struct {
 	Title string `json:"title"`
 }
 
+// MoveItemRequest is the HTTP request body for moving an item to another list.
+type MoveItemRequest struct {
+	ListID string `json:"listID"`
+}
+
 // ItemDto is the HTTP representation of an item.
 type ItemDto struct {
 	ID          string   `json:"ID"`

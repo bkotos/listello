@@ -16,6 +16,12 @@ export interface ModifyItemTitleRequest {
   title: string;
 }
 /**
+ * MoveItemRequest is the HTTP request body for moving an item to another list.
+ */
+export interface MoveItemRequest {
+  listID: string;
+}
+/**
  * ItemDto is the HTTP representation of an item.
  */
 export interface ItemDto {
