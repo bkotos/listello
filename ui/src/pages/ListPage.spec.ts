@@ -571,5 +571,13 @@ describe("ListPage", () => {
       const row = screen.getByText("Buy windshield wipers for truck").closest(".task-row");
       expect(row).not.toHaveClass("is-active");
     });
+
+    it("opens the second item in the detail panel when another item is clicked", () => {
+      // Act
+      fireEvent.click(screen.getByText("Draft weekly status update"));
+
+      // Assert
+      expect(screen.getByDisplayValue("Draft weekly status update")).toBeInTheDocument();
+    });
   });
 });

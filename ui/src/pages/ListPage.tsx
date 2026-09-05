@@ -92,7 +92,7 @@ function ListPage() {
         </ContentArea>
       </div>
       {selectedItem ? (
-        <ItemDetail item={selectedItem} listName={title} onClose={() => setSelectedItemId(null)} />
+        <ItemDetail key={selectedItem.ID} item={selectedItem} listName={title} onClose={() => setSelectedItemId(null)} />
       ) : null}
     </div>
   );
