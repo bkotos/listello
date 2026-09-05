@@ -150,7 +150,7 @@ describe("ItemRow", () => {
     expect(toggle.querySelector("svg")).not.toBeInTheDocument();
   });
 
-  it("immediately removes the strikethrough when the checkbox is clicked after completing", () => {
+    it("immediately removes the strikethrough when the checkbox is clicked after completing", () => {
     // Arrange
     const onComplete = vi.fn();
     const onUncomplete = vi.fn();
@@ -164,6 +164,67 @@ describe("ItemRow", () => {
     const title = screen.getByText("Idea: weekly review template");
     expect(title).not.toHaveClass("muted");
     expect(title).not.toHaveClass("line-through");
+  });
+
+  it("marks the row as active when selected", () => {
+    // Arrange
+    render(
+      createElement(ItemRow, {
+        item: baseItem,
+        selected: true,
+        onSelect: vi.fn(),
+        onComplete: vi.fn(),
+        onUncomplete: vi.fn(),
+        onDelete: vi.fn(),
+        onModifyTitle: vi.fn(),
+      }),
+    );
+
+    // Assert
+    const row = screen.getByText("Idea: weekly review template").closest(".task-row");
+    expect(row).toHaveClass("is-active");
+  });
+
+  it("calls onSelect when the row is clicked", () => {
+    // Arrange
+    const onSelect = vi.fn();
+    render(
+      createElement(ItemRow, {
+        item: baseItem,
+        onSelect,
+        onComplete: vi.fn(),
+        onUncomplete: vi.fn(),
+        onDelete: vi.fn(),
+        onModifyTitle: vi.fn(),
+      }),
+    );
+
+    // Act
+    fireEvent.click(screen.getByText("Idea: weekly review template"));
+
+    // Assert
+    expect(onSelect).toHaveBeenCalledWith("IT_1");
+  });
+
+  it("does not call onSelect when the checkbox is clicked", () => {
+    // Arrange
+    const onSelect = vi.fn();
+    render(
+      createElement(ItemRow, {
+        item: baseItem,
+        onSelect,
+        onComplete: vi.fn(),
+        onUncomplete: vi.fn(),
+        onDelete: vi.fn(),
+        onModifyTitle: vi.fn(),
+      }),
+    );
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Mark complete" }));
+
+    // Assert
+    expect(onSelect).not.toHaveBeenCalled();
   });
 
   describe("hover actions", () => {

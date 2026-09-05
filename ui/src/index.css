@@ -121,6 +121,11 @@ body {
   color: hsl(0deg 0% 20%);
 }
 
+.icon-btn.is-danger-hover:hover {
+  background-color: hsl(348deg 86% 61% / 0.12);
+  color: hsl(348deg 86% 43%);
+}
+
 .muted {
   color: hsl(0deg 0% 45%);
 }
@@ -134,7 +139,13 @@ body {
   border: 1px solid transparent;
   border-radius: var(--bulma-radius);
   background-color: hsl(0deg 0% 100%);
+  cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.task-row.is-active {
+  border-color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l));
+  box-shadow: 0 1px 3px hsl(0deg 0% 0% / 0.08);
 }
 
 .hover-reveal {

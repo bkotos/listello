@@ -4,6 +4,8 @@ import type { ItemDto } from "api-types";
 
 export type ItemRowProps = {
   item: ItemDto;
+  selected?: boolean;
+  onSelect?: (itemId: string) => void;
   onComplete: (itemId: string) => void;
   onUncomplete: (itemId: string) => void;
   onDelete: (itemId: string) => void;
@@ -14,7 +16,7 @@ function isComplete(item: ItemDto): boolean {
   return item.State === "complete";
 }
 
-export function ItemRow({ item, onComplete, onUncomplete, onDelete, onModifyTitle }: ItemRowProps) {
+export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, onDelete, onModifyTitle }: ItemRowProps) {
   const [optimisticallyComplete, setOptimisticallyComplete] = useState(false);
   const [optimisticallyDeleted, setOptimisticallyDeleted] = useState(false);
   const [optimisticTitle, setOptimisticTitle] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export function ItemRow({ item, onComplete, onUncomplete, onDelete, onModifyTitl
   }
 
   return (
-    <ItemRowShell>
+    <ItemRowShell selected={selected} onSelect={onSelect ? () => onSelect(item.ID) : undefined}>
       <CompleteToggle completed={completed} onToggle={handleToggle} />
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
@@ -77,15 +79,18 @@ export function ItemRow({ item, onComplete, onUncomplete, onDelete, onModifyTitl
 
 type ItemRowShellProps = {
   children: ReactNode;
+  selected?: boolean;
+  onSelect?: () => void;
 };
 
-function ItemRowShell({ children }: ItemRowShellProps) {
+function ItemRowShell({ children, selected, onSelect }: ItemRowShellProps) {
   return (
     <div
       role="button"
       tabIndex={0}
-      className="task-row hover-parent is-flex p-3"
+      className={`task-row hover-parent is-flex p-3${selected ? " is-active" : ""}`}
       style={{ gap: "0.75rem", alignItems: "flex-start" }}
+      onClick={onSelect}
     >
       {children}
     </div>
@@ -104,7 +109,10 @@ function CompleteToggle({ completed, onToggle }: CompleteToggleProps) {
       aria-label={completed ? "Mark incomplete" : "Mark complete"}
       className={`check-toggle${completed ? " is-checked" : ""}`}
       style={{ height: "1.25rem", width: "1.25rem", marginTop: "0.125rem" }}
-      onClick={onToggle}
+      onClick={(event) => {
+        event.stopPropagation();
+        onToggle();
+      }}
     >
       {completed ? <Check size={12} strokeWidth={2} aria-hidden /> : null}
     </button>
@@ -216,13 +224,16 @@ function TaskOptions({ itemId, onRename, onDelete }: TaskOptionsProps) {
           aria-expanded={menuOpen}
           className={`icon-btn ${menuOpen ? "is-active" : "hover-reveal"}`}
           style={{ height: "1.75rem", width: "1.75rem" }}
-          onClick={() => setMenuOpen((open) => !open)}
+          onClick={(event) => {
+            event.stopPropagation();
+            setMenuOpen((open) => !open);
+          }}
         >
           <Ellipsis size={16} />
         </button>
       </div>
       {menuOpen ? (
-        <div className="dropdown-menu" role="menu">
+        <div className="dropdown-menu" role="menu" onClick={(event) => event.stopPropagation()}>
           <div className="dropdown-content">
             <a
               role="menuitem"

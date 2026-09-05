@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderPageWithShellContext } from "../test/renderPageWithShellContext";
 import ListPage from "./ListPage";
 
@@ -511,6 +511,48 @@ describe("ListPage", () => {
     // Assert
     await waitFor(() => {
       expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("does not show the detail panel before an item is clicked", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+
+    // Assert
+    expect(document.querySelector("aside.app-detail")).not.toBeInTheDocument();
+  });
+
+  describe("when an item is clicked", () => {
+    beforeEach(async () => {
+      vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+      vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+      renderPageWithShellContext(createElement(ListPage), {
+        path: "lists/:listId",
+        initialEntry: "/lists/LS_1",
+      });
+      await waitFor(() => {
+        expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByText("Buy windshield wipers for truck"));
+    });
+
+    it("opens the detail panel", () => {
+      const panel = document.querySelector("aside.app-detail");
+      expect(panel).toBeInTheDocument();
+      expect(panel).toHaveClass("is-hidden-touch");
+    });
+
+    it("marks the clicked row as active", () => {
+      const row = screen.getAllByText("Buy windshield wipers for truck")[0].closest(".task-row");
+      expect(row).toHaveClass("is-active");
     });
   });
 });
