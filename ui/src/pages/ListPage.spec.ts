@@ -482,7 +482,7 @@ describe("ListPage", () => {
     expect(modifyItemTitle).toHaveBeenCalledWith("IT_1", { title: "Schedule dentist" });
   });
 
-  it("reloads items after modifyItemTitle is called", async () => {
+    it("reloads items after modifyItemTitle is called", async () => {
     // Arrange
     const updatedItems = [{ ...sampleItems[0], Title: "Schedule dentist" }, sampleItems[1]];
     vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
@@ -511,6 +511,39 @@ describe("ListPage", () => {
     // Assert
     await waitFor(() => {
       expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("updates the detail panel title after rename from Task options", async () => {
+    // Arrange
+    const updatedItems = [{ ...sampleItems[0], Title: "Schedule dentist" }, sampleItems[1]];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(sampleItems)
+      .mockResolvedValueOnce(updatedItems);
+    vi.mocked(modifyItemTitle).mockResolvedValue(updatedItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText("Buy windshield wipers for truck"));
+
+    // Act
+    fireEvent.click(screen.getAllByRole("button", { name: "Task options" })[0]);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Rename" }));
+    const input = screen.getAllByDisplayValue("Buy windshield wipers for truck").find(
+      (el) => el.tagName === "INPUT",
+    )!;
+    fireEvent.change(input, { target: { value: "Schedule dentist" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    await waitFor(() => {
+      const title = screen.getByDisplayValue("Schedule dentist");
+      expect(title.tagName).toBe("TEXTAREA");
     });
   });
 

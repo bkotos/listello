@@ -66,6 +66,7 @@ export function ItemDetail({ item, listName, onClose }: ItemDetailProps) {
                 style={{ height: "1.5rem", width: "1.5rem", marginTop: "0.25rem" }}
               />
               <textarea
+                key={item.Title}
                 rows={1}
                 defaultValue={item.Title}
                 className="textarea is-shadowless"
