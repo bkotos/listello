@@ -4,8 +4,8 @@ import type { ItemDto } from "api-types";
 
 export type ItemRowProps = {
   item: ItemDto;
-  selected?: boolean;
-  onSelect?: (itemId: string) => void;
+  selected: boolean;
+  onSelect: (itemId: string) => void;
   onComplete: (itemId: string) => void;
   onUncomplete: (itemId: string) => void;
   onDelete: (itemId: string) => void;
@@ -42,6 +42,8 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
     return (
       <RenamingItemRow
         title={title}
+        selected={selected}
+        onSelect={() => onSelect(item.ID)}
         completed={completed}
         onToggle={handleToggle}
         onCommit={(nextTitle) => {
@@ -55,7 +57,7 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
   }
 
   return (
-    <ItemRowShell selected={selected} onSelect={onSelect ? () => onSelect(item.ID) : undefined}>
+    <ItemRowShell selected={selected} onSelect={() => onSelect(item.ID)}>
       <CompleteToggle completed={completed} onToggle={handleToggle} />
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
@@ -79,8 +81,8 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
 
 type ItemRowShellProps = {
   children: ReactNode;
-  selected?: boolean;
-  onSelect?: () => void;
+  selected: boolean;
+  onSelect: () => void;
 };
 
 function ItemRowShell({ children, selected, onSelect }: ItemRowShellProps) {
@@ -121,17 +123,19 @@ function CompleteToggle({ completed, onToggle }: CompleteToggleProps) {
 
 type RenamingItemRowProps = {
   title: string;
+  selected: boolean;
+  onSelect: () => void;
   completed: boolean;
   onToggle: () => void;
   onCommit: (title: string) => void;
   onCancel: () => void;
 };
 
-function RenamingItemRow({ title, completed, onToggle, onCommit, onCancel }: RenamingItemRowProps) {
+function RenamingItemRow({ title, selected, onSelect, completed, onToggle, onCommit, onCancel }: RenamingItemRowProps) {
   const [draft, setDraft] = useState(title);
 
   return (
-    <ItemRowShell>
+    <ItemRowShell selected={selected} onSelect={onSelect}>
       <CompleteToggle completed={completed} onToggle={onToggle} />
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
