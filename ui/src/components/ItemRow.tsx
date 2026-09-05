@@ -47,6 +47,7 @@ export function ItemRow({ item, onComplete, onUncomplete, onDelete, onModifyTitl
           setRenaming(false);
           onModifyTitle(item.ID, nextTitle);
         }}
+        onCancel={() => setRenaming(false)}
       />
     );
   }
@@ -115,9 +116,10 @@ type RenamingItemRowProps = {
   completed: boolean;
   onToggle: () => void;
   onCommit: (title: string) => void;
+  onCancel: () => void;
 };
 
-function RenamingItemRow({ title, completed, onToggle, onCommit }: RenamingItemRowProps) {
+function RenamingItemRow({ title, completed, onToggle, onCommit, onCancel }: RenamingItemRowProps) {
   const [draft, setDraft] = useState(title);
 
   return (
@@ -133,6 +135,8 @@ function RenamingItemRow({ title, completed, onToggle, onCommit }: RenamingItemR
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 onCommit(draft);
+              } else if (e.key === "Escape") {
+                onCancel();
               }
             }}
           />

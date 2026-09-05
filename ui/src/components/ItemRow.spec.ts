@@ -378,4 +378,33 @@ describe("ItemRow", () => {
       expect(screen.getByText("Schedule dentist")).toBeInTheDocument();
     });
   });
+
+  describe("when Escape is pressed while renaming", () => {
+    beforeEach(() => {
+      render(
+        createElement(ItemRow, {
+          item: { ...baseItem, Title: "Reply to the venue about the offsite" },
+          onComplete: vi.fn(),
+          onUncomplete: vi.fn(),
+          onDelete: vi.fn(),
+          onModifyTitle: vi.fn(),
+        }),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Task options" }));
+      fireEvent.click(screen.getByRole("menuitem", { name: "Rename" }));
+      const input = screen.getByDisplayValue("Reply to the venue about the offsite");
+      fireEvent.change(input, { target: { value: "Schedule dentist" } });
+      fireEvent.keyDown(input, { key: "Escape" });
+    });
+
+    it("hides the title input", () => {
+      // Assert
+      expect(screen.queryByDisplayValue("Schedule dentist")).not.toBeInTheDocument();
+    });
+
+    it("shows the original title", () => {
+      // Assert
+      expect(screen.getByText("Reply to the venue about the offsite")).toBeInTheDocument();
+    });
+  });
 });
