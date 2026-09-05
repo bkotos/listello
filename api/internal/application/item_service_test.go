@@ -363,3 +363,82 @@ func TestItemService_ModifyItemTitle_PublishesEvent(t *testing.T) {
 	assert.Equal(t, title, metadata.Title)
 	assert.NotEmpty(t, published.Timestamp)
 }
+
+func TestItemService_MoveItem_PersistsItem(t *testing.T) {
+	// Arrange
+	const (
+		itemID = "IT_1"
+		listID = "LS_2"
+	)
+	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Schedule dentist", State: domain.ItemOutstanding}
+	list := domain.List{ID: listID, Name: "Next actions"}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, publisher)
+
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	listRepo.EXPECT().
+		GetByID(listID).
+		Return(list, nil)
+	itemRepo.EXPECT().
+		Save(mock.MatchedBy(func(saved domain.Item) bool {
+			return saved.ID == itemID && saved.ListID == listID
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("domain.Event")).
+		Return(nil)
+
+	// Act
+	result, err := svc.MoveItem(itemID, listID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, listID, result.ListID)
+}
+
+func TestItemService_MoveItem_PublishesEvent(t *testing.T) {
+	// Arrange
+	const (
+		itemID = "IT_1"
+		listID = "LS_2"
+	)
+	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Schedule dentist", State: domain.ItemOutstanding}
+	list := domain.List{ID: listID, Name: "Next actions"}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, publisher)
+
+	var published domain.Event
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	listRepo.EXPECT().
+		GetByID(listID).
+		Return(list, nil)
+	itemRepo.EXPECT().
+		Save(mock.AnythingOfType("domain.Item")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			metadata, ok := event.Metadata.(domain.EventMetadataItemMovedToOtherList)
+			return event.Name == domain.EventItemMovedToOtherList && ok && metadata.ID == itemID && metadata.ListID == listID
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.MoveItem(itemID, listID)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataItemMovedToOtherList)
+	require.True(t, ok)
+	assert.Equal(t, itemID, metadata.ID)
+	assert.Equal(t, listID, metadata.ListID)
+	assert.NotEmpty(t, published.Timestamp)
+}
