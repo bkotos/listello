@@ -15,9 +15,10 @@ import {
 export type ItemDetailProps = {
   item: ItemDto;
   listName: string;
+  onClose: () => void;
 };
 
-export function ItemDetail({ item, listName }: ItemDetailProps) {
+export function ItemDetail({ item, listName, onClose }: ItemDetailProps) {
   return (
     <aside className="app-detail is-hidden-touch">
       <div
@@ -48,6 +49,7 @@ export function ItemDetail({ item, listName }: ItemDetailProps) {
               aria-label="Close"
               className="icon-btn"
               style={{ height: "2rem", width: "2rem" }}
+              onClick={onClose}
             >
               <X size={16} />
             </button>

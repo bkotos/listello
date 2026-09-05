@@ -91,7 +91,9 @@ function ListPage() {
           )}
         </ContentArea>
       </div>
-      {selectedItem ? <ItemDetail item={selectedItem} listName={title} /> : null}
+      {selectedItem ? (
+        <ItemDetail item={selectedItem} listName={title} onClose={() => setSelectedItemId(null)} />
+      ) : null}
     </div>
   );
 }

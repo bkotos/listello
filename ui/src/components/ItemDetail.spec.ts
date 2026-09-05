@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import type { ItemDto } from "api-types";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ItemDetail } from "./ItemDetail";
 
 const baseItem: ItemDto = {
@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe("ItemDetail", () => {
   beforeEach(() => {
-    render(createElement(ItemDetail, { item: baseItem, listName: "Work" }));
+    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn() }));
   });
 
   it("renders a right-hand detail aside", () => {
