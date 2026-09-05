@@ -139,6 +139,7 @@ function RenamingItemRow({ title, completed, onToggle, onCommit, onCancel }: Ren
                 onCancel();
               }
             }}
+            onBlur={() => onCommit(draft)}
           />
         </div>
       </div>

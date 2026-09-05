@@ -379,6 +379,43 @@ describe("ItemRow", () => {
     });
   });
 
+  describe("when the renamed title is committed on blur", () => {
+    const onModifyTitle = vi.fn(() => new Promise<void>(() => {}));
+
+    beforeEach(() => {
+      onModifyTitle.mockClear();
+      render(
+        createElement(ItemRow, {
+          item: { ...baseItem, Title: "Reply to the venue about the offsite" },
+          onComplete: vi.fn(),
+          onUncomplete: vi.fn(),
+          onDelete: vi.fn(),
+          onModifyTitle,
+        }),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Task options" }));
+      fireEvent.click(screen.getByRole("menuitem", { name: "Rename" }));
+      const input = screen.getByDisplayValue("Reply to the venue about the offsite");
+      fireEvent.change(input, { target: { value: "Schedule dentist" } });
+      fireEvent.blur(input);
+    });
+
+    it("calls onModifyTitle with the new title", () => {
+      // Assert
+      expect(onModifyTitle).toHaveBeenCalledWith("IT_1", "Schedule dentist");
+    });
+
+    it("hides the title input", () => {
+      // Assert
+      expect(screen.queryByDisplayValue("Schedule dentist")).not.toBeInTheDocument();
+    });
+
+    it("shows the new title", () => {
+      // Assert
+      expect(screen.getByText("Schedule dentist")).toBeInTheDocument();
+    });
+  });
+
   describe("when Escape is pressed while renaming", () => {
     beforeEach(() => {
       render(
