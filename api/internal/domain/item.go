@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -95,6 +96,9 @@ func (i *Item) Delete() (Event, error) {
 
 // ModifyTitle changes the item's title and raises an ItemTitleChanged event.
 func (i *Item) ModifyTitle(title string) (Event, error) {
+	if strings.Contains(title, "\n") {
+		return Event{}, fmt.Errorf("title must not contain newlines")
+	}
 	i.Title = title
 	return NewEvent(EventItemTitleChanged, EventMetadataItemTitleChanged{ID: i.ID, Title: title}, 1), nil
 }

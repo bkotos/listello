@@ -200,11 +200,18 @@ func (s *suiteState) theOwnerModifiesTheTitleOfTheItemTo(ctx context.Context, ti
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
 	event, err := s.items[title].ModifyTitle(newTitle)
-	require.NoError(t, err)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
 	item := s.items[title]
 	delete(s.items, title)
 	s.items[item.Title] = item
 	s.record(event)
+}
+
+func (s *suiteState) theOwnerModifiesTheTitleOfTheItemToDocString(ctx context.Context, title string, body *godog.DocString) {
+	s.theOwnerModifiesTheTitleOfTheItemTo(ctx, title, body.Content)
 }
 
 func (s *suiteState) theItemShouldExist(ctx context.Context, title string) {
@@ -578,12 +585,14 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^creating the list should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^defining the item should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^modifying the due date should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
+	ctx.Step(`^modifying the title should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^linking as a child should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
 	ctx.Step(`^the user captures an inbox item "([^"]*)"$`, s.theUserCapturesAnInboxItem)
 	ctx.Step(`^the user captures an inbox item "([^"]*)" on the list "([^"]*)"$`, s.theUserCapturesAnInboxItemOnTheList)
 	ctx.Step(`^the capture should fail with error "([^"]*)"$`, s.theCaptureShouldFailWithError)
 	ctx.Step(`^a captured item "([^"]*)" exists$`, s.aCapturedItemExists)
 	ctx.Step(`^the owner modifies the title of the item "([^"]*)" to "([^"]*)"$`, s.theOwnerModifiesTheTitleOfTheItemTo)
+	ctx.Step(`^the owner modifies the title of the item "([^"]*)" to:$`, s.theOwnerModifiesTheTitleOfTheItemToDocString)
 	ctx.Step(`^the item "([^"]*)" should exist$`, s.theItemShouldExist)
 	ctx.Step(`^the owner modifies the description of the item "([^"]*)" to "([^"]*)"$`, s.theOwnerModifiesTheDescriptionOfTheItemTo)
 	ctx.Step(`^the item "([^"]*)" should have description "([^"]*)"$`, s.theItemShouldHaveDescription)

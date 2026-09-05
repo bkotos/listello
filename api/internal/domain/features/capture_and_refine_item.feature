@@ -24,6 +24,15 @@ Feature: Capture and refine an inbox item
     And a "ItemTitleChanged" event should have occurred with title "Schedule dentist"
     And the item "Schedule dentist" should exist
 
+  Scenario: Modifying the title to include newlines fails
+    Given a captured item "dentist" exists
+    When the owner modifies the title of the item "dentist" to:
+      """
+      Schedule
+      dentist
+      """
+    Then modifying the title should fail with error "title must not contain newlines"
+
   Scenario: Modifying the description of a captured item
     Given a captured item "Schedule dentist" exists
     When the owner modifies the description of the item "Schedule dentist" to "Call the clinic on Monday"
