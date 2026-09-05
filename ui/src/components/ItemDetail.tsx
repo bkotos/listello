@@ -72,7 +72,12 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle }: ItemDetai
                 defaultValue={item.Title}
                 className="textarea is-shadowless"
                 onBlur={(e) => onModifyTitle(item.ID, e.currentTarget.value)}
-                onKeyDown={preventNewlines}
+                onKeyDown={(e) => {
+                  preventNewlines(e);
+                  if (e.key === "Enter") {
+                    onModifyTitle(item.ID, e.currentTarget.value);
+                  }
+                }}
                 onPaste={stripPastedNewlines}
                 style={{
                   flex: "1 1 0",

@@ -573,6 +573,32 @@ describe("ListPage", () => {
     expect(modifyItemTitle).toHaveBeenCalledWith("IT_1", { title: "Schedule dentist" });
   });
 
+  it("calls modifyItemTitle when Enter is pressed in the detail title", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(modifyItemTitle).mockResolvedValue({
+      ...sampleItems[0],
+      Title: "Schedule dentist",
+    });
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText("Buy windshield wipers for truck"));
+
+    // Act
+    const title = screen.getByDisplayValue("Buy windshield wipers for truck");
+    fireEvent.change(title, { target: { value: "Schedule dentist" } });
+    fireEvent.keyDown(title, { key: "Enter" });
+
+    // Assert
+    expect(modifyItemTitle).toHaveBeenCalledWith("IT_1", { title: "Schedule dentist" });
+  });
+
   it("reloads items after the detail title is blurred", async () => {
     // Arrange
     const updatedItems = [{ ...sampleItems[0], Title: "Schedule dentist" }, sampleItems[1]];
