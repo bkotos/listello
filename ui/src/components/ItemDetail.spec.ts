@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import type { ItemDto } from "api-types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -62,6 +62,12 @@ describe("ItemDetail", () => {
     const title = screen.getByDisplayValue("Buy windshield wipers for truck");
     expect(title.tagName).toBe("TEXTAREA");
     expect(title).toHaveClass("textarea", "is-shadowless");
+  });
+
+  it("prevents Enter from inserting a newline in the title", () => {
+    const title = screen.getByDisplayValue("Buy windshield wipers for truck");
+    const proceeded = fireEvent.keyDown(title, { key: "Enter" });
+    expect(proceeded).toBe(false);
   });
 
   it("renders a Due date field", () => {

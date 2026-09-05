@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import type { ItemDto } from "api-types";
 import {
   Calendar,
@@ -72,6 +72,7 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle }: ItemDetai
                 defaultValue={item.Title}
                 className="textarea is-shadowless"
                 onBlur={(e) => onModifyTitle(item.ID, e.currentTarget.value)}
+                onKeyDown={preventNewlines}
                 style={{
                   flex: "1 1 0",
                   resize: "none",
@@ -202,6 +203,12 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle }: ItemDetai
       </div>
     </aside>
   );
+}
+
+function preventNewlines(event: KeyboardEvent<HTMLTextAreaElement>) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+  }
 }
 
 type PropertyRowProps = {
