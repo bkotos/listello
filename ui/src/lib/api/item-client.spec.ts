@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { completeItem, defineItem, deleteItem, getAllItems, modifyItemTitle, uncompleteItem } from "./item-client";
+import { completeItem, defineItem, deleteItem, getAllItems, modifyItemTitle, moveItem, uncompleteItem } from "./item-client";
 import { request } from "./util";
 
 vi.mock(import("./util"), () => ({
@@ -170,6 +170,34 @@ describe("modifyItemTitle", () => {
     expect(request).toHaveBeenCalledWith("/api/items/IT_1/title", {
       method: "PATCH",
       body: JSON.stringify({ title: "Schedule dentist" }),
+    });
+    expect(result).toEqual(item);
+  });
+});
+
+describe("moveItem", () => {
+  it("posts a move action for an item to the API", async () => {
+    // Arrange
+    const item = {
+      ID: "IT_1",
+      ListID: "LS_2",
+      ParentID: "",
+      Title: "Schedule dentist",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    vi.mocked(request).mockResolvedValue(item);
+
+    // Act
+    const result = await moveItem("IT_1", { listID: "LS_2" });
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/items/IT_1/move", {
+      method: "POST",
+      body: JSON.stringify({ listID: "LS_2" }),
     });
     expect(result).toEqual(item);
   });

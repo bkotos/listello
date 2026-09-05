@@ -1,4 +1,4 @@
-import type { DefineItemRequest, ItemDto, ModifyItemTitleRequest } from "api-types";
+import type { DefineItemRequest, ItemDto, ModifyItemTitleRequest, MoveItemRequest } from "api-types";
 import { request } from "./util";
 
 export async function getAllItems(
@@ -42,6 +42,16 @@ export async function modifyItemTitle(
 ): Promise<ItemDto> {
   return request<ItemDto>(`/api/items/${itemId}/title`, {
     method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function moveItem(
+  itemId: string,
+  body: MoveItemRequest,
+): Promise<ItemDto> {
+  return request<ItemDto>(`/api/items/${itemId}/move`, {
+    method: "POST",
     body: JSON.stringify(body),
   });
 }
