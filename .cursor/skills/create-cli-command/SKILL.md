@@ -38,7 +38,7 @@ Adapter repository is **not** required for this skill (command tests use mock se
 - Application service methods (`api/internal/personal-productivity-context/application/`) — use [create-application-service](../create-application-service/SKILL.md)
 - Adapter repositories (`api/internal/personal-productivity-context/adapter/`) — use [create-adapter-repository](../create-adapter-repository/SKILL.md)
 - Bootstrap / `main.go` service construction (`api/internal/bootstrap/`, `api/cmd/cli/main.go`)
-- HTTP handlers (`api/cmd/server/`) — use [create-api-handler](../create-api-handler/SKILL.md)
+- HTTP handlers (`api/internal/personal-productivity-context/handlers/`) — use [create-api-handler](../create-api-handler/SKILL.md)
 - View DTOs / `api-types` (CLI uses args, flags, and human-readable output — not JSON DTOs unless `--json` is in scope)
 
 ## Architecture constraints

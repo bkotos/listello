@@ -35,7 +35,7 @@ If any check fails → **stop**. Tell the user to use `create-application-servic
 
 - Application port interfaces (`api/internal/personal-productivity-context/application/`) — use [create-application-service](../create-application-service/SKILL.md) first
 - Bootstrap wiring (`api/internal/bootstrap/bootstrap.go`)
-- HTTP handlers (`api/cmd/server/handlers/`)
+- HTTP handlers (`api/internal/personal-productivity-context/handlers/`)
 - CLI commands (`api/cmd/cli/commands/`)
 
 ## Architecture constraints

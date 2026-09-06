@@ -3,14 +3,14 @@ package main
 import (
 	"net/http"
 
+	internalhandlers "github.com/bkotos/listello/internal/handlers"
 	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
-
-	"github.com/bkotos/listello/cmd/server/handlers"
+	handlers "github.com/bkotos/listello/internal/personal-productivity-context/handlers"
 )
 
 func newAPIServer(listService application.ListService, itemService application.ItemService) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", handlers.Health)
+	mux.HandleFunc("GET /health", internalhandlers.Health)
 	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))
 	mux.HandleFunc("GET /api/lists/{id}", handlers.GetList(listService))
 	mux.HandleFunc("POST /api/lists", handlers.CreateList(listService))

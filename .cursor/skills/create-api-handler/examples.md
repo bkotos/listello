@@ -40,7 +40,7 @@ Do **not** add handler tests that assert domain validation failures — those sc
 
 ## 1. POST `DefineItem` — write endpoint with path param
 
-**File:** `api/cmd/server/handlers/define_item.go`
+**File:** `api/internal/personal-productivity-context/handlers/define_item.go`
 
 ```go
 func DefineItem(itemService application.ItemService) http.HandlerFunc {
@@ -77,7 +77,7 @@ Key points:
 
 ### Test
 
-**File:** `api/cmd/server/handlers/define_item_test.go`
+**File:** `api/internal/personal-productivity-context/handlers/define_item_test.go`
 
 ```go
 import appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"
@@ -105,7 +105,7 @@ func TestDefineItem(t *testing.T) {
 
 ## 2. POST `CreateList` — write endpoint (legacy request decode)
 
-**File:** `api/cmd/server/handlers/create_list.go`
+**File:** `api/internal/personal-productivity-context/handlers/create_list.go`
 
 ```go
 func CreateList(listService application.ListService) http.HandlerFunc {
@@ -119,7 +119,7 @@ func CreateList(listService application.ListService) http.HandlerFunc {
 
 ### Test
 
-**File:** `api/cmd/server/handlers/create_list_test.go`
+**File:** `api/internal/personal-productivity-context/handlers/create_list_test.go`
 
 ```go
 listService := appmocks.NewMockListService(t)
@@ -129,7 +129,7 @@ CreateList(listService)(rec, req)
 
 ## 3. GET `GetAllLists` — collection read
 
-**File:** `api/cmd/server/handlers/get_all_lists.go`
+**File:** `api/internal/personal-productivity-context/handlers/get_all_lists.go`
 
 ```go
 func GetAllLists(listService application.ListService) http.HandlerFunc {
@@ -150,7 +150,7 @@ listService.EXPECT().GetAll().Return(expected, nil)
 
 ## 4. GET `GetList` — resource by ID
 
-**File:** `api/cmd/server/handlers/get_list.go`
+**File:** `api/internal/personal-productivity-context/handlers/get_list.go`
 
 ```go
 func GetList(listService application.ListService) http.HandlerFunc {
@@ -186,7 +186,7 @@ listService.EXPECT().GetByID(listID).Return(domain.List{}, fmt.Errorf("list %q n
 ```go
 func newAPIServer(listService application.ListService, itemService application.ItemService) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", handlers.Health)
+	mux.HandleFunc("GET /health", internalhandlers.Health)
 	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))
 	mux.HandleFunc("GET /api/lists/{id}", handlers.GetList(listService))
 	mux.HandleFunc("POST /api/lists", handlers.CreateList(listService))

@@ -21,7 +21,7 @@ Before starting, verify:
 
 | Check | How |
 |-------|-----|
-| Handler function exists | `handlers.{Handler}(...)` in `api/cmd/server/handlers/` |
+| Handler function exists | `handlers.{Handler}(...)` in `api/internal/personal-productivity-context/handlers/` |
 | Route registered | `mux.HandleFunc("{METHOD} /api/...", ...)` in `server.go` |
 | Response type in api-types | e.g. `{Resource}Response` in `api-types/index.ts` |
 | Request type in api-types (writes) | e.g. `{Action}{Resource}Request` in `api-types/index.ts` |
@@ -40,7 +40,7 @@ Do not write client tests or fetch wrappers until the handler is implemented.
 
 - React Query hooks (`{resource}-queries.ts`) — use [create-api-queries](../create-api-queries/SKILL.md)
 
-- Go API handlers and DTOs (`api/cmd/server/`, `api/internal/personal-productivity-context/view-dtos/`) — use [create-api-handler](../create-api-handler/SKILL.md)
+- Go API handlers and DTOs (`api/internal/personal-productivity-context/handlers/`, `api/internal/personal-productivity-context/view-dtos/`) — use [create-api-handler](../create-api-handler/SKILL.md)
 - Application / adapter layers
 - React pages, components, routes (`ui/src/pages/`, `ui/src/components/`) — use [create-ui-component](../create-ui-component/SKILL.md)
 - App context (`ui/src/contexts/`) — wire queries into context separately if needed

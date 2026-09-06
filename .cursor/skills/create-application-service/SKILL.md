@@ -36,7 +36,7 @@ Downstream skills (`create-adapter-repository`, `create-api-handler`, `create-cl
 
 - Adapter implementations (`api/internal/personal-productivity-context/adapter/`)
 - Bootstrap wiring (`api/internal/bootstrap/bootstrap.go`)
-- HTTP handlers (`api/cmd/server/handlers/`)
+- HTTP handlers (`api/internal/personal-productivity-context/handlers/`)
 - CLI commands (`api/cmd/cli/commands/`)
 
 ## Architecture constraints
@@ -252,7 +252,7 @@ When a port or service interface is added or changed:
 | Interface kind | Generated to | Used by |
 |----------------|--------------|---------|
 | Repository ports (`ListRepository`, `ItemRepository`, `EventPublisher`) | `mocks_test.go` (`application_test` package) | Application unit tests |
-| Service interfaces (`ListService`, `ItemService`) | `mocks/mocks.go` (`mocks` package) | Handler tests (`cmd/server/handlers/`) |
+| Service interfaces (`ListService`, `ItemService`) | `mocks/mocks.go` (`mocks` package) | Handler tests (`internal/personal-productivity-context/handlers/`) |
 
 When adding a new `{Aggregate}Service` interface, register it in `.mockery.yml` with `config` pointing to `mocks/` (same as `ListService` / `ItemService`).
 

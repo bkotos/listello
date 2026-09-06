@@ -187,7 +187,7 @@ See [.cursor/skills/create-adapter-repository/examples.md](../.cursor/skills/cre
 
 ### `create-api-handler`
 
-Wires HTTP endpoints in `api/cmd/server/`: handler function, `httptest` tests, route registration in `server.go`, and **request + response DTOs** in `view-dtos/`.
+Wires HTTP endpoints in `api/internal/personal-productivity-context/handlers/`: handler function, `httptest` tests, route registration in `api/cmd/server/server.go`, and **request + response DTOs** in `view-dtos/`.
 
 **In scope:** `handlers/{action}_{resource}.go`, handler tests, `server.go` routes, `{Action}{Resource}Request` + `{Resource}Response` DTOs, DTO tests, `make api-types`.
 

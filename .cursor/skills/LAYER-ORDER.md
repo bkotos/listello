@@ -92,7 +92,7 @@ If missing → stop, use `create-application-service`.
 
 | Check | How to verify |
 |-------|---------------|
-| Handler exists | `handlers.{Handler}(...)` in `api/cmd/server/handlers/` |
+| Handler exists | `handlers.{Handler}(...)` in `api/internal/personal-productivity-context/handlers/` |
 | Route registered | Matching `mux.HandleFunc(...)` in `api/cmd/server/server.go` |
 | Response type in api-types | e.g. `ListResponse` in `api-types/index.ts` |
 | Request type in api-types (writes) | e.g. `CreateListRequest` in `api-types/index.ts` |

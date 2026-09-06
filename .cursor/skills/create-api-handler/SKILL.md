@@ -1,15 +1,15 @@
 ---
 name: create-api-handler
 description: >-
-  Scaffolds and wires HTTP API handlers and routes in api/cmd/server/ that call
-  application services. Use when adding or extending API endpoints, HTTP
-  handlers, route registration, request/response view DTOs, or handlers for
-  ListService/ItemService following Listello hexagonal architecture.
+  Scaffolds and wires HTTP API handlers in api/internal/personal-productivity-context/handlers/
+  and routes in api/cmd/server/ that call application services. Use when adding
+  or extending API endpoints, HTTP handlers, route registration, request/response
+  view DTOs, or handlers for ListService/ItemService following Listello hexagonal architecture.
 ---
 
 # Create API Handler
 
-Guide for adding HTTP endpoints in `api/cmd/server/`. Read this skill before changing handlers or routes.
+Guide for adding HTTP endpoints in `api/internal/personal-productivity-context/handlers/` (routes in `api/cmd/server/`). Read this skill before changing handlers or routes.
 
 Architecture context: see [README.md](../../../README.md) (handlers call application services, map domain results to view DTOs, encode JSON). Layer order: [LAYER-ORDER.md](../LAYER-ORDER.md). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
 
@@ -212,7 +212,7 @@ func Get{Resource}({aggregate}Service application.{Service}) http.HandlerFunc {
 ```go
 func newAPIServer(listService application.ListService, itemService application.ItemService) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", handlers.Health)
+	mux.HandleFunc("GET /health", internalhandlers.Health)
 	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))
 	mux.HandleFunc("GET /api/lists/{id}", handlers.GetList(listService))
 	mux.HandleFunc("POST /api/lists", handlers.CreateList(listService))
@@ -403,7 +403,7 @@ Do not write handler implementation in the same turn as a new failing spec.
 
 ```bash
 # Handler tests only
-cd api && go test ./cmd/server/handlers/...
+cd api && go test ./internal/personal-productivity-context/handlers/...
 
 # Full API tests
 make -C api test
