@@ -7,7 +7,7 @@ import (
 	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 	viewdto "github.com/bkotos/listello/internal/personal-productivity-context/view-dtos"
 
-	"github.com/bkotos/listello/cmd/server/response"
+	util "github.com/bkotos/listello/internal/util"
 )
 
 func CreateList(listService application.ListService) http.HandlerFunc {
@@ -16,20 +16,20 @@ func CreateList(listService application.ListService) http.HandlerFunc {
 			Name string `json:"name"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			response.WriteError(w, http.StatusBadRequest, "invalid JSON body")
+			util.WriteError(w, http.StatusBadRequest, "invalid JSON body")
 			return
 		}
 		if body.Name == "" {
-			response.WriteError(w, http.StatusBadRequest, "name is required")
+			util.WriteError(w, http.StatusBadRequest, "name is required")
 			return
 		}
 
 		list, err := listService.CreateList(body.Name)
 		if err != nil {
-			response.WriteError(w, http.StatusBadRequest, err.Error())
+			util.WriteError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		response.WriteJSON(w, http.StatusCreated, viewdto.ListFromDomain(list))
+		util.WriteJSON(w, http.StatusCreated, viewdto.ListFromDomain(list))
 	}
 }

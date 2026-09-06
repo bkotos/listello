@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/bkotos/listello/cmd/server/response"
+	util "github.com/bkotos/listello/internal/util"
 )
 
 func Health(w http.ResponseWriter, _ *http.Request) {
-	response.WriteJSON(w, http.StatusOK, map[string]bool{"ok": true})
+	util.WriteJSON(w, http.StatusOK, map[string]bool{"ok": true})
 }

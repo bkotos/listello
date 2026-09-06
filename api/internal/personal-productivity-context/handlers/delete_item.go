@@ -6,24 +6,24 @@ import (
 
 	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 
-	"github.com/bkotos/listello/cmd/server/response"
+	util "github.com/bkotos/listello/internal/util"
 )
 
 func DeleteItem(itemService application.ItemService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		if id == "" {
-			response.WriteError(w, http.StatusBadRequest, "id is required")
+			util.WriteError(w, http.StatusBadRequest, "id is required")
 			return
 		}
 
 		err := itemService.DeleteItem(id)
 		if err != nil {
 			if strings.Contains(err.Error(), "not found") {
-				response.WriteError(w, http.StatusNotFound, err.Error())
+				util.WriteError(w, http.StatusNotFound, err.Error())
 				return
 			}
-			response.WriteError(w, http.StatusBadRequest, err.Error())
+			util.WriteError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 

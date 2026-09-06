@@ -47,7 +47,7 @@ Adapter repository is **not** required for this skill (handler tests use mock se
 - Decode into a `{Action}{Resource}Request` DTO; map domain results to response DTOs via `{Resource}FromDomain`.
 - **Do not validate domain-owned fields in handlers** (e.g. empty `title` on `DefineItem`) — domain/application return errors; map those to 400.
 - Validate only HTTP/transport concerns in handlers (invalid JSON, missing path param).
-- Use `response.WriteJSON` and `response.WriteError` from `cmd/server/response`.
+- Use `util.WriteJSON` and `util.WriteError` from `internal/util`.
 - One handler file per endpoint (`create_list.go`, `get_list.go`, …).
 - Handler factory accepts the service **interface**: `func CreateList(listService application.ListService) http.HandlerFunc`.
 
@@ -142,24 +142,24 @@ import (
 	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 	viewdto "github.com/bkotos/listello/internal/personal-productivity-context/view-dtos"
 
-	"github.com/bkotos/listello/cmd/server/response"
+	util "github.com/bkotos/listello/internal/util"
 )
 
 func {Action}({aggregate}Service application.{Service}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req viewdto.{Action}{Resource}Request
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			response.WriteError(w, http.StatusBadRequest, "invalid JSON body")
+			util.WriteError(w, http.StatusBadRequest, "invalid JSON body")
 			return
 		}
 
 		result, err := {aggregate}Service.{Method}(/* map fields from req */)
 		if err != nil {
-			response.WriteError(w, http.StatusBadRequest, err.Error())
+			util.WriteError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		response.WriteJSON(w, http.StatusCreated, viewdto.{Resource}FromDomain(result))
+		util.WriteJSON(w, http.StatusCreated, viewdto.{Resource}FromDomain(result))
 	}
 }
 ```
@@ -171,10 +171,10 @@ func GetAll{Resource}({aggregate}Service application.{Service}) http.HandlerFunc
 	return func(w http.ResponseWriter, _ *http.Request) {
 		all, err := {aggregate}Service.GetAll()
 		if err != nil {
-			response.WriteError(w, http.StatusInternalServerError, err.Error())
+			util.WriteError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		response.WriteJSON(w, http.StatusOK, viewdto.{Plural}FromDomain(all))
+		util.WriteJSON(w, http.StatusOK, viewdto.{Plural}FromDomain(all))
 	}
 }
 ```
@@ -188,21 +188,21 @@ func Get{Resource}({aggregate}Service application.{Service}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		if id == "" {
-			response.WriteError(w, http.StatusBadRequest, "id is required")
+			util.WriteError(w, http.StatusBadRequest, "id is required")
 			return
 		}
 
 		result, err := {aggregate}Service.GetByID(id)
 		if err != nil {
 			if strings.Contains(err.Error(), "not found") {
-				response.WriteError(w, http.StatusNotFound, err.Error())
+				util.WriteError(w, http.StatusNotFound, err.Error())
 				return
 			}
-			response.WriteError(w, http.StatusInternalServerError, err.Error())
+			util.WriteError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		response.WriteJSON(w, http.StatusOK, viewdto.{FromDomain}(result))
+		util.WriteJSON(w, http.StatusOK, viewdto.{FromDomain}(result))
 	}
 }
 ```

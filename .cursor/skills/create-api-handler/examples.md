@@ -29,7 +29,7 @@ var req viewdto.DefineItemRequest
 if err := json.NewDecoder(r.Body).Decode(&req); err != nil { ... }
 
 item, err := itemService.DefineItem(id, req.Title)
-response.WriteJSON(w, http.StatusCreated, viewdto.ItemFromDomain(item))
+util.WriteJSON(w, http.StatusCreated, viewdto.ItemFromDomain(item))
 ```
 
 Do **not** add handler-level validation for fields the domain already validates (e.g. empty `title` on `DefineItem`). Let the service return an error and map it to 400.
@@ -47,23 +47,23 @@ func DefineItem(itemService application.ItemService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		if id == "" {
-			response.WriteError(w, http.StatusBadRequest, "id is required")
+			util.WriteError(w, http.StatusBadRequest, "id is required")
 			return
 		}
 
 		var req viewdto.DefineItemRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			response.WriteError(w, http.StatusBadRequest, "invalid JSON body")
+			util.WriteError(w, http.StatusBadRequest, "invalid JSON body")
 			return
 		}
 
 		item, err := itemService.DefineItem(id, req.Title)
 		if err != nil {
-			response.WriteError(w, http.StatusBadRequest, err.Error())
+			util.WriteError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		response.WriteJSON(w, http.StatusCreated, viewdto.ItemFromDomain(item))
+		util.WriteJSON(w, http.StatusCreated, viewdto.ItemFromDomain(item))
 	}
 }
 ```
@@ -112,7 +112,7 @@ func CreateList(listService application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// ...
 		list, err := listService.CreateList(body.Name)
-		response.WriteJSON(w, http.StatusCreated, viewdto.ListFromDomain(list))
+		util.WriteJSON(w, http.StatusCreated, viewdto.ListFromDomain(list))
 	}
 }
 ```
@@ -136,7 +136,7 @@ func GetAllLists(listService application.ListService) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		all, err := listService.GetAll()
 		// ...
-		response.WriteJSON(w, http.StatusOK, viewdto.ListsFromDomain(all))
+		util.WriteJSON(w, http.StatusOK, viewdto.ListsFromDomain(all))
 	}
 }
 ```
@@ -158,7 +158,7 @@ func GetList(listService application.ListService) http.HandlerFunc {
 		id := r.PathValue("id")
 		list, err := listService.GetByID(id)
 		// 404 when err contains "not found"
-		response.WriteJSON(w, http.StatusOK, viewdto.ListFromDomain(list))
+		util.WriteJSON(w, http.StatusOK, viewdto.ListFromDomain(list))
 	}
 }
 ```
@@ -211,7 +211,7 @@ When adding a new `{Aggregate}Service` interface, register it in `api/.mockery.y
 
 ## 7. Response helpers
 
-**File:** `api/cmd/server/response/json.go`
+**File:** `api/internal/util/json.go`
 
 ```go
 func WriteJSON(w http.ResponseWriter, status int, payload any)

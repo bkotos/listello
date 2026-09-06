@@ -227,7 +227,7 @@ flowchart TD
     tygo --> done[Tests green — handler layer only]
 ```
 
-Handlers decode JSON into request DTOs, call application services, map results to response DTOs, and use `response.WriteJSON` / `WriteError`. Run `make api-types` after DTO changes.
+Handlers decode JSON into request DTOs, call application services, map results to response DTOs, and use `util.WriteJSON` / `WriteError`. Run `make api-types` after DTO changes.
 
 After tests pass, the agent may mention `main.go` bootstrap wiring as a follow-up but will not implement it unless you ask.
 
