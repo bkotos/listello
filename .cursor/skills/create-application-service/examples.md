@@ -4,7 +4,7 @@ Annotated references from the Listello codebase. Read when implementing a new or
 
 ## 1. Service interface + implementation: `ListService`
 
-**File:** `api/internal/application/list_service.go`
+**File:** `api/internal/personal-productivity-context/application/list_service.go`
 
 Each aggregate exposes an exported **interface** and an unexported **struct**. The constructor returns the interface; a compile-time check ensures the struct satisfies it.
 
@@ -60,7 +60,7 @@ func (s *listService) CreateList(name string) (domain.List, error) {
 
 ### Test: persistence (`TestListService_CreateList_PersistsList`)
 
-**File:** `api/internal/application/list_service_test.go`
+**File:** `api/internal/personal-productivity-context/application/list_service_test.go`
 
 - Mocks: `NewMockListRepository(t)`, `NewMockEventPublisher(t)` from `mocks_test.go`.
 - `Save` expectation uses `mock.MatchedBy` to verify a non-empty item was passed (do not re-assert domain field values).
@@ -91,7 +91,7 @@ func (s *listService) GetByID(id string) (domain.List, error) {
 
 ## 3. `ItemService` with cross-aggregate dependency
 
-**File:** `api/internal/application/item_service.go`
+**File:** `api/internal/personal-productivity-context/application/item_service.go`
 
 ```go
 // ItemService defines item application operations.
@@ -125,7 +125,7 @@ Key points:
 
 ## 4. Shared `EventPublisher` port
 
-**File:** `api/internal/application/event_publisher.go`
+**File:** `api/internal/personal-productivity-context/application/event_publisher.go`
 
 ```go
 type EventPublisher interface {
@@ -141,7 +141,7 @@ All command services take `EventPublisher` as a constructor dependency. Do not c
 
 ```yaml
 packages:
-  github.com/bkotos/listello/internal/application:
+  github.com/bkotos/listello/internal/personal-productivity-context/application:
     interfaces:
       ListRepository:
       EventPublisher:
@@ -159,6 +159,6 @@ packages:
 ```
 
 - **Repository mocks** → `mocks_test.go` (default config) for `application_test` package.
-- **Service mocks** → `mocks/mocks.go` importable by handler tests as `appmocks "github.com/bkotos/listello/internal/application/mocks"`.
+- **Service mocks** → `mocks/mocks.go` importable by handler tests as `appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"`.
 
 After adding a new interface, register it in `.mockery.yml` and run `make -C api mocks`.

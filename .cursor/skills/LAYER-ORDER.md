@@ -8,7 +8,7 @@ This is a **code dependency order**, not the order you must invoke skills. CLI a
 
 ```mermaid
 flowchart TD
-    domain[Domain<br/>internal/domain]
+    domain[Domain<br/>internal/personal-productivity-context/domain]
     app[Application service<br/>create-application-service]
     adapter[Adapter repository<br/>create-adapter-repository]
     cli[CLI command<br/>create-cli-command]
@@ -55,14 +55,14 @@ Run these checks by reading the codebase before starting downstream work.
 
 | Check | How to verify |
 |-------|---------------|
-| Domain command exists (writes) | `domain.{Command}(...)` defined in `internal/domain/` |
+| Domain command exists (writes) | `domain.{Command}(...)` defined in `internal/personal-productivity-context/domain/` |
 | Domain feature passes (writes) | Godog scenarios green for the command |
 
 ### Adapter repository (`create-adapter-repository`)
 
 | Check | How to verify |
 |-------|---------------|
-| Port interface exists | `{Aggregate}Repository` in `internal/application/{aggregate}_service.go` |
+| Port interface exists | `{Aggregate}Repository` in `internal/personal-productivity-context/application/{aggregate}_service.go` |
 | Service struct exists | `{Aggregate}Service` + `New{Aggregate}Service` in same file |
 | Port lists the methods to implement | Interface includes `Save`, `GetByID`, etc. as needed |
 
@@ -72,9 +72,9 @@ If missing → stop, use `create-application-service`.
 
 | Check | How to verify |
 |-------|---------------|
-| Service method exists | `(s *{Service}) {Method}(...)` in `internal/application/` |
+| Service method exists | `(s *{Service}) {Method}(...)` in `internal/personal-productivity-context/application/` |
 | Method is implemented | Body does not return `fmt.Errorf("not implemented")` |
-| Application tests pass | `go test ./internal/application/...` green for that method |
+| Application tests pass | `go test ./internal/personal-productivity-context/application/...` green for that method |
 
 If missing → stop, use `create-application-service`.
 
@@ -82,9 +82,9 @@ If missing → stop, use `create-application-service`.
 
 | Check | How to verify |
 |-------|---------------|
-| Service method exists | `(s *{Service}) {Method}(...)` in `internal/application/` |
+| Service method exists | `(s *{Service}) {Method}(...)` in `internal/personal-productivity-context/application/` |
 | Method is implemented | Body does not return `fmt.Errorf("not implemented")` |
-| Application tests pass | `go test ./internal/application/...` green for that method |
+| Application tests pass | `go test ./internal/personal-productivity-context/application/...` green for that method |
 
 If missing → stop, use `create-application-service`.
 

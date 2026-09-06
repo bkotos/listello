@@ -1,6 +1,6 @@
 package viewdto
 
-import domain "github.com/bkotos/listello/internal/domain"
+import domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 
 // DefineItemRequest is the HTTP request body for defining an item on a list.
 type DefineItemRequest struct {

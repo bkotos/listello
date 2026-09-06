@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	domain "github.com/bkotos/listello/internal/domain"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 func NewItemList(container Container) *cobra.Command {

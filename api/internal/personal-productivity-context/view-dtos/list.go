@@ -1,6 +1,6 @@
 package viewdto
 
-import domain "github.com/bkotos/listello/internal/domain"
+import domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 
 // ListResponse is the HTTP representation of a list.
 type ListResponse struct {

@@ -21,9 +21,9 @@ Before starting, verify:
 
 | Check | How |
 |-------|-----|
-| Service method exists | `{Method}(...)` on `{Aggregate}Service` interface in `internal/application/` |
+| Service method exists | `{Method}(...)` on `{Aggregate}Service` interface in `internal/personal-productivity-context/application/` |
 | Method is implemented | Not `return ..., fmt.Errorf("not implemented")` |
-| Application tests pass | `go test ./internal/application/...` green for that method |
+| Application tests pass | `go test ./internal/personal-productivity-context/application/...` green for that method |
 
 If any check fails → **stop**. Tell the user to use `create-application-service` first and get green tests. Do not write handler tests, DTOs, or routes.
 
@@ -35,15 +35,15 @@ Adapter repository is **not** required for this skill (handler tests use mock se
 
 **Out of scope** (mention as follow-ups only; do not implement unless asked):
 
-- Application service methods (`api/internal/application/`) — use [create-application-service](../create-application-service/SKILL.md)
-- Adapter repositories (`api/internal/adapter/`) — use [create-adapter-repository](../create-adapter-repository/SKILL.md)
+- Application service methods (`api/internal/personal-productivity-context/application/`) — use [create-application-service](../create-application-service/SKILL.md)
+- Adapter repositories (`api/internal/personal-productivity-context/adapter/`) — use [create-adapter-repository](../create-adapter-repository/SKILL.md)
 - Bootstrap / `main.go` service construction (`api/internal/bootstrap/`, `api/cmd/server/main.go`)
 - UI client (`ui/src/lib/api/`)
 
 ## Architecture constraints
 
 - Handlers depend on application **service interfaces** — never call domain, adapters, or concrete service structs directly.
-- **All JSON request and response bodies use named DTOs** in `internal/view-dtos/` — never anonymous inline structs in handlers (legacy handlers may still use inline structs; migrate when touching them).
+- **All JSON request and response bodies use named DTOs** in `internal/personal-productivity-context/view-dtos/` — never anonymous inline structs in handlers (legacy handlers may still use inline structs; migrate when touching them).
 - Decode into a `{Action}{Resource}Request` DTO; map domain results to response DTOs via `{Resource}FromDomain`.
 - **Do not validate domain-owned fields in handlers** (e.g. empty `title` on `DefineItem`) — domain/application return errors; map those to 400.
 - Validate only HTTP/transport concerns in handlers (invalid JSON, missing path param).
@@ -53,7 +53,7 @@ Adapter repository is **not** required for this skill (handler tests use mock se
 
 ## Do not duplicate domain logic
 
-Domain rules live in `internal/domain` (Gherkin + godog). Handlers are thin transport adapters — do not re-implement or re-test domain behavior here.
+Domain rules live in `internal/personal-productivity-context/domain` (Gherkin + godog). Handlers are thin transport adapters — do not re-implement or re-test domain behavior here.
 
 **In handler code:**
 
@@ -65,7 +65,7 @@ Domain rules live in `internal/domain` (Gherkin + godog). Handlers are thin tran
 
 - Mock the **service interface**; assert `EXPECT().{Method}(...)` was called with the correct arguments.
 - Assert HTTP concerns: status code, response shape/mapping from the value the mock returns.
-- Do **not** add tests for domain validation failures (e.g. define on inbox, empty title) — those belong in `internal/domain`.
+- Do **not** add tests for domain validation failures (e.g. define on inbox, empty title) — those belong in `internal/personal-productivity-context/domain`.
 - Do **not** re-assert domain field semantics on the returned aggregate (outstanding state, ID prefixes, etc.) — only verify the handler forwards the service result into the response DTO.
 
 HTTP-specific behavior (e.g. mapping `"not found"` in an error to 404) is fair game — that is transport logic, not domain logic.
@@ -75,7 +75,7 @@ HTTP-specific behavior (e.g. mapping `"not found"` in an error to 404) is fair g
 These duplicate the upstream gate — all must pass:
 
 1. **Application service method exists and is implemented** — the handler calls a real service API, not a stub.
-2. **Request and response shapes** — you will add DTOs in `internal/view-dtos/` as part of this skill.
+2. **Request and response shapes** — you will add DTOs in `internal/personal-productivity-context/view-dtos/` as part of this skill.
 
 If the service method is missing or still `not implemented` → **stop** and use `create-application-service` first.
 
@@ -95,8 +95,8 @@ Task progress:
 - [ ] Verify upstream: service method implemented, application tests green (stop if not — see LAYER-ORDER.md)
 - [ ] Read application service method signature
 - [ ] Decide HTTP method, path, request body fields, response fields
-- [ ] Add request DTO in internal/view-dtos/ (POST/PUT/PATCH)
-- [ ] Add response DTO + FromDomain mapper in internal/view-dtos/
+- [ ] Add request DTO in internal/personal-productivity-context/view-dtos/ (POST/PUT/PATCH)
+- [ ] Add response DTO + FromDomain mapper in internal/personal-productivity-context/view-dtos/
 - [ ] Add DTO unit tests in view-dtos/{resource}_test.go
 - [ ] Write failing handler test with httptest
 - [ ] Run tests — confirm failure is missing behavior
@@ -124,7 +124,7 @@ Task progress:
 | Response DTO | `{Resource}Dto` or `{Resource}Response` (e.g. `ListResponse`, `ItemDto`) |
 | Response mapper | `{Resource}FromDomain`, `{Plural}FromDomain` for slices |
 | DTO test file | `view-dtos/{resource}_test.go` |
-| Service mocks | `appmocks "github.com/bkotos/listello/internal/application/mocks"` (mockery-generated) |
+| Service mocks | `appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"` (mockery-generated) |
 | Service handler param | `{aggregate}Service` (e.g. `listService`, `itemService`) — type is `application.{Aggregate}Service` interface |
 | Bruno request | `bruno/api/{Action} {Resource}.bru` (e.g. `Define Item.bru`) |
 
@@ -139,8 +139,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	application "github.com/bkotos/listello/internal/application"
-	viewdto "github.com/bkotos/listello/internal/view-dtos"
+	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
+	viewdto "github.com/bkotos/listello/internal/personal-productivity-context/view-dtos"
 
 	"github.com/bkotos/listello/cmd/server/response"
 )
@@ -273,7 +273,7 @@ Key points:
 - Use a sample list/item ID in the path (e.g. `LS_1`); create prerequisite data first if needed.
 - Increment `seq` so requests stay ordered in the Bruno UI.
 
-### View DTOs (`internal/view-dtos/{resource}.go`)
+### View DTOs (`internal/personal-productivity-context/view-dtos/{resource}.go`)
 
 Define request and response types in the same file per resource. Tygo generates TypeScript for all exported structs.
 
@@ -325,7 +325,7 @@ After any DTO change: `make api-types` (regenerates `api-types/index.ts` via tyg
 
 ## Test templates
 
-Use `httptest` with **mock service interfaces** from `internal/application/mocks`. Assert the service method was called with the correct arguments via `EXPECT()`; optionally assert HTTP status and response mapping from the value returned by the mock.
+Use `httptest` with **mock service interfaces** from `internal/personal-productivity-context/application/mocks`. Assert the service method was called with the correct arguments via `EXPECT()`; optionally assert HTTP status and response mapping from the value returned by the mock.
 
 ### POST handler
 

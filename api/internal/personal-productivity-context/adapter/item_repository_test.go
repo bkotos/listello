@@ -11,8 +11,8 @@ import (
 
 	_ "github.com/ncruces/go-sqlite3/driver"
 
-	adapter "github.com/bkotos/listello/internal/adapter"
-	domain "github.com/bkotos/listello/internal/domain"
+	adapter "github.com/bkotos/listello/internal/personal-productivity-context/adapter"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 func TestSQLiteItemRepository_Save_PersistsItem(t *testing.T) {

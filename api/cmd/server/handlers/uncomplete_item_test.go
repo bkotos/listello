@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	appmocks "github.com/bkotos/listello/internal/application/mocks"
-	domain "github.com/bkotos/listello/internal/domain"
-	viewdto "github.com/bkotos/listello/internal/view-dtos"
+	appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
+	viewdto "github.com/bkotos/listello/internal/personal-productivity-context/view-dtos"
 )
 
 func TestUncompleteItem(t *testing.T) {

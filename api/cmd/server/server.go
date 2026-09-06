@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	application "github.com/bkotos/listello/internal/application"
+	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 
 	"github.com/bkotos/listello/cmd/server/handlers"
 )

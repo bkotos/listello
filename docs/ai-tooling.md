@@ -39,7 +39,7 @@ This repo includes Cursor configuration that guides agents working on Listello: 
 
 Applied to every agent session. When adding or changing behavior:
 
-1. **Red** — Write the failing spec first (Gherkin + godog in `internal/domain`; Go unit tests elsewhere). Confirm the failure is missing behavior, not a broken harness.
+1. **Red** — Write the failing spec first (Gherkin + godog in `internal/personal-productivity-context/domain`; Go unit tests elsewhere). Confirm the failure is missing behavior, not a broken harness.
 2. **Stop** — Summarize the spec and failure. Do not implement until you approve.
 3. **Green** — Implement the bare minimum to pass. Re-run tests.
 
@@ -90,7 +90,7 @@ Skills are markdown playbooks the agent reads when a task matches. They live in 
 
 ### `create-application-service`
 
-Scaffolds and implements use cases in `api/internal/application/`: repository ports, service struct, unit tests, and mockery regeneration.
+Scaffolds and implements use cases in `api/internal/personal-productivity-context/application/`: repository ports, service struct, unit tests, and mockery regeneration.
 
 **In scope:** `{aggregate}_service.go`, `{aggregate}_service_test.go`, port interfaces, `api/.mockery.yml`, `make -C api mocks`.
 
@@ -137,7 +137,7 @@ See [.cursor/skills/create-application-service/examples.md](../.cursor/skills/cr
 
 ### `create-adapter-repository`
 
-Implements application repository ports in `api/internal/adapter/` with SQLite: `SQLite{Aggregate}Repository`, SQL queries, schema in `sqlite.go`, and integration tests against a real temp database.
+Implements application repository ports in `api/internal/personal-productivity-context/adapter/` with SQLite: `SQLite{Aggregate}Repository`, SQL queries, schema in `sqlite.go`, and integration tests against a real temp database.
 
 **In scope:** `{aggregate}_repository.go`, `{aggregate}_repository_test.go`, `CREATE TABLE` additions in `sqlite.go`.
 

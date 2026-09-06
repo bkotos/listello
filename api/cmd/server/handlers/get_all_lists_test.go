@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	appmocks "github.com/bkotos/listello/internal/application/mocks"
-	domain "github.com/bkotos/listello/internal/domain"
+	appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 func TestGetAllLists(t *testing.T) {

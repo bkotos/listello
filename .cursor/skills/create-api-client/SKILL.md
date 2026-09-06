@@ -40,7 +40,7 @@ Do not write client tests or fetch wrappers until the handler is implemented.
 
 - React Query hooks (`{resource}-queries.ts`) — use [create-api-queries](../create-api-queries/SKILL.md)
 
-- Go API handlers and DTOs (`api/cmd/server/`, `api/internal/view-dtos/`) — use [create-api-handler](../create-api-handler/SKILL.md)
+- Go API handlers and DTOs (`api/cmd/server/`, `api/internal/personal-productivity-context/view-dtos/`) — use [create-api-handler](../create-api-handler/SKILL.md)
 - Application / adapter layers
 - React pages, components, routes (`ui/src/pages/`, `ui/src/components/`) — use [create-ui-component](../create-ui-component/SKILL.md)
 - App context (`ui/src/contexts/`) — wire queries into context separately if needed

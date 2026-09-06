@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	viewdto "github.com/bkotos/listello/internal/view-dtos"
-	domain "github.com/bkotos/listello/internal/domain"
+	viewdto "github.com/bkotos/listello/internal/personal-productivity-context/view-dtos"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 func TestListFromDomain(t *testing.T) {

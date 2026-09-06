@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	domain "github.com/bkotos/listello/internal/domain"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 func TestNewEvent_ReturnsExpectedEventWithISOTimestamp(t *testing.T) {

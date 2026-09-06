@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	domain "github.com/bkotos/listello/internal/domain"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 type stubListRepository struct {

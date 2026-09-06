@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	domain "github.com/bkotos/listello/internal/domain"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 // LoggingEventPublisher publishes domain events by writing them to stdout

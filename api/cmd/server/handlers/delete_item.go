@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	application "github.com/bkotos/listello/internal/application"
+	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 
 	"github.com/bkotos/listello/cmd/server/response"
 )

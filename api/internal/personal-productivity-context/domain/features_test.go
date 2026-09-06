@@ -14,7 +14,7 @@ import (
 	"github.com/cucumber/godog"
 	"github.com/stretchr/testify/require"
 
-	domain "github.com/bkotos/listello/internal/domain"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 //go:embed features/*.feature

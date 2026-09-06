@@ -1,6 +1,6 @@
 package commands
 
-import application "github.com/bkotos/listello/internal/application"
+import application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 
 type testContainer struct {
 	list application.ListService

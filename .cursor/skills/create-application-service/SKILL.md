@@ -1,7 +1,7 @@
 ---
 name: create-application-service
 description: >-
-  Scaffolds and implements application-layer services in api/internal/application/
+  Scaffolds and implements application-layer services in api/internal/personal-productivity-context/application/
   (repository ports, service struct, unit tests, mockery). Use when adding or
   extending use cases, application services, repository interfaces, or
   ListService/ItemService methods following Listello hexagonal architecture.
@@ -9,7 +9,7 @@ description: >-
 
 # Create Application Service
 
-Guide for adding or extending use cases in `api/internal/application/`. Read this skill before changing application-layer code.
+Guide for adding or extending use cases in `api/internal/personal-productivity-context/application/`. Read this skill before changing application-layer code.
 
 Architecture context: see [README.md](../../../README.md) (Application layer coordinates domain commands, repository ports, and `EventPublisher`). Layer order: [LAYER-ORDER.md](../LAYER-ORDER.md). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
 
@@ -34,14 +34,14 @@ Downstream skills (`create-adapter-repository`, `create-api-handler`, `create-cl
 
 **Out of scope** (mention as follow-ups only; do not implement unless asked):
 
-- Adapter implementations (`api/internal/adapter/`)
+- Adapter implementations (`api/internal/personal-productivity-context/adapter/`)
 - Bootstrap wiring (`api/internal/bootstrap/bootstrap.go`)
 - HTTP handlers (`api/cmd/server/handlers/`)
 - CLI commands (`api/cmd/cli/commands/`)
 
 ## Architecture constraints
 
-- Application depends only on `internal/domain` and its own interfaces.
+- Application depends only on `internal/personal-productivity-context/domain` and its own interfaces.
 - Never import adapters, HTTP, CLI, or database packages.
 - **Write commands:** call domain → `repository.Save` → `eventPublisher.Publish(event)`.
 - **Reads:** delegate directly to repository; no domain call, no event publish.
@@ -51,7 +51,7 @@ Downstream skills (`create-adapter-repository`, `create-api-handler`, `create-cl
 1. **New aggregate?** → Create `{aggregate}_service.go` + `{aggregate}_service_test.go`.
 2. **Existing service, new command?** → Add method to existing service file; add tests.
 3. **Existing service, new read?** → Add repository method (if needed), service method, test.
-4. **Domain command missing?** → Stop. Domain must exist first (Gherkin + godog in `internal/domain`).
+4. **Domain command missing?** → Stop. Domain must exist first (Gherkin + godog in `internal/personal-productivity-context/domain`).
 
 ## Scaffold checklist
 
@@ -85,7 +85,7 @@ Task progress:
 | Constructor | `New{Aggregate}Service(...) {Aggregate}Service` — returns interface |
 | Interface check | `var _ {Aggregate}Service = (*{aggregate}Service)(nil)` |
 | Test name | `Test{Service}_{Method}_{Behavior}` |
-| Domain import | `domain "github.com/bkotos/listello/internal/domain"` |
+| Domain import | `domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"` |
 
 Shared port: `EventPublisher` lives in `event_publisher.go`.
 
@@ -97,7 +97,7 @@ Shared port: `EventPublisher` lives in `event_publisher.go`.
 package application
 
 import (
-	domain "github.com/bkotos/listello/internal/domain"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 // {Aggregate}Repository persists {aggregates}.
@@ -245,7 +245,7 @@ Do not write production implementation in the same turn as a new failing spec.
 
 When a port or service interface is added or changed:
 
-1. Add the interface under `packages.github.com/bkotos/listello/internal/application.interfaces` in `api/.mockery.yml`.
+1. Add the interface under `packages.github.com/bkotos/listello/internal/personal-productivity-context/application.interfaces` in `api/.mockery.yml`.
 2. Run `make -C api mocks` (requires mockery v3).
 3. Use generated mocks — **never hand-edit mocks**.
 
@@ -265,7 +265,7 @@ Existing interfaces: `ListRepository`, `ItemRepository`, `EventPublisher`, `List
 make -C api test
 
 # Application layer only
-cd api && go test ./internal/application/...
+cd api && go test ./internal/personal-productivity-context/application/...
 ```
 
 ## Further reading

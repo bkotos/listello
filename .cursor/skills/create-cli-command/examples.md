@@ -80,7 +80,7 @@ run(newRoot(listService, itemService))
 
 **File:** `api/cmd/cli/commands/item_define_test.go`
 
-Split **calls service** and **prints confirmation** into separate tests. Mock the service interface — do not stub repositories. Do **not** test domain validation failures here (covered in `internal/domain`).
+Split **calls service** and **prints confirmation** into separate tests. Mock the service interface — do not stub repositories. Do **not** test domain validation failures here (covered in `internal/personal-productivity-context/domain`).
 
 ### Calls application
 

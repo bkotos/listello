@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	application "github.com/bkotos/listello/internal/application"
-	domain "github.com/bkotos/listello/internal/domain"
+	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 func TestListService_CreateList_PersistsList(t *testing.T) {

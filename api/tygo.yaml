@@ -1,5 +1,5 @@
 packages:
-  - path: "github.com/bkotos/listello/internal/view-dtos"
+  - path: "github.com/bkotos/listello/internal/personal-productivity-context/view-dtos"
     output_path: "../api-types/index.ts"
     exclude_files:
       - "list_test.go"

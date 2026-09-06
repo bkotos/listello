@@ -1,7 +1,7 @@
 package main
 
 import (
-	application "github.com/bkotos/listello/internal/application"
+	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 )
 
 type container struct {

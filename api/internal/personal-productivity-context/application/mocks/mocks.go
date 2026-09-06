@@ -5,7 +5,7 @@
 package mocks
 
 import (
-	"github.com/bkotos/listello/internal/domain"
+	"github.com/bkotos/listello/internal/personal-productivity-context/domain"
 	mock "github.com/stretchr/testify/mock"
 )
 

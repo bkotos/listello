@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	appmocks "github.com/bkotos/listello/internal/application/mocks"
+	appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"
 )
 
 func TestDeleteItem(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	domain "github.com/bkotos/listello/internal/domain"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 // SQLiteListRepository persists lists in SQLite.

@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	adapter "github.com/bkotos/listello/internal/adapter"
-	domain "github.com/bkotos/listello/internal/domain"
+	adapter "github.com/bkotos/listello/internal/personal-productivity-context/adapter"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 func TestSQLiteListRepository_SaveAndGetByID(t *testing.T) {

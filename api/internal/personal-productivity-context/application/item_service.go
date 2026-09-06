@@ -1,7 +1,7 @@
 package application
 
 import (
-	domain "github.com/bkotos/listello/internal/domain"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 // ItemRepository persists items and their list membership.

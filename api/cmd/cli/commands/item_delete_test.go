@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	appmocks "github.com/bkotos/listello/internal/application/mocks"
+	appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"
 )
 
 func TestItemDelete_CallsApplication(t *testing.T) {

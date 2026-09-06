@@ -4,7 +4,7 @@ Annotated references from the Listello codebase. Read when implementing a new or
 
 ## 1. `SQLiteListRepository` — full implementation
 
-**File:** `api/internal/adapter/list_repository.go`
+**File:** `api/internal/personal-productivity-context/adapter/list_repository.go`
 
 Implements `application.ListRepository` with three methods: `Save`, `GetByID`, `GetAll`.
 
@@ -73,7 +73,7 @@ Key points:
 
 ## 2. Schema — `sqlite.go`
 
-**File:** `api/internal/adapter/sqlite.go`
+**File:** `api/internal/personal-productivity-context/adapter/sqlite.go`
 
 ```go
 func (s *SQLite) migrate() error {
@@ -95,7 +95,7 @@ For new aggregates, add another `CREATE TABLE IF NOT EXISTS` block here. See [do
 
 ## 3. Integration tests
 
-**File:** `api/internal/adapter/list_repository_test.go`
+**File:** `api/internal/personal-productivity-context/adapter/list_repository_test.go`
 
 Package: `adapter_test` (external test package).
 
@@ -148,7 +148,7 @@ Asserts order matches insertion order (`ORDER BY rowid`).
 
 ## 4. Application port (implemented by adapter)
 
-**File:** `api/internal/application/list_service.go`
+**File:** `api/internal/personal-productivity-context/application/list_service.go`
 
 The adapter must match this interface:
 
@@ -178,7 +178,7 @@ After implementing a new repository, mention that bootstrap needs a similar `New
 
 ## 6. Next repository: `ItemRepository`
 
-**Application port** (`api/internal/application/item_service.go`):
+**Application port** (`api/internal/personal-productivity-context/application/item_service.go`):
 
 ```go
 type ItemRepository interface {

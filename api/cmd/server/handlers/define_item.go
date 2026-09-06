@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	application "github.com/bkotos/listello/internal/application"
-	viewdto "github.com/bkotos/listello/internal/view-dtos"
+	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
+	viewdto "github.com/bkotos/listello/internal/personal-productivity-context/view-dtos"
 
 	"github.com/bkotos/listello/cmd/server/response"
 )

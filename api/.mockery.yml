@@ -8,7 +8,7 @@ pkgname: '{{.SrcPackageName}}_test'
 recursive: false
 template: testify
 packages:
-  github.com/bkotos/listello/internal/application:
+  github.com/bkotos/listello/internal/personal-productivity-context/application:
     interfaces:
       ListRepository:
       EventPublisher:

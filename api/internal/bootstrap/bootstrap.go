@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	adapter "github.com/bkotos/listello/internal/adapter"
-	application "github.com/bkotos/listello/internal/application"
+	adapter "github.com/bkotos/listello/internal/personal-productivity-context/adapter"
+	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 )
 
 // MustOpenDB opens SQLite or exits the process on failure.

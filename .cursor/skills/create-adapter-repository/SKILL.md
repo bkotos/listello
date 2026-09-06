@@ -1,7 +1,7 @@
 ---
 name: create-adapter-repository
 description: >-
-  Scaffolds and implements SQLite repository adapters in api/internal/adapter/
+  Scaffolds and implements SQLite repository adapters in api/internal/personal-productivity-context/adapter/
   that satisfy application-layer ports. Use when adding or extending adapter
   repositories, SQLite persistence, schema migrations, or SQLiteListRepository/
   SQLiteItemRepository implementations following Listello hexagonal architecture.
@@ -9,7 +9,7 @@ description: >-
 
 # Create Adapter Repository
 
-Guide for implementing repository adapters in `api/internal/adapter/`. Read this skill before changing adapter persistence code.
+Guide for implementing repository adapters in `api/internal/personal-productivity-context/adapter/`. Read this skill before changing adapter persistence code.
 
 Architecture context: see [README.md](../../../README.md) (adapters implement application ports and are the only layer that talks to SQLite). Layer order: [LAYER-ORDER.md](../LAYER-ORDER.md). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
 
@@ -21,7 +21,7 @@ Before starting, verify:
 
 | Check | How |
 |-------|-----|
-| `{Aggregate}Repository` interface exists | `internal/application/{aggregate}_service.go` |
+| `{Aggregate}Repository` interface exists | `internal/personal-productivity-context/application/{aggregate}_service.go` |
 | `{Aggregate}Service` + constructor exist | Same file |
 | Interface includes methods you will implement | `Save`, `GetByID`, etc. |
 
@@ -33,7 +33,7 @@ If any check fails → **stop**. Tell the user to use `create-application-servic
 
 **Out of scope** (mention as follow-ups only; do not implement unless asked):
 
-- Application port interfaces (`api/internal/application/`) — use [create-application-service](../create-application-service/SKILL.md) first
+- Application port interfaces (`api/internal/personal-productivity-context/application/`) — use [create-application-service](../create-application-service/SKILL.md) first
 - Bootstrap wiring (`api/internal/bootstrap/bootstrap.go`)
 - HTTP handlers (`api/cmd/server/handlers/`)
 - CLI commands (`api/cmd/cli/commands/`)
@@ -41,7 +41,7 @@ If any check fails → **stop**. Tell the user to use `create-application-servic
 ## Architecture constraints
 
 - Adapter implements an application port interface (e.g. `application.ListRepository`).
-- Adapter depends on `internal/domain` and `database/sql` — never on HTTP, CLI, or application service types.
+- Adapter depends on `internal/personal-productivity-context/domain` and `database/sql` — never on HTTP, CLI, or application service types.
 - Map SQL rows to domain types; no business rules in the adapter.
 - Wrap errors with context: `fmt.Errorf("save list: %w", err)`.
 - Return domain-friendly errors for not-found (`sql.ErrNoRows` → e.g. `fmt.Errorf("list %q not found", id)`).
@@ -50,7 +50,7 @@ If any check fails → **stop**. Tell the user to use `create-application-servic
 
 These duplicate the upstream gate — all must pass:
 
-1. **Application port exists** — interface in `api/internal/application/{aggregate}_service.go` with the methods to implement.
+1. **Application port exists** — interface in `api/internal/personal-productivity-context/application/{aggregate}_service.go` with the methods to implement.
 2. **Domain types defined** — know which fields to persist and scan.
 3. **Schema planned** — new table or column changes identified.
 
@@ -90,7 +90,7 @@ Task progress:
 | Implementation type | `SQLite{Aggregate}Repository` |
 | Constructor | `NewSQLite{Aggregate}Repository(sqlite *SQLite)` |
 | Test name | `TestSQLite{Aggregate}Repository_{Method}_{Behavior}` |
-| Domain import | `domain "github.com/bkotos/listello/internal/domain"` |
+| Domain import | `domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"` |
 
 Existing shared infrastructure: `SQLite`, `OpenSQLite` in `sqlite.go`.
 
@@ -105,7 +105,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	domain "github.com/bkotos/listello/internal/domain"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 // SQLite{Aggregate}Repository persists {aggregates} in SQLite.
@@ -270,7 +270,7 @@ Do not break existing tables without a migration plan.
 make -C api test
 
 # Adapter layer only
-cd api && go test ./internal/adapter/...
+cd api && go test ./internal/personal-productivity-context/adapter/...
 ```
 
 Confirm the implementation satisfies the application port by compiling packages that wire them (bootstrap can be updated separately).

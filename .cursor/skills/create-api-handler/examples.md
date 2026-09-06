@@ -4,9 +4,9 @@ Annotated references from the Listello codebase. Read when implementing a new HT
 
 ## 0. Request and response DTOs (required for new endpoints)
 
-All JSON bodies use named types in `internal/view-dtos/`. Do not decode into anonymous structs in handlers (legacy `CreateList` still uses an inline struct — migrate when touching it).
+All JSON bodies use named types in `internal/personal-productivity-context/view-dtos/`. Do not decode into anonymous structs in handlers (legacy `CreateList` still uses an inline struct — migrate when touching it).
 
-**File:** `api/internal/view-dtos/item.go`
+**File:** `api/internal/personal-productivity-context/view-dtos/item.go`
 
 ```go
 type DefineItemRequest struct {
@@ -34,7 +34,7 @@ response.WriteJSON(w, http.StatusCreated, viewdto.ItemFromDomain(item))
 
 Do **not** add handler-level validation for fields the domain already validates (e.g. empty `title` on `DefineItem`). Let the service return an error and map it to 400.
 
-Do **not** add handler tests that assert domain validation failures — those scenarios belong in `internal/domain` godog features.
+Do **not** add handler tests that assert domain validation failures — those scenarios belong in `internal/personal-productivity-context/domain` godog features.
 
 **DTO tests** in `view-dtos/{resource}_test.go` cover `FromDomain` mappers. Run `make api-types` after adding or changing DTOs.
 
@@ -80,7 +80,7 @@ Key points:
 **File:** `api/cmd/server/handlers/define_item_test.go`
 
 ```go
-import appmocks "github.com/bkotos/listello/internal/application/mocks"
+import appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"
 
 func TestDefineItem(t *testing.T) {
 	const listID = "LS_1"
@@ -197,12 +197,12 @@ func newAPIServer(listService application.ListService, itemService application.I
 
 ## 6. Service mocks (handler tests)
 
-**File:** `api/internal/application/mocks/mocks.go` (mockery-generated)
+**File:** `api/internal/personal-productivity-context/application/mocks/mocks.go` (mockery-generated)
 
 Service interfaces (`ListService`, `ItemService`) are mocked here so handler tests can import them:
 
 ```go
-import appmocks "github.com/bkotos/listello/internal/application/mocks"
+import appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"
 ```
 
 Repository port mocks remain in `mocks_test.go` for **application-layer** tests only.

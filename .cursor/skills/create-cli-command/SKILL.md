@@ -21,9 +21,9 @@ Before starting, verify:
 
 | Check | How |
 |-------|-----|
-| Service method exists | `{Method}(...)` on `{Aggregate}Service` interface in `internal/application/` |
+| Service method exists | `{Method}(...)` on `{Aggregate}Service` interface in `internal/personal-productivity-context/application/` |
 | Method is implemented | Not `return ..., fmt.Errorf("not implemented")` |
-| Application tests pass | `go test ./internal/application/...` green for that method |
+| Application tests pass | `go test ./internal/personal-productivity-context/application/...` green for that method |
 
 If any check fails → **stop**. Tell the user to use `create-application-service` first and get green tests. Do not write command tests or Cobra wiring.
 
@@ -35,8 +35,8 @@ Adapter repository is **not** required for this skill (command tests use mock se
 
 **Out of scope** (mention as follow-ups only; do not implement unless asked):
 
-- Application service methods (`api/internal/application/`) — use [create-application-service](../create-application-service/SKILL.md)
-- Adapter repositories (`api/internal/adapter/`) — use [create-adapter-repository](../create-adapter-repository/SKILL.md)
+- Application service methods (`api/internal/personal-productivity-context/application/`) — use [create-application-service](../create-application-service/SKILL.md)
+- Adapter repositories (`api/internal/personal-productivity-context/adapter/`) — use [create-adapter-repository](../create-adapter-repository/SKILL.md)
 - Bootstrap / `main.go` service construction (`api/internal/bootstrap/`, `api/cmd/cli/main.go`)
 - HTTP handlers (`api/cmd/server/`) — use [create-api-handler](../create-api-handler/SKILL.md)
 - View DTOs / `api-types` (CLI uses args, flags, and human-readable output — not JSON DTOs unless `--json` is in scope)
@@ -53,7 +53,7 @@ Adapter repository is **not** required for this skill (command tests use mock se
 
 ## Do not duplicate domain logic
 
-Domain rules live in `internal/domain` (Gherkin + godog). CLI commands are thin adapters — do not re-implement or re-test domain behavior here.
+Domain rules live in `internal/personal-productivity-context/domain` (Gherkin + godog). CLI commands are thin adapters — do not re-implement or re-test domain behavior here.
 
 **In command code:**
 
@@ -65,7 +65,7 @@ Domain rules live in `internal/domain` (Gherkin + godog). CLI commands are thin 
 
 - Mock the **service interface** (`appmocks.NewMock{Service}Service`); assert `EXPECT().{Method}(...)` was called with correct arguments.
 - Split into separate tests for **calls service** and **prints confirmation** — one concern per test.
-- Do **not** add tests for domain validation failures (e.g. define on inbox, create list named "Inbox") — those belong in `internal/domain`.
+- Do **not** add tests for domain validation failures (e.g. define on inbox, create list named "Inbox") — those belong in `internal/personal-productivity-context/domain`.
 - Do **not** re-assert domain field semantics on returned aggregates — only verify the command uses the service result in its confirmation output.
 
 ## Preconditions
@@ -116,7 +116,7 @@ Task progress:
 | Leaf factory | `New{Resource}{Action}(container) *cobra.Command` |
 | Test name | `Test{Resource}{Action}_{Behavior}` |
 | Test helper | `new{Resource}TestRoot(svc) *cobra.Command` in test file |
-| Service mocks | `appmocks "github.com/bkotos/listello/internal/application/mocks"` (mockery-generated) |
+| Service mocks | `appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"` (mockery-generated) |
 | E2e spec | `e2e-cli/src/cli.spec.ts` (extend existing file or add `{resource}_{action}.spec.ts`) |
 | E2e helper | `e2e-cli/src/support/listello-cli.ts` — `runListello(dbPath, args)` |
 | Service param | `container` — type is `commands.Container` |
@@ -131,7 +131,7 @@ package commands
 import (
 	"github.com/spf13/cobra"
 
-	application "github.com/bkotos/listello/internal/application"
+	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 )
 
 func New{Resource}(container Container) *cobra.Command {
@@ -189,7 +189,7 @@ Commands receive the runtime `container` from `main`; bootstrap opens SQLite usi
 
 ## Test templates
 
-Use mock service interfaces from `internal/application/mocks`. Capture stdout/stderr with `bytes.Buffer`. Split **calls service** and **prints confirmation** into separate tests.
+Use mock service interfaces from `internal/personal-productivity-context/application/mocks`. Capture stdout/stderr with `bytes.Buffer`. Split **calls service** and **prints confirmation** into separate tests.
 
 ### Calls application
 
@@ -249,7 +249,7 @@ Do **not** rely on the default `listello.db` in e2e tests.
 
 **What not to test in e2e** (same boundaries as unit command tests):
 
-- Domain validation failures (e.g. create list named "Inbox") — those belong in `internal/domain`
+- Domain validation failures (e.g. create list named "Inbox") — those belong in `internal/personal-productivity-context/domain`
 - Re-testing every field on returned aggregates — assert CLI output only
 
 **Structure:** Arrange / Act / Assert comments in each test; `beforeEach` creates workdir + db path; `afterEach` removes workdir; `beforeAll` sets `$.verbose = false`.

@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	application "github.com/bkotos/listello/internal/application"
-	appmocks "github.com/bkotos/listello/internal/application/mocks"
-	domain "github.com/bkotos/listello/internal/domain"
+	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
+	appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"
+	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 func newItemTestRoot(itemService application.ItemService) *cobra.Command {

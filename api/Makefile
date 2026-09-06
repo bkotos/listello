@@ -72,7 +72,7 @@ run-wasm: build-wasm
 # Run implemented domain Gherkin suite (excludes @wip) + Cucumber JSON report.
 bdd-report:
 	mkdir -p $(REPORTS_DIR)
-	go test ./internal/domain -v -count=1 \
+	go test ./internal/personal-productivity-context/domain -v -count=1 \
 		-godog.format=pretty,cucumber:$(CUCUMBER_JSON) \
 		-godog.strict
 	@echo "Cucumber JSON written to $(CUCUMBER_JSON)"
@@ -80,11 +80,11 @@ bdd-report:
 # Include @wip scenarios so undefined steps show up in the report.
 bdd-gaps:
 	mkdir -p $(REPORTS_DIR)
-	go test ./internal/domain -v -count=1 \
+	go test ./internal/personal-productivity-context/domain -v -count=1 \
 		-godog.tags= \
 		-godog.format=pretty,cucumber:$(CUCUMBER_JSON)
 	@echo "Cucumber JSON written to $(CUCUMBER_JSON)"
 
 # List registered step definitions (implemented steps).
 bdd-steps:
-	go test ./internal/domain -v -count=1 -godog.definitions
+	go test ./internal/personal-productivity-context/domain -v -count=1 -godog.definitions
