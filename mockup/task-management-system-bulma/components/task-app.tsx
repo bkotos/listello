@@ -5,6 +5,7 @@ import { StoreProvider, useStore } from '@/lib/store'
 import { Sidebar } from './sidebar'
 import { TaskList } from './task-list'
 import { DetailPanel } from './detail-panel'
+import { OnboardingFlow } from './onboarding-flow'
 
 function Shell() {
   const { state, dispatch } = useStore()
@@ -64,10 +65,29 @@ function Shell() {
   )
 }
 
+function AppRoot() {
+  const { dispatch } = useStore()
+  const [onboarded, setOnboarded] = useState(false)
+
+  if (!onboarded) {
+    return (
+      <OnboardingFlow
+        onComplete={(data) => {
+          const name = data.firstListName.trim()
+          if (name) dispatch({ type: 'CREATE_LIST', name })
+          setOnboarded(true)
+        }}
+      />
+    )
+  }
+
+  return <Shell />
+}
+
 export function TaskApp() {
   return (
     <StoreProvider>
-      <Shell />
+      <AppRoot />
     </StoreProvider>
   )
 }
