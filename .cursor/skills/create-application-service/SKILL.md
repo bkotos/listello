@@ -37,7 +37,7 @@ Downstream skills (`create-adapter-repository`, `create-api-handler`, `create-cl
 - Adapter implementations (`api/internal/personal-productivity-context/adapter/`)
 - Bootstrap wiring (`api/internal/bootstrap/bootstrap.go`)
 - HTTP handlers (`api/internal/personal-productivity-context/handlers/`)
-- CLI commands (`api/cmd/cli/commands/`)
+- CLI commands (`api/internal/personal-productivity-context/cli-commands/`)
 
 ## Architecture constraints
 

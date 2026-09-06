@@ -4,7 +4,7 @@ Annotated references from the Listello codebase. Read when implementing a new Co
 
 ## 1. Parent group: `item`
 
-**File:** `api/cmd/cli/commands/item.go`
+**File:** `api/internal/personal-productivity-context/cli-commands/item.go`
 
 ```go
 func NewItem(itemService application.ItemService) *cobra.Command {
@@ -25,7 +25,7 @@ Key points:
 
 ## 2. Leaf command: `item define`
 
-**File:** `api/cmd/cli/commands/item_define.go`
+**File:** `api/internal/personal-productivity-context/cli-commands/item_define.go`
 
 ```go
 func NewItemDefine(itemService application.ItemService) *cobra.Command {
@@ -78,7 +78,7 @@ run(newRoot(listService, itemService))
 
 ## 4. Tests: `item define` (preferred pattern)
 
-**File:** `api/cmd/cli/commands/item_define_test.go`
+**File:** `api/internal/personal-productivity-context/cli-commands/item_define_test.go`
 
 Split **calls service** and **prints confirmation** into separate tests. Mock the service interface — do not stub repositories. Do **not** test domain validation failures here (covered in `internal/personal-productivity-context/domain`).
 
@@ -117,7 +117,7 @@ func TestItemDefine_PrintsConfirmation(t *testing.T) {
 
 ## 5. Legacy: `list create` tests
 
-**File:** `api/cmd/cli/commands/list_create_test.go`
+**File:** `api/internal/personal-productivity-context/cli-commands/list_create_test.go`
 
 Older commands may still use `application.NewListService` with stub repositories in one combined test. New commands should use mock service interfaces and split concerns as in §4.
 

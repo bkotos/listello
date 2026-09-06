@@ -1,15 +1,15 @@
 ---
 name: create-cli-command
 description: >-
-  Scaffolds and wires Cobra CLI commands in api/cmd/cli/ that call application
-  services, plus e2e tests in e2e-cli/ (Vitest + zx). Use when adding or
-  extending CLI commands, cobra subcommands, root wiring, or listello list/item
-  commands following Listello hexagonal architecture.
+  Scaffolds and wires Cobra CLI commands in api/internal/personal-productivity-context/cli-commands/
+  that call application services, plus e2e tests in e2e-cli/ (Vitest + zx). Use
+  when adding or extending CLI commands, cobra subcommands, root wiring, or
+  listello list/item commands following Listello hexagonal architecture.
 ---
 
 # Create CLI Command
 
-Guide for adding Cobra commands in `api/cmd/cli/`. Read this skill before changing CLI commands or root wiring.
+Guide for adding Cobra commands in `api/internal/personal-productivity-context/cli-commands/` (root wiring in `api/cmd/cli/`). Read this skill before changing CLI commands or root wiring.
 
 Architecture context: see [README.md](../../../README.md) (CLI calls application services directly). Layer order: [LAYER-ORDER.md](../LAYER-ORDER.md). CLI design: [listello-cli-design.md](../../../listello-cli-design.md). TDD workflow: see [.cursor/rules/tdd.mdc](../../rules/tdd.mdc).
 
@@ -49,7 +49,7 @@ Adapter repository is **not** required for this skill (command tests use mock se
 - Mutating commands print a one-line confirmation to `cmd.OutOrStdout()`.
 - Return application/domain errors from `RunE`; root prints `error: %v` to stderr and exits non-zero.
 - Do not print domain events in CLI output (events go to the event log via the application layer).
-- Factory accepts the shared **`commands.Container`** interface (see `api/cmd/cli/commands/container.go`); leaf commands call `container.{Aggregate}Service().{Method}(...)`.
+- Factory accepts the shared **`commands.Container`** interface (see `api/internal/personal-productivity-context/cli-commands/container.go`); leaf commands call `container.{Aggregate}Service().{Method}(...)`.
 
 ## Do not duplicate domain logic
 
@@ -299,7 +299,7 @@ Do not write command implementation in the same turn as a new failing spec.
 
 ```bash
 # CLI command tests only
-cd api && go test ./cmd/cli/commands/...
+cd api && go test ./internal/personal-productivity-context/cli-commands/...
 
 # Full API tests
 make -C api test

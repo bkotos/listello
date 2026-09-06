@@ -237,9 +237,9 @@ See [.cursor/skills/create-api-handler/examples.md](../.cursor/skills/create-api
 
 ### `create-cli-command`
 
-Wires Cobra commands in `api/cmd/cli/`: leaf command factory, parent group, `cobra.Execute` tests, and registration in `root.go`.
+Wires Cobra commands in `api/internal/personal-productivity-context/cli-commands/`: leaf command factory, parent group, `cobra.Execute` tests, and registration in `api/cmd/cli/root.go`.
 
-**In scope:** `commands/{resource}.go`, `commands/{resource}_{action}.go`, command tests, `root.go` wiring.
+**In scope:** `cli-commands/{resource}.go`, `cli-commands/{resource}_{action}.go`, command tests, `root.go` wiring.
 
 **Out of scope** (unless you ask separately): application services, adapters, bootstrap/`main.go`, HTTP handlers, view DTOs.
 

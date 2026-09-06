@@ -5,8 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bkotos/listello/cmd/cli/commands"
 	"github.com/bkotos/listello/internal/bootstrap"
+	"github.com/bkotos/listello/internal/personal-productivity-context/cli-commands"
 )
 
 func newRoot() (*cobra.Command, func()) {
