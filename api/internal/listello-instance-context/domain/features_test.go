@@ -125,7 +125,7 @@ func (s *suiteState) theUserInitializesPersistence(ctx context.Context) {
 func (s *suiteState) theInstanceShouldHavePersistenceInitialized(ctx context.Context) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
-	require.True(t, s.instance.PersistenceInitialized)
+	require.True(t, s.instance.IsPersistenceInitialized())
 }
 
 func eventNames(events []domain.Event) []string {

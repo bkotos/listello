@@ -14,12 +14,20 @@ const (
 	HostingModeStandaloneWeb HostingMode = "standalone-web"
 )
 
+// PersistenceState is whether instance persistence has been initialized.
+type PersistenceState string
+
+const (
+	PersistenceUninitialized PersistenceState = "uninitialized"
+	PersistenceInitialized   PersistenceState = "initialized"
+)
+
 // ListelloInstance is a running Listello instance.
 type ListelloInstance struct {
-	ID                     string
-	HostingMode            HostingMode
-	PersistenceLocation    string
-	PersistenceInitialized bool
+	ID                  string
+	HostingMode         HostingMode
+	PersistenceLocation string
+	PersistenceState    PersistenceState
 }
 
 // CreateInstance creates a new Listello instance and raises an InstanceCreated event.
@@ -49,6 +57,11 @@ func (i ListelloInstance) isLocalHostingMode() bool {
 
 // InitializePersistence initializes persistence and raises a PersistenceInitialized event.
 func (i *ListelloInstance) InitializePersistence() (Event, error) {
-	i.PersistenceInitialized = true
+	i.PersistenceState = PersistenceInitialized
 	return event.NewEvent(EventPersistenceInitialized, EventMetadataPersistenceInitialized{ID: i.ID}, 1), nil
+}
+
+// IsPersistenceInitialized reports whether persistence has been initialized.
+func (i ListelloInstance) IsPersistenceInitialized() bool {
+	return i.PersistenceState == PersistenceInitialized
 }
