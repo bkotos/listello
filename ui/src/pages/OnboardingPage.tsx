@@ -112,7 +112,12 @@ function OnboardingPage() {
         {isStep1Welcome && (
           <WelcomeFooter onCreateInstance={handleCreateInstance} />
         )}
-        {isStep2Hosting && <HostingFooter onContinue={handleHostingContinue} />}
+        {isStep2Hosting && (
+          <HostingFooter
+            onBack={() => setStep(OnboardingStep.Step1Welcome)}
+            onContinue={handleHostingContinue}
+          />
+        )}
         {isStep3DataDirectory && (
           <DataDirectoryFooter onBack={() => setStep(OnboardingStep.Step2Hosting)} />
         )}

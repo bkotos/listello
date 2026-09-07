@@ -82,13 +82,14 @@ export function HostingStep({
 }
 
 type HostingFooterProps = {
+  onBack: () => void;
   onContinue: () => void;
 };
 
-export function HostingFooter({ onContinue }: HostingFooterProps) {
+export function HostingFooter({ onBack, onContinue }: HostingFooterProps) {
   return (
     <>
-      <button type="button" className="button is-light">
+      <button type="button" className="button is-light" onClick={onBack}>
         <span className="icon">
           <ArrowLeft size={18} />
         </span>

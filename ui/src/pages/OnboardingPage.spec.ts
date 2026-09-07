@@ -276,6 +276,25 @@ describe("OnboardingPage", () => {
       expect(button.closest(".onboarding-footer")).toBeInTheDocument();
     });
 
+    describe("when the Back button is clicked", () => {
+      beforeEach(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Back" }));
+        await waitFor(() => {
+          expect(
+            screen.getByRole("heading", { name: "Welcome to Listello" }),
+          ).toBeInTheDocument();
+        });
+      });
+
+      it("renders the Welcome to Listello heading", () => {
+        // Assert
+        const heading = screen.getByRole("heading", {
+          name: "Welcome to Listello",
+        });
+        expect(heading).toHaveClass("step-title", "text-balance");
+      });
+    });
+
     describe("when the Continue button is clicked", () => {
       beforeEach(async () => {
         fireEvent.click(screen.getByRole("button", { name: "Continue" }));
