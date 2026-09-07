@@ -276,6 +276,82 @@ describe("OnboardingPage", () => {
       expect(button.closest(".onboarding-footer")).toBeInTheDocument();
     });
 
+    describe("when the Continue button is clicked", () => {
+      beforeEach(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+        await waitFor(() => {
+          expect(
+            screen.getByRole("heading", { name: "Choose a data directory" }),
+          ).toBeInTheDocument();
+        });
+      });
+
+      it("renders the Choose a data directory heading", () => {
+        // Assert
+        const heading = screen.getByRole("heading", {
+          name: "Choose a data directory",
+        });
+        expect(heading).toHaveClass("step-title", "text-balance");
+      });
+
+      it("renders the Instance · Local eyebrow", () => {
+        // Assert
+        const eyebrow = screen.getByText("Instance · Local");
+        expect(eyebrow).toHaveClass("step-eyebrow");
+      });
+
+      it("renders the data directory lead", () => {
+        // Assert
+        const lead = screen.getByText(
+          /This is where Listello keeps its data for this instance/,
+        );
+        expect(lead).toHaveClass("step-lead", "text-pretty");
+        expect(lead).toHaveTextContent(
+          "This is where Listello keeps its data for this instance. You can move it later.",
+        );
+      });
+
+      it("renders the Instance phase fill at 75%", () => {
+        // Assert
+        const label = document.querySelector(
+          ".phase-seg.is-active .phase-seg-label",
+        );
+        expect(label).toHaveTextContent("Instance");
+        expect(
+          label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
+        ).toHaveStyle({
+          width: "75%",
+        });
+      });
+
+      it("renders a Data directory field", () => {
+        // Assert
+        const input = screen.getByLabelText("Data directory");
+        expect(input).toHaveClass("input");
+        expect(input).toHaveAttribute("id", "onb-location");
+        expect(input).toHaveAttribute("placeholder", "~/listello");
+        expect(input).toHaveValue(
+          "/Users/jdoe/Library/Application Support/listello",
+        );
+        expect(screen.getByText("Data directory")).toHaveClass("label");
+      });
+
+      it("renders a folder icon in the Data directory field", () => {
+        // Assert
+        const control = screen.getByLabelText("Data directory").closest(".control");
+        expect(control).toHaveClass("has-icons-left");
+        expect(control?.querySelector("svg.lucide-folder")).toBeInTheDocument();
+      });
+
+      it("renders the data directory help", () => {
+        // Assert
+        const help = screen.getByText(
+          "Logs, the SQLite database, and config are stored here.",
+        );
+        expect(help).toHaveClass("help");
+      });
+    });
+
     describe("when the Standalone Web choice card is clicked", () => {
       beforeEach(() => {
         fireEvent.click(screen.getByRole("button", { name: /Standalone Web/ }));

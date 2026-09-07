@@ -81,7 +81,11 @@ export function HostingStep({
   );
 }
 
-export function HostingFooter() {
+type HostingFooterProps = {
+  onContinue: () => void;
+};
+
+export function HostingFooter({ onContinue }: HostingFooterProps) {
   return (
     <>
       <button type="button" className="button is-light">
@@ -90,7 +94,7 @@ export function HostingFooter() {
         </span>
         <span>Back</span>
       </button>
-      <button type="button" className="button is-primary footer-grow">
+      <button type="button" className="button is-primary footer-grow" onClick={onContinue}>
         <span>Continue</span>
         <span className="icon">
           <ArrowRight size={18} />

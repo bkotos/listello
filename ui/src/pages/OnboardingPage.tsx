@@ -2,11 +2,16 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { createInstance } from "../lib/api/instance-client";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
+import {
+  DataDirectoryFooter,
+  DataDirectoryStep,
+} from "../components/onboarding/Step3-DataDirectory";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 enum OnboardingStep {
   Welcome = "step1-welcome",
   Hosting = "step2-hosting",
+  DataDirectory = "step3-data-directory",
 }
 
 function OnboardingPage() {
@@ -18,12 +23,22 @@ function OnboardingPage() {
     setStep(OnboardingStep.Hosting);
   }
 
+  function handleHostingContinue() {
+    if (hostingMode === HostingMode.Local) {
+      setStep(OnboardingStep.DataDirectory);
+    }
+  }
+
   const isStep1Welcome = step === OnboardingStep.Welcome;
   const isStep2Hosting = step === OnboardingStep.Hosting;
+  const isStep3DataDirectory = step === OnboardingStep.DataDirectory;
 
   let instanceFill = "25%";
   if (isStep2Hosting) {
     instanceFill = hostingMode === HostingMode.StandaloneWeb ? "67%" : "50%";
+  }
+  if (isStep3DataDirectory) {
+    instanceFill = "75%";
   }
 
   return (
@@ -86,6 +101,7 @@ function OnboardingPage() {
               onSelectHostingMode={setHostingMode}
             />
           )}
+          {isStep3DataDirectory && <DataDirectoryStep />}
         </div>
       </div>
 
@@ -93,7 +109,8 @@ function OnboardingPage() {
         {isStep1Welcome && (
           <WelcomeFooter onCreateInstance={handleCreateInstance} />
         )}
-        {isStep2Hosting && <HostingFooter />}
+        {isStep2Hosting && <HostingFooter onContinue={handleHostingContinue} />}
+        {isStep3DataDirectory && <DataDirectoryFooter />}
       </footer>
     </div>
   );
