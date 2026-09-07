@@ -84,6 +84,7 @@ function OnboardingPage() {
             <HostingStep
               standaloneWebSelected={standaloneWebSelected}
               onSelectStandaloneWeb={() => setStandaloneWebSelected(true)}
+              onSelectLocal={() => setStandaloneWebSelected(false)}
             />
           )}
         </div>

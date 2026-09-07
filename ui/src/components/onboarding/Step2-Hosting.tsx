@@ -3,11 +3,13 @@ import { ArrowLeft, ArrowRight, CircleCheck, Database, Globe, HardDrive } from "
 type HostingStepProps = {
   standaloneWebSelected: boolean;
   onSelectStandaloneWeb: () => void;
+  onSelectLocal: () => void;
 };
 
 export function HostingStep({
   standaloneWebSelected,
   onSelectStandaloneWeb,
+  onSelectLocal,
 }: HostingStepProps) {
   return (
     <div>
@@ -22,6 +24,7 @@ export function HostingStep({
           type="button"
           className={`choice-card${standaloneWebSelected ? "" : " is-selected"}`}
           aria-pressed={!standaloneWebSelected}
+          onClick={onSelectLocal}
         >
           <span className="choice-icon">
             <HardDrive size={20} />
