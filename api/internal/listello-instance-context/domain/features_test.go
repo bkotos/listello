@@ -69,6 +69,27 @@ func (s *suiteState) theInstanceShouldExist(ctx context.Context) {
 	require.NotNil(godog.T(ctx), s.instance)
 }
 
+func (s *suiteState) anInstanceExists() {
+	s.theUserCreatesAnInstance()
+}
+
+func (s *suiteState) theUserSelectsHostingMode(ctx context.Context, mode string) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	ev, err := s.instance.SelectHostingMode(mode)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.record(ev)
+}
+
+func (s *suiteState) theInstanceShouldHaveHostingMode(ctx context.Context, mode string) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.Equal(t, mode, s.instance.HostingMode)
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
@@ -86,8 +107,11 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	})
 
 	ctx.Step(`^the user creates an instance$`, s.theUserCreatesAnInstance)
+	ctx.Step(`^an instance exists$`, s.anInstanceExists)
+	ctx.Step(`^the user selects hosting mode "([^"]*)"$`, s.theUserSelectsHostingMode)
 	ctx.Step(`^a "([^"]*)" event should have occurred$`, s.aEventShouldHaveOccurred)
 	ctx.Step(`^the instance should exist$`, s.theInstanceShouldExist)
+	ctx.Step(`^the instance should have hosting mode "([^"]*)"$`, s.theInstanceShouldHaveHostingMode)
 }
 
 func TestFeatures(t *testing.T) {

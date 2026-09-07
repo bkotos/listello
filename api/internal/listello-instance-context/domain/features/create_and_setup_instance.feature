@@ -8,7 +8,6 @@ Feature: Create and set up a Listello instance
     Then a "InstanceCreated" event should have occurred
     And the instance should exist
 
-  @wip
   Scenario Outline: Selecting a hosting mode
     Given an instance exists
     When the user selects hosting mode "<mode>"
