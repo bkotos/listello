@@ -52,10 +52,56 @@ func (i *ListelloInstance) SelectHostingMode(mode HostingMode) (Event, error) {
 	return event.NewEvent(EventHostingModeSelected, EventMetadataHostingModeSelected{ID: i.ID, Mode: mode}, 1), nil
 }
 
+// PersistenceLocationObservation is the observed filesystem state of a persistence location.
+type PersistenceLocationObservation struct {
+	parentExists   bool
+	parentWritable bool
+	locationExists bool
+}
+
+// SetParentExists records whether the parent directory exists.
+func (o *PersistenceLocationObservation) SetParentExists(exists bool) {
+	o.parentExists = exists
+}
+
+// DoesParentExist reports whether the parent directory exists.
+func (o PersistenceLocationObservation) DoesParentExist() bool {
+	return o.parentExists
+}
+
+// SetParentWritable records whether the parent directory is writable.
+func (o *PersistenceLocationObservation) SetParentWritable(writable bool) {
+	o.parentWritable = writable
+}
+
+// IsParentWritable reports whether the parent directory is writable.
+func (o PersistenceLocationObservation) IsParentWritable() bool {
+	return o.parentWritable
+}
+
+// SetLocationExists records whether the persistence location already exists.
+func (o *PersistenceLocationObservation) SetLocationExists(exists bool) {
+	o.locationExists = exists
+}
+
+// DoesLocationExist reports whether the persistence location already exists.
+func (o PersistenceLocationObservation) DoesLocationExist() bool {
+	return o.locationExists
+}
+
 // SelectPersistenceLocation sets the instance persistence location and raises a LocalPersistenceLocationSelected event.
-func (i *ListelloInstance) SelectPersistenceLocation(location string) (Event, error) {
+func (i *ListelloInstance) SelectPersistenceLocation(location string, observation PersistenceLocationObservation) (Event, error) {
 	if !i.isLocalHostingMode() {
 		return Event{}, fmt.Errorf("persistence location is only applicable for local")
+	}
+	if !observation.DoesParentExist() {
+		return Event{}, fmt.Errorf("parent directory of persistence location does not exist")
+	}
+	if !observation.IsParentWritable() {
+		return Event{}, fmt.Errorf("parent directory of persistence location is not writable")
+	}
+	if observation.DoesLocationExist() {
+		return Event{}, fmt.Errorf("persistence location already exists")
 	}
 	i.PersistenceLocation = location
 	return event.NewEvent(EventLocalPersistenceLocationSelected, EventMetadataLocalPersistenceLocationSelected{ID: i.ID, Location: location}, 1), nil

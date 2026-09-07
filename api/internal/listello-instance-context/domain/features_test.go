@@ -5,6 +5,7 @@ import (
 	"embed"
 	"flag"
 	"os"
+	"path"
 	"slices"
 	"strings"
 	"testing"
@@ -31,16 +32,54 @@ func init() {
 	godog.BindFlags("godog.", flag.CommandLine, &opts)
 }
 
+type directoryState struct {
+	exists   bool
+	writable bool
+}
+
 type suiteState struct {
 	instance *domain.ListelloInstance
 	events   []domain.Event
 	lastErr  error
+	dirs     map[string]*directoryState
 }
 
 func (s *suiteState) reset() {
 	s.instance = nil
 	s.events = nil
 	s.lastErr = nil
+	s.dirs = map[string]*directoryState{}
+}
+
+func (s *suiteState) directory(p string) *directoryState {
+	if s.dirs[p] == nil {
+		s.dirs[p] = &directoryState{}
+	}
+	return s.dirs[p]
+}
+
+func (s *suiteState) theParentDirectoryOfExists(location string) {
+	s.directory(path.Dir(location)).exists = true
+}
+
+func (s *suiteState) theParentDirectoryOfIsWritable(location string) {
+	s.directory(path.Dir(location)).writable = true
+}
+
+func (s *suiteState) theDirectoryDoesNotExist(location string) {
+	s.directory(location).exists = false
+}
+
+func (s *suiteState) theParentDirectoryOfDoesNotExist(location string) {
+	s.directory(path.Dir(location)).exists = false
+}
+
+func (s *suiteState) theParentDirectoryOfIsNotWritable(location string) {
+	s.directory(path.Dir(location)).writable = false
+}
+
+func (s *suiteState) theDirectoryExists(location string) {
+	s.directory(location).exists = true
 }
 
 func (s *suiteState) record(event domain.Event) {
@@ -106,10 +145,20 @@ func (s *suiteState) theInstanceShouldHaveHostingMode(ctx context.Context, mode 
 	require.Equal(t, domain.HostingMode(mode), s.instance.HostingMode)
 }
 
+func (s *suiteState) observation(location string) domain.PersistenceLocationObservation {
+	parent := s.directory(path.Dir(location))
+	target := s.directory(location)
+	var observation domain.PersistenceLocationObservation
+	observation.SetParentExists(parent.exists)
+	observation.SetParentWritable(parent.writable)
+	observation.SetLocationExists(target.exists)
+	return observation
+}
+
 func (s *suiteState) theUserSelectsPersistenceLocation(ctx context.Context, location string) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
-	ev, err := s.instance.SelectPersistenceLocation(location)
+	ev, err := s.instance.SelectPersistenceLocation(location, s.observation(location))
 	s.lastErr = err
 	if err != nil {
 		return
@@ -185,6 +234,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the instance should have an ID prefixed with "([^"]*)"$`, s.theInstanceShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the instance ID after the prefix "([^"]*)" should be a UUID$`, s.theInstanceIDAfterThePrefixShouldBeAUUID)
 	ctx.Step(`^the instance should have hosting mode "([^"]*)"$`, s.theInstanceShouldHaveHostingMode)
+	ctx.Step(`^the parent directory of "([^"]*)" exists$`, s.theParentDirectoryOfExists)
+	ctx.Step(`^the parent directory of "([^"]*)" is writable$`, s.theParentDirectoryOfIsWritable)
+	ctx.Step(`^the parent directory of "([^"]*)" does not exist$`, s.theParentDirectoryOfDoesNotExist)
+	ctx.Step(`^the parent directory of "([^"]*)" is not writable$`, s.theParentDirectoryOfIsNotWritable)
+	ctx.Step(`^the directory "([^"]*)" does not exist$`, s.theDirectoryDoesNotExist)
+	ctx.Step(`^the directory "([^"]*)" exists$`, s.theDirectoryExists)
 	ctx.Step(`^the user selects persistence location "([^"]*)"$`, s.theUserSelectsPersistenceLocation)
 	ctx.Step(`^the instance should have persistence location "([^"]*)"$`, s.theInstanceShouldHavePersistenceLocation)
 	ctx.Step(`^selecting the persistence location should fail with error "([^"]*)"$`, s.selectingThePersistenceLocationShouldFailWithError)

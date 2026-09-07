@@ -24,7 +24,6 @@ Feature: Create and set up a Listello instance
       | local          |
       | standalone-web |
 
-  @wip
   Scenario: Selecting a persistence location for a local instance
     Given an instance exists
     And the user selects hosting mode "local"
@@ -35,7 +34,6 @@ Feature: Create and set up a Listello instance
     Then a "LocalPersistenceLocationSelected" event should have occurred
     And the instance should have persistence location "/var/listello"
 
-  @wip
   Scenario: Selecting a persistence location fails when the parent directory does not exist
     Given an instance exists
     And the user selects hosting mode "local"
@@ -43,7 +41,6 @@ Feature: Create and set up a Listello instance
     When the user selects persistence location "/var/listello"
     Then selecting the persistence location should fail with error "parent directory of persistence location does not exist"
 
-  @wip
   Scenario: Selecting a persistence location fails when the parent directory is not writable
     Given an instance exists
     And the user selects hosting mode "local"
@@ -52,7 +49,6 @@ Feature: Create and set up a Listello instance
     When the user selects persistence location "/var/listello"
     Then selecting the persistence location should fail with error "parent directory of persistence location is not writable"
 
-  @wip
   Scenario: Selecting a persistence location fails when the directory already exists
     Given an instance exists
     And the user selects hosting mode "local"
@@ -68,7 +64,6 @@ Feature: Create and set up a Listello instance
     When the user selects persistence location "/var/listello"
     Then selecting the persistence location should fail with error "persistence location is only applicable for local"
 
-  @wip
   Scenario: Initializing persistence
     Given an instance exists
     And the user selects hosting mode "local"
@@ -80,7 +75,6 @@ Feature: Create and set up a Listello instance
     Then a "PersistenceInitialized" event should have occurred
     And the instance should have persistence initialized
 
-  @wip
   Scenario: Completing setup
     Given an instance exists
     And the user selects hosting mode "local"
@@ -93,7 +87,6 @@ Feature: Create and set up a Listello instance
     Then a "SetupCompleted" event should have occurred
     And the instance should have setup completed
 
-  @wip
   Scenario: Creating a local instance through to setup completed
     When the user creates an instance
     And the user selects hosting mode "local"
