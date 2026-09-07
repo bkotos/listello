@@ -1,7 +1,7 @@
-package domain
+package util
 
 import "github.com/google/uuid"
 
-func newID(prefix string) string {
+func NewID(prefix string) string {
 	return prefix + uuid.NewString()
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	event "github.com/bkotos/listello/internal/event-context"
+	"github.com/bkotos/listello/internal/util"
 )
 
 // ItemState is the lifecycle state of an item.
@@ -59,7 +60,7 @@ func DefineItem(list List, title string) (Item, Event, error) {
 	if list.IsInbox() {
 		return Item{}, Event{}, fmt.Errorf("can only capture items on inbox lists, not define them")
 	}
-	item := Item{ID: newID("IT_"), ListID: list.ID, Title: title, State: ItemOutstanding}
+	item := Item{ID: util.NewID("IT_"), ListID: list.ID, Title: title, State: ItemOutstanding}
 	return item, event.NewEvent(EventItemDefined, EventMetadataItemDefined{ID: item.ID, ListID: list.ID}, 1), nil
 }
 
@@ -70,7 +71,7 @@ func CaptureInboxItem(list List, title string) (Item, Event, error) {
 		return Item{}, Event{}, fmt.Errorf("can only capture items to the inbox")
 	}
 	item := Item{
-		ID:       newID("IT_"),
+		ID:       util.NewID("IT_"),
 		ListID:   list.ID,
 		Title:    title,
 		Priority: PriorityNone,

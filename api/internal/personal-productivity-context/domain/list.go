@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	event "github.com/bkotos/listello/internal/event-context"
+	"github.com/bkotos/listello/internal/util"
 )
 
 const inboxListName = "Inbox"
@@ -27,6 +28,6 @@ func CreateList(name string) (List, Event, error) {
 	if name == inboxListName {
 		return List{}, Event{}, fmt.Errorf("cannot create a list named Inbox")
 	}
-	list := List{ID: newID("LS_"), Name: name}
+	list := List{ID: util.NewID("LS_"), Name: name}
 	return list, event.NewEvent(EventListCreated, EventMetadataListCreated{ID: list.ID}, 1), nil
 }
