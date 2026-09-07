@@ -114,12 +114,12 @@ func (_m *MockListelloInstanceRepository) EXPECT() *MockListelloInstanceReposito
 	return &MockListelloInstanceRepository_Expecter{mock: &_m.Mock}
 }
 
-// GetInstance provides a mock function for the type MockListelloInstanceRepository
-func (_mock *MockListelloInstanceRepository) GetInstance() (*domain.ListelloInstance, error) {
+// Get provides a mock function for the type MockListelloInstanceRepository
+func (_mock *MockListelloInstanceRepository) Get() (*domain.ListelloInstance, error) {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetInstance")
+		panic("no return value specified for Get")
 	}
 
 	var r0 *domain.ListelloInstance
@@ -142,29 +142,29 @@ func (_mock *MockListelloInstanceRepository) GetInstance() (*domain.ListelloInst
 	return r0, r1
 }
 
-// MockListelloInstanceRepository_GetInstance_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInstance'
-type MockListelloInstanceRepository_GetInstance_Call struct {
+// MockListelloInstanceRepository_Get_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Get'
+type MockListelloInstanceRepository_Get_Call struct {
 	*mock.Call
 }
 
-// GetInstance is a helper method to define mock.On call
-func (_e *MockListelloInstanceRepository_Expecter) GetInstance() *MockListelloInstanceRepository_GetInstance_Call {
-	return &MockListelloInstanceRepository_GetInstance_Call{Call: _e.mock.On("GetInstance")}
+// Get is a helper method to define mock.On call
+func (_e *MockListelloInstanceRepository_Expecter) Get() *MockListelloInstanceRepository_Get_Call {
+	return &MockListelloInstanceRepository_Get_Call{Call: _e.mock.On("Get")}
 }
 
-func (_c *MockListelloInstanceRepository_GetInstance_Call) Run(run func()) *MockListelloInstanceRepository_GetInstance_Call {
+func (_c *MockListelloInstanceRepository_Get_Call) Run(run func()) *MockListelloInstanceRepository_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run()
 	})
 	return _c
 }
 
-func (_c *MockListelloInstanceRepository_GetInstance_Call) Return(listelloInstance *domain.ListelloInstance, err error) *MockListelloInstanceRepository_GetInstance_Call {
+func (_c *MockListelloInstanceRepository_Get_Call) Return(listelloInstance *domain.ListelloInstance, err error) *MockListelloInstanceRepository_Get_Call {
 	_c.Call.Return(listelloInstance, err)
 	return _c
 }
 
-func (_c *MockListelloInstanceRepository_GetInstance_Call) RunAndReturn(run func() (*domain.ListelloInstance, error)) *MockListelloInstanceRepository_GetInstance_Call {
+func (_c *MockListelloInstanceRepository_Get_Call) RunAndReturn(run func() (*domain.ListelloInstance, error)) *MockListelloInstanceRepository_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }

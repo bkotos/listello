@@ -67,7 +67,7 @@ func TestListelloInstanceService_GetInstance_ReturnsInstanceFromRepository(t *te
 	svc := application.NewListelloInstanceService(repo, publisher)
 
 	repo.EXPECT().
-		GetInstance().
+		Get().
 		Return(expected, nil)
 
 	// Act
@@ -85,7 +85,7 @@ func TestListelloInstanceService_GetInstance_ReturnsNullWhenNotExists(t *testing
 	svc := application.NewListelloInstanceService(repo, publisher)
 
 	repo.EXPECT().
-		GetInstance().
+		Get().
 		Return(nil, nil)
 
 	// Act

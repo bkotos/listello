@@ -22,5 +22,17 @@ func TestListelloInstanceRepository_SaveAndGet(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
-	assert.Equal(t, instance, got)
+	assert.Equal(t, &instance, got)
+}
+
+func TestListelloInstanceRepository_Get_ReturnsNilWhenNotExists(t *testing.T) {
+	// Arrange
+	repo := adapter.NewListelloInstanceRepository()
+
+	// Act
+	got, err := repo.Get()
+
+	// Assert
+	require.NoError(t, err)
+	assert.Nil(t, got)
 }
