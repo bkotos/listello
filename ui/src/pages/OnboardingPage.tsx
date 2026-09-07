@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { createInstance } from "../lib/api/instance-client";
-import { HostingFooter, HostingStep } from "../components/onboarding/Step2-Hosting";
+import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 enum OnboardingStep {
@@ -11,7 +11,7 @@ enum OnboardingStep {
 
 function OnboardingPage() {
   const [step, setStep] = useState(OnboardingStep.Welcome);
-  const [standaloneWebSelected, setStandaloneWebSelected] = useState(false);
+  const [hostingMode, setHostingMode] = useState(HostingMode.Local);
 
   async function handleCreateInstance() {
     await createInstance();
@@ -23,7 +23,7 @@ function OnboardingPage() {
 
   let instanceFill = "25%";
   if (isStep2Hosting) {
-    instanceFill = standaloneWebSelected ? "67%" : "50%";
+    instanceFill = hostingMode === HostingMode.StandaloneWeb ? "67%" : "50%";
   }
 
   return (
@@ -82,9 +82,8 @@ function OnboardingPage() {
           {isStep1Welcome && <WelcomeStep />}
           {isStep2Hosting && (
             <HostingStep
-              standaloneWebSelected={standaloneWebSelected}
-              onSelectStandaloneWeb={() => setStandaloneWebSelected(true)}
-              onSelectLocal={() => setStandaloneWebSelected(false)}
+              hostingMode={hostingMode}
+              onSelectHostingMode={setHostingMode}
             />
           )}
         </div>

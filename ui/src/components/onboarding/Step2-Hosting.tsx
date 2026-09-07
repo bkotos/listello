@@ -1,16 +1,22 @@
 import { ArrowLeft, ArrowRight, CircleCheck, Database, Globe, HardDrive } from "lucide-react";
 
+export enum HostingMode {
+  Local = "local",
+  StandaloneWeb = "standalone-web",
+}
+
 type HostingStepProps = {
-  standaloneWebSelected: boolean;
-  onSelectStandaloneWeb: () => void;
-  onSelectLocal: () => void;
+  hostingMode: HostingMode;
+  onSelectHostingMode: (mode: HostingMode) => void;
 };
 
 export function HostingStep({
-  standaloneWebSelected,
-  onSelectStandaloneWeb,
-  onSelectLocal,
+  hostingMode,
+  onSelectHostingMode,
 }: HostingStepProps) {
+  const isLocal = hostingMode === HostingMode.Local;
+  const isStandaloneWeb = hostingMode === HostingMode.StandaloneWeb;
+
   return (
     <div>
       <p className="step-eyebrow">Instance · Hosting</p>
@@ -22,9 +28,9 @@ export function HostingStep({
       <div className="step-content choice-list">
         <button
           type="button"
-          className={`choice-card${standaloneWebSelected ? "" : " is-selected"}`}
-          aria-pressed={!standaloneWebSelected}
-          onClick={onSelectLocal}
+          className={`choice-card${isLocal ? " is-selected" : ""}`}
+          aria-pressed={isLocal}
+          onClick={() => onSelectHostingMode(HostingMode.Local)}
         >
           <span className="choice-icon">
             <HardDrive size={20} />
@@ -39,7 +45,7 @@ export function HostingStep({
               Uses SQLite
             </span>
           </span>
-          {!standaloneWebSelected && (
+          {isLocal && (
             <span className="choice-check">
               <CircleCheck size={20} />
             </span>
@@ -47,9 +53,9 @@ export function HostingStep({
         </button>
         <button
           type="button"
-          className={`choice-card${standaloneWebSelected ? " is-selected" : ""}`}
-          aria-pressed={standaloneWebSelected}
-          onClick={onSelectStandaloneWeb}
+          className={`choice-card${isStandaloneWeb ? " is-selected" : ""}`}
+          aria-pressed={isStandaloneWeb}
+          onClick={() => onSelectHostingMode(HostingMode.StandaloneWeb)}
         >
           <span className="choice-icon">
             <Globe size={20} />
@@ -64,7 +70,7 @@ export function HostingStep({
               Uses IndexedDB / OPFS
             </span>
           </span>
-          {standaloneWebSelected && (
+          {isStandaloneWeb && (
             <span className="choice-check">
               <CircleCheck size={20} />
             </span>
