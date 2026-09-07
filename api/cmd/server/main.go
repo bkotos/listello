@@ -31,6 +31,7 @@ func main() {
 			itemService := bootstrap.NewItemService(db, eventLog)
 			instanceService := instanceapp.NewListelloInstanceService(
 				instanceadapter.NewListelloInstanceRepository(),
+				nil,
 				ppadapter.NewLoggingEventPublisher(eventLog),
 			)
 			addr := fmt.Sprintf("%s:%d", host, port)

@@ -143,3 +143,63 @@ func (_c *MockListelloInstanceService_GetInstance_Call) RunAndReturn(run func() 
 	_c.Call.Return(run)
 	return _c
 }
+
+// SelectPersistenceLocation provides a mock function for the type MockListelloInstanceService
+func (_mock *MockListelloInstanceService) SelectPersistenceLocation(location string) (domain.ListelloInstance, error) {
+	ret := _mock.Called(location)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SelectPersistenceLocation")
+	}
+
+	var r0 domain.ListelloInstance
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (domain.ListelloInstance, error)); ok {
+		return returnFunc(location)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) domain.ListelloInstance); ok {
+		r0 = returnFunc(location)
+	} else {
+		r0 = ret.Get(0).(domain.ListelloInstance)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(location)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockListelloInstanceService_SelectPersistenceLocation_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SelectPersistenceLocation'
+type MockListelloInstanceService_SelectPersistenceLocation_Call struct {
+	*mock.Call
+}
+
+// SelectPersistenceLocation is a helper method to define mock.On call
+//   - location string
+func (_e *MockListelloInstanceService_Expecter) SelectPersistenceLocation(location any) *MockListelloInstanceService_SelectPersistenceLocation_Call {
+	return &MockListelloInstanceService_SelectPersistenceLocation_Call{Call: _e.mock.On("SelectPersistenceLocation", location)}
+}
+
+func (_c *MockListelloInstanceService_SelectPersistenceLocation_Call) Run(run func(location string)) *MockListelloInstanceService_SelectPersistenceLocation_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockListelloInstanceService_SelectPersistenceLocation_Call) Return(listelloInstance domain.ListelloInstance, err error) *MockListelloInstanceService_SelectPersistenceLocation_Call {
+	_c.Call.Return(listelloInstance, err)
+	return _c
+}
+
+func (_c *MockListelloInstanceService_SelectPersistenceLocation_Call) RunAndReturn(run func(location string) (domain.ListelloInstance, error)) *MockListelloInstanceService_SelectPersistenceLocation_Call {
+	_c.Call.Return(run)
+	return _c
+}

@@ -26,6 +26,7 @@ packages:
   github.com/bkotos/listello/internal/listello-instance-context/application:
     interfaces:
       ListelloInstanceRepository:
+      PersistenceLocationObserver:
       EventPublisher:
       ListelloInstanceService:
         config:
