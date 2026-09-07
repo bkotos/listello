@@ -350,6 +350,27 @@ describe("OnboardingPage", () => {
         );
         expect(help).toHaveClass("help");
       });
+
+      describe("when the Back button is clicked", () => {
+        beforeEach(async () => {
+          fireEvent.click(screen.getByRole("button", { name: "Back" }));
+          await waitFor(() => {
+            expect(
+              screen.getByRole("heading", {
+                name: "How should Listello be hosted?",
+              }),
+            ).toBeInTheDocument();
+          });
+        });
+
+        it("renders the How should Listello be hosted heading", () => {
+          // Assert
+          const heading = screen.getByRole("heading", {
+            name: "How should Listello be hosted?",
+          });
+          expect(heading).toHaveClass("step-title", "text-balance");
+        });
+      });
     });
 
     describe("when the Standalone Web choice card is clicked", () => {
