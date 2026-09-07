@@ -35,9 +35,13 @@ func (i *ListelloInstance) SelectHostingMode(mode HostingMode) (Event, error) {
 
 // SelectPersistenceLocation sets the instance persistence location and raises a LocalPersistenceLocationSelected event.
 func (i *ListelloInstance) SelectPersistenceLocation(location string) (Event, error) {
-	if i.HostingMode != HostingModeLocal {
+	if !i.isLocalHostingMode() {
 		return Event{}, fmt.Errorf("persistence location is only applicable for local")
 	}
 	i.PersistenceLocation = location
 	return event.NewEvent(EventLocalPersistenceLocationSelected, EventMetadataLocalPersistenceLocationSelected{ID: i.ID, Location: location}, 1), nil
+}
+
+func (i ListelloInstance) isLocalHostingMode() bool {
+	return i.HostingMode == HostingModeLocal
 }
