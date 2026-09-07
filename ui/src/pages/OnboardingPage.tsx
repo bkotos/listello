@@ -1,18 +1,8 @@
 import { useState } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  CircleCheck,
-  Database,
-  Globe,
-  HardDrive,
-  Layers,
-  ListChecks,
-  Server,
-  Sparkles,
-} from "lucide-react";
+import { Check } from "lucide-react";
 import { createInstance } from "../lib/api/instance-client";
+import { HostingFooter, HostingStep } from "../components/onboarding/Step2-Hosting";
+import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 function OnboardingPage() {
   const [instanceCreated, setInstanceCreated] = useState(false);
@@ -85,123 +75,6 @@ function OnboardingPage() {
         )}
       </footer>
     </div>
-  );
-}
-
-function WelcomeStep() {
-  return (
-    <div>
-      <span className="big-icon">
-        <Sparkles size={26} />
-      </span>
-      <h1 className="step-title text-balance">Welcome to Listello</h1>
-      <p className="step-lead text-pretty">
-        Let's create your instance and set up a calm, GTD-style workspace. It
-        only takes a minute, and you can change everything later.
-      </p>
-      <div className="step-content">
-        <div className="setup-check is-done">
-          <span className="setup-check-status">
-            <Server size={18} />
-          </span>
-          <span className="setup-check-label">Choose how Listello is hosted</span>
-        </div>
-        <div className="setup-check is-done">
-          <span className="setup-check-status">
-            <Layers size={18} />
-          </span>
-          <span className="setup-check-label">Create your space and profile</span>
-        </div>
-        <div className="setup-check is-done">
-          <span className="setup-check-status">
-            <ListChecks size={18} />
-          </span>
-          <span className="setup-check-label">Start your first list</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function HostingStep() {
-  return (
-    <div>
-      <p className="step-eyebrow">Instance · Hosting</p>
-      <h1 className="step-title text-balance">How should Listello be hosted?</h1>
-      <p className="step-lead text-pretty">
-        Your hosting mode decides where this instance runs and how your data is stored. You
-        can migrate later.
-      </p>
-      <div className="step-content choice-list">
-        <button type="button" className="choice-card is-selected" aria-pressed="true">
-          <span className="choice-icon">
-            <HardDrive size={20} />
-          </span>
-          <span>
-            <span className="choice-title is-block">Local</span>
-            <span className="choice-desc">
-              Runs directly on this machine, with local filesystem-backed persistence.
-            </span>
-            <span className="choice-meta">
-              <Database size={12} />
-              Uses SQLite
-            </span>
-          </span>
-          <span className="choice-check">
-            <CircleCheck size={20} />
-          </span>
-        </button>
-        <button type="button" className="choice-card" aria-pressed="false">
-          <span className="choice-icon">
-            <Globe size={20} />
-          </span>
-          <span>
-            <span className="choice-title is-block">Standalone Web</span>
-            <span className="choice-desc">
-              Runs independently in the browser as a PWA or standalone app.
-            </span>
-            <span className="choice-meta">
-              <Database size={12} />
-              Uses IndexedDB / OPFS
-            </span>
-          </span>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-type WelcomeFooterProps = {
-  onCreateInstance: () => void;
-};
-
-function WelcomeFooter({ onCreateInstance }: WelcomeFooterProps) {
-  return (
-    <button type="button" className="button is-primary footer-grow" onClick={onCreateInstance}>
-      <span>Create instance</span>
-      <span className="icon">
-        <ArrowRight size={18} />
-      </span>
-    </button>
-  );
-}
-
-function HostingFooter() {
-  return (
-    <>
-      <button type="button" className="button is-light">
-        <span className="icon">
-          <ArrowLeft size={18} />
-        </span>
-        <span>Back</span>
-      </button>
-      <button type="button" className="button is-primary footer-grow">
-        <span>Continue</span>
-        <span className="icon">
-          <ArrowRight size={18} />
-        </span>
-      </button>
-    </>
   );
 }
 
