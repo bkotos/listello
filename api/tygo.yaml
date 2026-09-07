@@ -3,3 +3,7 @@ packages:
     output_path: "../api-types/index.ts"
     exclude_files:
       - "list_test.go"
+  - path: "github.com/bkotos/listello/internal/listello-instance-context/view-dtos"
+    output_path: "../api-types/listello-instance.ts"
+    exclude_files:
+      - "listello_instance_test.go"

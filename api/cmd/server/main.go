@@ -8,6 +8,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bkotos/listello/internal/bootstrap"
+	instanceadapter "github.com/bkotos/listello/internal/listello-instance-context/adapter"
+	instanceapp "github.com/bkotos/listello/internal/listello-instance-context/application"
+	ppadapter "github.com/bkotos/listello/internal/personal-productivity-context/adapter"
 )
 
 func main() {
@@ -26,9 +29,13 @@ func main() {
 
 			listService := bootstrap.NewListService(db, eventLog)
 			itemService := bootstrap.NewItemService(db, eventLog)
+			instanceService := instanceapp.NewListelloInstanceService(
+				instanceadapter.NewListelloInstanceRepository(),
+				ppadapter.NewLoggingEventPublisher(eventLog),
+			)
 			addr := fmt.Sprintf("%s:%d", host, port)
 			cmd.Printf("listening on http://%s\n", addr)
-			return http.ListenAndServe(addr, newAPIServer(listService, itemService))
+			return http.ListenAndServe(addr, newAPIServer(listService, itemService, instanceService))
 		},
 	}
 

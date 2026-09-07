@@ -4,11 +4,13 @@ import (
 	"net/http"
 
 	internalhandlers "github.com/bkotos/listello/internal/handlers"
+	instanceapp "github.com/bkotos/listello/internal/listello-instance-context/application"
+	instancehandlers "github.com/bkotos/listello/internal/listello-instance-context/handlers"
 	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 	handlers "github.com/bkotos/listello/internal/personal-productivity-context/handlers"
 )
 
-func newAPIServer(listService application.ListService, itemService application.ItemService) http.Handler {
+func newAPIServer(listService application.ListService, itemService application.ItemService, instanceService instanceapp.ListelloInstanceService) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", internalhandlers.Health)
 	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))
@@ -21,5 +23,6 @@ func newAPIServer(listService application.ListService, itemService application.I
 	mux.HandleFunc("PATCH /api/items/{id}/title", handlers.ModifyItemTitle(itemService))
 	mux.HandleFunc("POST /api/items/{id}/move", handlers.MoveItem(itemService))
 	mux.HandleFunc("DELETE /api/items/{id}", handlers.DeleteItem(itemService))
+	mux.HandleFunc("POST /api/instance", instancehandlers.CreateInstance(instanceService))
 	return mux
 }
