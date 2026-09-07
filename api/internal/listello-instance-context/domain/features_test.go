@@ -90,6 +90,23 @@ func (s *suiteState) theInstanceShouldHaveHostingMode(ctx context.Context, mode 
 	require.Equal(t, domain.HostingMode(mode), s.instance.HostingMode)
 }
 
+func (s *suiteState) theUserSelectsPersistenceLocation(ctx context.Context, location string) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	ev, err := s.instance.SelectPersistenceLocation(location)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.record(ev)
+}
+
+func (s *suiteState) theInstanceShouldHavePersistenceLocation(ctx context.Context, location string) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.Equal(t, location, s.instance.PersistenceLocation)
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
@@ -112,6 +129,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred$`, s.aEventShouldHaveOccurred)
 	ctx.Step(`^the instance should exist$`, s.theInstanceShouldExist)
 	ctx.Step(`^the instance should have hosting mode "([^"]*)"$`, s.theInstanceShouldHaveHostingMode)
+	ctx.Step(`^the user selects persistence location "([^"]*)"$`, s.theUserSelectsPersistenceLocation)
+	ctx.Step(`^the instance should have persistence location "([^"]*)"$`, s.theInstanceShouldHavePersistenceLocation)
 }
 
 func TestFeatures(t *testing.T) {

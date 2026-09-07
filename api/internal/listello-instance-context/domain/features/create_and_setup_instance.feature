@@ -19,7 +19,6 @@ Feature: Create and set up a Listello instance
       | local          |
       | standalone-web |
 
-  @wip
   Scenario: Selecting a persistence location for a local instance
     Given an instance exists
     And the user selects hosting mode "local"
