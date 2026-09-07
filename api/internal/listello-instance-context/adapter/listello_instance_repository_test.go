@@ -10,7 +10,7 @@ import (
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 )
 
-func TestListelloInstanceRepository_SaveAndGetByID(t *testing.T) {
+func TestListelloInstanceRepository_SaveAndGet(t *testing.T) {
 	// Arrange
 	repo := adapter.NewListelloInstanceRepository()
 	instance, _, err := domain.CreateInstance()
@@ -18,7 +18,7 @@ func TestListelloInstanceRepository_SaveAndGetByID(t *testing.T) {
 
 	// Act
 	require.NoError(t, repo.Save(instance))
-	got, err := repo.GetByID(instance.ID)
+	got, err := repo.Get()
 
 	// Assert
 	require.NoError(t, err)

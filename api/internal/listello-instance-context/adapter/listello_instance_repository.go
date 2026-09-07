@@ -5,27 +5,25 @@ import (
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 )
 
-// ListelloInstanceRepository persists Listello instances in memory.
+// ListelloInstanceRepository persists the Listello instance in memory.
 type ListelloInstanceRepository struct {
-	instances map[string]domain.ListelloInstance
+	instance domain.ListelloInstance
 }
 
 var _ application.ListelloInstanceRepository = (*ListelloInstanceRepository)(nil)
 
 // NewListelloInstanceRepository returns an in-memory Listello instance repository.
 func NewListelloInstanceRepository() *ListelloInstanceRepository {
-	return &ListelloInstanceRepository{
-		instances: make(map[string]domain.ListelloInstance),
-	}
+	return &ListelloInstanceRepository{}
 }
 
-// Save stores the instance.
+// Save stores the instance, replacing any previously stored instance.
 func (r *ListelloInstanceRepository) Save(instance domain.ListelloInstance) error {
-	r.instances[instance.ID] = instance
+	r.instance = instance
 	return nil
 }
 
-// GetByID returns the instance with the given ID.
-func (r *ListelloInstanceRepository) GetByID(id string) (domain.ListelloInstance, error) {
-	return r.instances[id], nil
+// Get returns the stored instance.
+func (r *ListelloInstanceRepository) Get() (domain.ListelloInstance, error) {
+	return r.instance, nil
 }
