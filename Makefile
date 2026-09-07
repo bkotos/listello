@@ -1,4 +1,4 @@
-.PHONY: run run-api run-ui test-api test-ui test-e2e-cli test api-types
+.PHONY: run run-api run-ui test-api test-ui test-e2e-cli test api-types build
 
 run:
 	@trap 'kill 0' EXIT INT TERM; \
@@ -22,6 +22,10 @@ test-e2e-cli:
 	npm test -w e2e-cli
 
 test: test-api test-ui test-e2e-cli
+
+build:
+	$(MAKE) -C api build-cli build-server
+	npm run build -w ui
 
 api-types:
 	$(MAKE) -C api api-types
