@@ -4,13 +4,21 @@ import { createInstance } from "../lib/api/instance-client";
 import { HostingFooter, HostingStep } from "../components/onboarding/Step2-Hosting";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
+enum OnboardingStep {
+  Welcome = "step1-welcome",
+  Hosting = "step2-hosting",
+}
+
 function OnboardingPage() {
-  const [instanceCreated, setInstanceCreated] = useState(false);
+  const [step, setStep] = useState(OnboardingStep.Welcome);
 
   async function handleCreateInstance() {
     await createInstance();
-    setInstanceCreated(true);
+    setStep(OnboardingStep.Hosting);
   }
+
+  const isStep1Welcome = step === OnboardingStep.Welcome;
+  const isStep2Hosting = step === OnboardingStep.Hosting;
 
   return (
     <div className="onboarding-page">
@@ -35,7 +43,9 @@ function OnboardingPage() {
               <span className="phase-seg-track">
                 <span
                   className="phase-seg-fill"
-                  style={{ width: instanceCreated ? "50%" : "25%" }}
+                  style={{
+                    width: isStep2Hosting ? "50%" : "25%",
+                  }}
                 />
               </span>
             </div>
@@ -63,16 +73,16 @@ function OnboardingPage() {
 
       <div className="onboarding-body">
         <div className="onboarding-inner">
-          {instanceCreated ? <HostingStep /> : <WelcomeStep />}
+          {isStep1Welcome && <WelcomeStep />}
+          {isStep2Hosting && <HostingStep />}
         </div>
       </div>
 
       <footer className="onboarding-footer">
-        {instanceCreated ? (
-          <HostingFooter />
-        ) : (
+        {isStep1Welcome && (
           <WelcomeFooter onCreateInstance={handleCreateInstance} />
         )}
+        {isStep2Hosting && <HostingFooter />}
       </footer>
     </div>
   );
