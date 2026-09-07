@@ -32,7 +32,6 @@ Feature: Create and set up a Listello instance
     When the user selects persistence location "/var/listello"
     Then selecting the persistence location should fail with error "persistence location is only applicable for local"
 
-  @wip
   Scenario: Initializing persistence
     Given an instance exists
     And the user selects hosting mode "local"

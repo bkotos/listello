@@ -111,6 +111,23 @@ func (s *suiteState) selectingThePersistenceLocationShouldFailWithError(ctx cont
 	require.EqualError(godog.T(ctx), s.lastErr, message)
 }
 
+func (s *suiteState) theUserInitializesPersistence(ctx context.Context) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	ev, err := s.instance.InitializePersistence()
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.record(ev)
+}
+
+func (s *suiteState) theInstanceShouldHavePersistenceInitialized(ctx context.Context) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.True(t, s.instance.PersistenceInitialized)
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
@@ -136,6 +153,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the user selects persistence location "([^"]*)"$`, s.theUserSelectsPersistenceLocation)
 	ctx.Step(`^the instance should have persistence location "([^"]*)"$`, s.theInstanceShouldHavePersistenceLocation)
 	ctx.Step(`^selecting the persistence location should fail with error "([^"]*)"$`, s.selectingThePersistenceLocationShouldFailWithError)
+	ctx.Step(`^the user initializes persistence$`, s.theUserInitializesPersistence)
+	ctx.Step(`^the instance should have persistence initialized$`, s.theInstanceShouldHavePersistenceInitialized)
 }
 
 func TestFeatures(t *testing.T) {
