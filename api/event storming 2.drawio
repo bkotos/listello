@@ -5,7 +5,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="9zEchehB8iIDUG06rt_G-1" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#ffe6cc;strokeColor=#d79b00;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=46;" value="Instance Created" vertex="1">
-          <mxGeometry height="120" width="190" x="-1470" y="110" as="geometry" />
+          <mxGeometry height="120" width="190" x="-1900" y="120" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-2" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#ffe6cc;strokeColor=#d79b00;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=46;" value="User Created" vertex="1">
           <mxGeometry height="120" width="190" x="1280" y="110" as="geometry" />
@@ -26,7 +26,7 @@
           <mxGeometry height="120" width="190" x="3410" y="110" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-9" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#b1ddf0;strokeColor=#10739e;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=42;" value="Create Instance" vertex="1">
-          <mxGeometry height="120" width="170" x="-1640" y="110" as="geometry" />
+          <mxGeometry height="120" width="170" x="-2070" y="120" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-10" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#b1ddf0;strokeColor=#10739e;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=46;" value="Create User" vertex="1">
           <mxGeometry height="120" width="190" x="1090" y="110" as="geometry" />
@@ -47,7 +47,7 @@
           <mxGeometry height="120" width="190" x="3220" y="110" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-16" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#fff2cc;strokeColor=#d6b656;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=39;" value="User" vertex="1">
-          <mxGeometry height="70" width="90" x="-1730" y="180" as="geometry" />
+          <mxGeometry height="70" width="90" x="-2160" y="190" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-17" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#fff2cc;strokeColor=#d6b656;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=39;" value="User" vertex="1">
           <mxGeometry height="70" width="90" x="1000" y="190" as="geometry" />
@@ -68,7 +68,7 @@
           <mxGeometry height="70" width="90" x="3160" y="200" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-23" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#f0a30a;strokeColor=#BD7000;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=46;fontColor=#000000;" value="Listello Instance" vertex="1">
-          <mxGeometry height="120" width="190" x="-1560" y="-10" as="geometry" />
+          <mxGeometry height="120" width="190" x="-1990" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-24" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#f0a30a;strokeColor=#BD7000;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=84;fontColor=#000000;" value="User" vertex="1">
           <mxGeometry height="120" width="190" x="1200" y="-10" as="geometry" />
@@ -89,28 +89,28 @@
           <mxGeometry height="120" width="190" x="3320" y="-10" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-30" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#ffe6cc;strokeColor=#d79b00;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=24;" value="Local persistence location selected" vertex="1">
-          <mxGeometry height="120" width="190" x="-440" y="105.00000000000004" as="geometry" />
+          <mxGeometry height="120" width="190" x="-870" y="115.00000000000004" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-32" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#ffe6cc;strokeColor=#d79b00;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=34;" value="Persistence initialized" vertex="1">
           <mxGeometry height="120" width="190" x="140" y="120" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-35" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=26;" value="Only applicable for local and self-hosted" vertex="1">
-          <mxGeometry height="120" width="190" x="-610" y="225.00000000000006" as="geometry" />
+          <mxGeometry height="120" width="190" x="-1040" y="235.00000000000006" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-40" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#b1ddf0;strokeColor=#10739e;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=31;" value="Select persistence location" vertex="1">
-          <mxGeometry height="120" width="170" x="-610" y="105.00000000000004" as="geometry" />
+          <mxGeometry height="120" width="170" x="-1040" y="115.00000000000004" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-41" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#b1ddf0;strokeColor=#10739e;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=31;" value="Initialize persistence" vertex="1">
           <mxGeometry height="120" width="170" x="-30" y="120" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-42" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#f0a30a;strokeColor=#BD7000;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=46;fontColor=#000000;" value="Listello Instance" vertex="1">
-          <mxGeometry height="120" width="190" x="-530" y="-14.999999999999954" as="geometry" />
+          <mxGeometry height="120" width="190" x="-960" y="-4.999999999999954" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-43" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#f0a30a;strokeColor=#BD7000;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=46;fontColor=#000000;" value="Listello Instance" vertex="1">
           <mxGeometry height="120" width="190" x="50" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-45" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#fff2cc;strokeColor=#d6b656;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=39;" value="User" vertex="1">
-          <mxGeometry height="70" width="90" x="-700" y="185.00000000000006" as="geometry" />
+          <mxGeometry height="70" width="90" x="-1130" y="195.00000000000006" as="geometry" />
         </mxCell>
         <mxCell id="9zEchehB8iIDUG06rt_G-46" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#fff2cc;strokeColor=#d6b656;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=39;" value="User" vertex="1">
           <mxGeometry height="70" width="90" x="-120" y="190" as="geometry" />
@@ -131,19 +131,31 @@
           <mxGeometry height="120" width="375" x="3290" y="-190" as="geometry" />
         </mxCell>
         <mxCell id="FSPhEC5fcRbzOoZup0Xa-11" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#ffe6cc;strokeColor=#d79b00;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=31;" value="Hosting mode selected" vertex="1">
-          <mxGeometry height="120" width="190" x="-1050" y="108.20000000000005" as="geometry" />
+          <mxGeometry height="120" width="190" x="-1480" y="118.20000000000005" as="geometry" />
         </mxCell>
         <mxCell id="FSPhEC5fcRbzOoZup0Xa-12" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=23;" value="Options:&lt;br&gt;Local, self-hosted, embedded" vertex="1">
-          <mxGeometry height="120" width="190" x="-1050" y="228.20000000000005" as="geometry" />
+          <mxGeometry height="120" width="190" x="-1480" y="238.20000000000005" as="geometry" />
         </mxCell>
         <mxCell id="FSPhEC5fcRbzOoZup0Xa-13" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#b1ddf0;strokeColor=#10739e;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=31;" value="Select hosting mode" vertex="1">
-          <mxGeometry height="120" width="170" x="-1220" y="108.20000000000005" as="geometry" />
+          <mxGeometry height="120" width="170" x="-1650" y="118.20000000000005" as="geometry" />
         </mxCell>
         <mxCell id="FSPhEC5fcRbzOoZup0Xa-14" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#f0a30a;strokeColor=#BD7000;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=46;fontColor=#000000;" value="Listello Instance" vertex="1">
-          <mxGeometry height="120" width="190" x="-1130" y="-11.799999999999955" as="geometry" />
+          <mxGeometry height="120" width="190" x="-1560" y="-1.7999999999999545" as="geometry" />
         </mxCell>
         <mxCell id="FSPhEC5fcRbzOoZup0Xa-16" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=21;" value="This directory is where logs, SQLite (for local), config, etc will be stored." vertex="1">
-          <mxGeometry height="120" width="190" x="-610" y="345.00000000000006" as="geometry" />
+          <mxGeometry height="120" width="190" x="-1040" y="355.00000000000006" as="geometry" />
+        </mxCell>
+        <mxCell id="FSPhEC5fcRbzOoZup0Xa-17" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#ffe6cc;strokeColor=#d79b00;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=31;" value="Local persistence initialized" vertex="1">
+          <mxGeometry height="120" width="190" x="-370" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="FSPhEC5fcRbzOoZup0Xa-18" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#b1ddf0;strokeColor=#10739e;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=31;" value="Initialize local persistence" vertex="1">
+          <mxGeometry height="120" width="170" x="-540" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="FSPhEC5fcRbzOoZup0Xa-19" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#fff2cc;strokeColor=#d6b656;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=24;" value="System" vertex="1">
+          <mxGeometry height="70" width="90" x="-630" y="195" as="geometry" />
+        </mxCell>
+        <mxCell id="FSPhEC5fcRbzOoZup0Xa-20" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#f0a30a;strokeColor=#BD7000;fillStyle=solid;direction=west;gradientDirection=north;shadow=1;size=20;autosizeText=1;fontSize=46;fontColor=#000000;" value="Listello Instance" vertex="1">
+          <mxGeometry height="120" width="190" x="-470" y="15" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
