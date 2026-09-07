@@ -14,6 +14,16 @@ enum OnboardingStep {
   DataDirectory = "step3-data-directory",
 }
 
+function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): string {
+  if (step === OnboardingStep.DataDirectory) {
+    return "75%";
+  }
+  if (step === OnboardingStep.Hosting) {
+    return hostingMode === HostingMode.StandaloneWeb ? "67%" : "50%";
+  }
+  return "25%";
+}
+
 function OnboardingPage() {
   const [step, setStep] = useState(OnboardingStep.Welcome);
   const [hostingMode, setHostingMode] = useState(HostingMode.Local);
@@ -32,14 +42,7 @@ function OnboardingPage() {
   const isStep1Welcome = step === OnboardingStep.Welcome;
   const isStep2Hosting = step === OnboardingStep.Hosting;
   const isStep3DataDirectory = step === OnboardingStep.DataDirectory;
-
-  let instanceFill = "25%";
-  if (isStep2Hosting) {
-    instanceFill = hostingMode === HostingMode.StandaloneWeb ? "67%" : "50%";
-  }
-  if (isStep3DataDirectory) {
-    instanceFill = "75%";
-  }
+  const instanceFill = instancePhaseFill(step, hostingMode);
 
   return (
     <div className="onboarding-page">
