@@ -1,0 +1,26 @@
+package handlers
+
+import (
+	"net/http"
+
+	application "github.com/bkotos/listello/internal/listello-instance-context/application"
+	viewdto "github.com/bkotos/listello/internal/listello-instance-context/view-dtos"
+
+	util "github.com/bkotos/listello/internal/util"
+)
+
+func GetInstance(listelloInstanceService application.ListelloInstanceService) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		instance, err := listelloInstanceService.GetInstance()
+		if err != nil {
+			util.WriteError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		if instance == nil {
+			util.WriteJSON(w, http.StatusOK, nil)
+			return
+		}
+
+		util.WriteJSON(w, http.StatusOK, viewdto.ListelloInstanceFromDomain(*instance))
+	}
+}
