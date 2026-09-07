@@ -1,6 +1,14 @@
 import { ArrowLeft, ArrowRight, CircleCheck, Database, Globe, HardDrive } from "lucide-react";
 
-export function HostingStep() {
+type HostingStepProps = {
+  standaloneWebSelected: boolean;
+  onSelectStandaloneWeb: () => void;
+};
+
+export function HostingStep({
+  standaloneWebSelected,
+  onSelectStandaloneWeb,
+}: HostingStepProps) {
   return (
     <div>
       <p className="step-eyebrow">Instance · Hosting</p>
@@ -10,7 +18,11 @@ export function HostingStep() {
         can migrate later.
       </p>
       <div className="step-content choice-list">
-        <button type="button" className="choice-card is-selected" aria-pressed="true">
+        <button
+          type="button"
+          className={`choice-card${standaloneWebSelected ? "" : " is-selected"}`}
+          aria-pressed={!standaloneWebSelected}
+        >
           <span className="choice-icon">
             <HardDrive size={20} />
           </span>
@@ -24,11 +36,18 @@ export function HostingStep() {
               Uses SQLite
             </span>
           </span>
-          <span className="choice-check">
-            <CircleCheck size={20} />
-          </span>
+          {!standaloneWebSelected && (
+            <span className="choice-check">
+              <CircleCheck size={20} />
+            </span>
+          )}
         </button>
-        <button type="button" className="choice-card" aria-pressed="false">
+        <button
+          type="button"
+          className={`choice-card${standaloneWebSelected ? " is-selected" : ""}`}
+          aria-pressed={standaloneWebSelected}
+          onClick={onSelectStandaloneWeb}
+        >
           <span className="choice-icon">
             <Globe size={20} />
           </span>
@@ -42,6 +61,11 @@ export function HostingStep() {
               Uses IndexedDB / OPFS
             </span>
           </span>
+          {standaloneWebSelected && (
+            <span className="choice-check">
+              <CircleCheck size={20} />
+            </span>
+          )}
         </button>
       </div>
     </div>

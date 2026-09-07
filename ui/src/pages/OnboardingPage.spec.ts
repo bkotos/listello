@@ -275,5 +275,43 @@ describe("OnboardingPage", () => {
       ).toBeInTheDocument();
       expect(button.closest(".onboarding-footer")).toBeInTheDocument();
     });
+
+    describe("when the Standalone Web choice card is clicked", () => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByRole("button", { name: /Standalone Web/ }));
+      });
+
+      it("selects the Standalone Web choice card", () => {
+        // Assert
+        const card = screen.getByRole("button", { name: /Standalone Web/ });
+        expect(card).toHaveClass("choice-card", "is-selected");
+        expect(card).toHaveAttribute("aria-pressed", "true");
+        expect(
+          card.querySelector(".choice-check svg.lucide-circle-check"),
+        ).toBeInTheDocument();
+      });
+
+      it("deselects the Local choice card", () => {
+        // Assert
+        const card = screen.getByRole("button", { name: /Local/ });
+        expect(card).toHaveClass("choice-card");
+        expect(card).not.toHaveClass("is-selected");
+        expect(card).toHaveAttribute("aria-pressed", "false");
+        expect(card.querySelector(".choice-check")).not.toBeInTheDocument();
+      });
+
+      it("renders the Instance phase fill at 67%", () => {
+        // Assert
+        const label = document.querySelector(
+          ".phase-seg.is-active .phase-seg-label",
+        );
+        expect(label).toHaveTextContent("Instance");
+        expect(
+          label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
+        ).toHaveStyle({
+          width: "67%",
+        });
+      });
+    });
   });
 });

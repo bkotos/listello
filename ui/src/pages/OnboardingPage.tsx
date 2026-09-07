@@ -11,6 +11,7 @@ enum OnboardingStep {
 
 function OnboardingPage() {
   const [step, setStep] = useState(OnboardingStep.Welcome);
+  const [standaloneWebSelected, setStandaloneWebSelected] = useState(false);
 
   async function handleCreateInstance() {
     await createInstance();
@@ -19,6 +20,11 @@ function OnboardingPage() {
 
   const isStep1Welcome = step === OnboardingStep.Welcome;
   const isStep2Hosting = step === OnboardingStep.Hosting;
+
+  let instanceFill = "25%";
+  if (isStep2Hosting) {
+    instanceFill = standaloneWebSelected ? "67%" : "50%";
+  }
 
   return (
     <div className="onboarding-page">
@@ -44,7 +50,7 @@ function OnboardingPage() {
                 <span
                   className="phase-seg-fill"
                   style={{
-                    width: isStep2Hosting ? "50%" : "25%",
+                    width: instanceFill,
                   }}
                 />
               </span>
@@ -74,7 +80,12 @@ function OnboardingPage() {
       <div className="onboarding-body">
         <div className="onboarding-inner">
           {isStep1Welcome && <WelcomeStep />}
-          {isStep2Hosting && <HostingStep />}
+          {isStep2Hosting && (
+            <HostingStep
+              standaloneWebSelected={standaloneWebSelected}
+              onSelectStandaloneWeb={() => setStandaloneWebSelected(true)}
+            />
+          )}
         </div>
       </div>
 
