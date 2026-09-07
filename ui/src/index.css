@@ -351,6 +351,15 @@ body {
   color: hsl(0deg 0% 12%);
 }
 
+.step-eyebrow {
+  font-family: var(--bulma-family-code);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) 38%);
+  margin-bottom: 0.5rem;
+}
+
 .step-lead {
   margin-top: 0.5rem;
   color: hsl(0deg 0% 40%);
@@ -359,6 +368,87 @@ body {
 
 .step-content {
   margin-top: 1.5rem;
+}
+
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.choice-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  width: 100%;
+  text-align: left;
+  padding: 1rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--bulma-radius);
+  background-color: hsl(0deg 0% 100%);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.choice-card:hover {
+  border-color: hsl(0deg 0% 72%);
+}
+
+.choice-card.is-selected {
+  border-color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l));
+  background-color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l) / 0.06);
+  box-shadow: 0 0 0 1px hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l));
+}
+
+.choice-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  color: hsl(0deg 0% 30%);
+  background-color: hsl(0deg 0% 95%);
+}
+
+.choice-card.is-selected .choice-icon {
+  color: hsl(0deg 0% 100%);
+  background-color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l));
+}
+
+.choice-title {
+  font-weight: 600;
+  color: hsl(0deg 0% 15%);
+}
+
+.choice-desc {
+  display: block;
+  font-size: 0.875rem;
+  color: hsl(0deg 0% 45%);
+  line-height: 1.4;
+}
+
+.choice-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  margin-top: 0.5rem;
+  font-family: var(--bulma-family-code);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: hsl(0deg 0% 55%);
+}
+
+.choice-card.is-selected .choice-meta {
+  color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) 35%);
+}
+
+.choice-check {
+  margin-left: auto;
+  color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l));
+  flex-shrink: 0;
 }
 
 .setup-check {

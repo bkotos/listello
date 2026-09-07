@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { createElement } from "react";
 import type { ListelloInstanceResponse } from "api-types/listello-instance";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -30,7 +36,9 @@ describe("OnboardingPage", () => {
 
   it("renders the Welcome to Listello heading", () => {
     // Assert
-    const heading = screen.getByRole("heading", { name: "Welcome to Listello" });
+    const heading = screen.getByRole("heading", {
+      name: "Welcome to Listello",
+    });
     expect(heading).toHaveClass("step-title", "text-balance");
     expect(heading.closest(".onboarding-page")).toBeInTheDocument();
   });
@@ -58,7 +66,9 @@ describe("OnboardingPage", () => {
 
   it("renders the Instance phase as active", () => {
     // Assert
-    const label = document.querySelector(".phase-seg.is-active .phase-seg-label");
+    const label = document.querySelector(
+      ".phase-seg.is-active .phase-seg-label",
+    );
     expect(label).toHaveClass("phase-seg-label");
     expect(label).toHaveTextContent("Instance");
     const seg = label?.closest(".phase-seg");
@@ -93,7 +103,9 @@ describe("OnboardingPage", () => {
 
   it("renders a sparkles icon", () => {
     // Assert
-    const heading = screen.getByRole("heading", { name: "Welcome to Listello" });
+    const heading = screen.getByRole("heading", {
+      name: "Welcome to Listello",
+    });
     const icon = heading.parentElement?.querySelector(".big-icon");
     expect(icon).toBeInTheDocument();
     expect(icon?.querySelector("svg.lucide-sparkles")).toBeInTheDocument();
@@ -101,7 +113,9 @@ describe("OnboardingPage", () => {
 
   it("renders the welcome lead", () => {
     // Assert
-    const lead = screen.getByText(/Let's create your instance and set up a calm, GTD-style workspace/);
+    const lead = screen.getByText(
+      /Let's create your instance and set up a calm, GTD-style workspace/,
+    );
     expect(lead).toHaveClass("step-lead", "text-pretty");
     expect(lead).toHaveTextContent(
       "Let's create your instance and set up a calm, GTD-style workspace. It only takes a minute, and you can change everything later.",
@@ -152,5 +166,114 @@ describe("OnboardingPage", () => {
 
     // Assert
     expect(createInstance).toHaveBeenCalledOnce();
+  });
+
+  describe("when the instance is created", () => {
+    beforeEach(async () => {
+      vi.mocked(createInstance).mockResolvedValue(createdInstance);
+      fireEvent.click(screen.getByRole("button", { name: "Create instance" }));
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", {
+            name: "How should Listello be hosted?",
+          }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("renders the How should Listello be hosted heading", () => {
+      // Assert
+      const heading = screen.getByRole("heading", {
+        name: "How should Listello be hosted?",
+      });
+      expect(heading).toHaveClass("step-title", "text-balance");
+    });
+
+    it("renders the Instance · Hosting eyebrow", () => {
+      // Assert
+      const eyebrow = screen.getByText("Instance · Hosting");
+      expect(eyebrow).toHaveClass("step-eyebrow");
+    });
+
+    it("renders the hosting lead", () => {
+      // Assert
+      const lead = screen.getByText(
+        /Your hosting mode decides where this instance runs/,
+      );
+      expect(lead).toHaveClass("step-lead", "text-pretty");
+      expect(lead).toHaveTextContent(
+        "Your hosting mode decides where this instance runs and how your data is stored. You can migrate later.",
+      );
+    });
+
+    it("renders the Instance phase fill at 50%", () => {
+      // Assert
+      const label = document.querySelector(
+        ".phase-seg.is-active .phase-seg-label",
+      );
+      expect(label).toHaveTextContent("Instance");
+      expect(
+        label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
+      ).toHaveStyle({
+        width: "50%",
+      });
+    });
+
+    it("renders a selected Local choice card", () => {
+      // Assert
+      const card = screen.getByRole("button", { name: /Local/ });
+      expect(card).toHaveClass("choice-card", "is-selected");
+      expect(card).toHaveAttribute("aria-pressed", "true");
+      expect(card.querySelector("svg.lucide-hard-drive")).toBeInTheDocument();
+      expect(card.querySelector(".choice-title")).toHaveTextContent("Local");
+      expect(card.querySelector(".choice-desc")).toHaveTextContent(
+        "Runs directly on this machine, with local filesystem-backed persistence.",
+      );
+      expect(card.querySelector(".choice-meta")).toHaveTextContent(
+        "Uses SQLite",
+      );
+      expect(card.querySelector("svg.lucide-database")).toBeInTheDocument();
+      expect(
+        card.querySelector(".choice-check svg.lucide-circle-check"),
+      ).toBeInTheDocument();
+    });
+
+    it("renders a Standalone Web choice card", () => {
+      // Assert
+      const card = screen.getByRole("button", { name: /Standalone Web/ });
+      expect(card).toHaveClass("choice-card");
+      expect(card).not.toHaveClass("is-selected");
+      expect(card).toHaveAttribute("aria-pressed", "false");
+      expect(card.querySelector("svg.lucide-globe")).toBeInTheDocument();
+      expect(card.querySelector(".choice-title")).toHaveTextContent(
+        "Standalone Web",
+      );
+      expect(card.querySelector(".choice-desc")).toHaveTextContent(
+        "Runs independently in the browser as a PWA or standalone app.",
+      );
+      expect(card.querySelector(".choice-meta")).toHaveTextContent(
+        "Uses IndexedDB / OPFS",
+      );
+      expect(card.querySelector("svg.lucide-database")).toBeInTheDocument();
+      expect(card.querySelector(".choice-check")).not.toBeInTheDocument();
+    });
+
+    it("renders a Back button", () => {
+      // Assert
+      const back = screen.getByRole("button", { name: "Back" });
+      expect(back).toHaveClass("button", "is-light");
+      expect(back.querySelector("svg.lucide-arrow-left")).toBeInTheDocument();
+      expect(back.closest(".onboarding-footer")).toBeInTheDocument();
+    });
+
+    it("renders a Continue button", () => {
+      // Assert
+      const button = screen.getByRole("button", { name: "Continue" });
+      expect(button).toHaveClass("button", "is-primary", "footer-grow");
+      expect(
+        button.querySelector("svg.lucide-arrow-right"),
+      ).toBeInTheDocument();
+      expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+    });
   });
 });
