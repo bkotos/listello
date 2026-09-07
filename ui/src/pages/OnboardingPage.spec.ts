@@ -1,10 +1,26 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { ListelloInstanceResponse } from "api-types/listello-instance";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import OnboardingPage from "./OnboardingPage";
+
+vi.mock("../lib/api/instance-client", () => ({
+  createInstance: vi.fn(),
+  getInstance: vi.fn(),
+}));
+
+import { createInstance } from "../lib/api/instance-client";
+
+const createdInstance: ListelloInstanceResponse = {
+  HostingMode: "",
+  PersistenceLocation: "",
+  PersistenceState: "",
+  SetupState: "",
+};
 
 afterEach(() => {
   cleanup();
+  vi.clearAllMocks();
 });
 
 describe("OnboardingPage", () => {
@@ -120,5 +136,16 @@ describe("OnboardingPage", () => {
     expect(button).toHaveClass("button", "is-primary", "footer-grow");
     expect(button.querySelector("svg.lucide-arrow-right")).toBeInTheDocument();
     expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+  });
+
+  it("calls createInstance when Create instance is clicked", () => {
+    // Arrange
+    vi.mocked(createInstance).mockResolvedValue(createdInstance);
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Create instance" }));
+
+    // Assert
+    expect(createInstance).toHaveBeenCalledOnce();
   });
 });

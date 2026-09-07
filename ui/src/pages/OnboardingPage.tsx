@@ -1,6 +1,10 @@
 import { ArrowRight, Check, Layers, ListChecks, Server, Sparkles } from "lucide-react";
+import { createInstance } from "../lib/api/instance-client";
 
 function OnboardingPage() {
+  async function handleCreateInstance() {
+    await createInstance();
+  }
   return (
     <div className="onboarding-page">
       <header className="onboarding-topbar">
@@ -83,7 +87,7 @@ function OnboardingPage() {
       </div>
 
       <footer className="onboarding-footer">
-        <button type="button" className="button is-primary footer-grow">
+        <button type="button" className="button is-primary footer-grow" onClick={handleCreateInstance}>
           <span>Create instance</span>
           <span className="icon">
             <ArrowRight size={18} />
