@@ -76,7 +76,7 @@ func (s *suiteState) anInstanceExists() {
 func (s *suiteState) theUserSelectsHostingMode(ctx context.Context, mode string) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
-	ev, err := s.instance.SelectHostingMode(mode)
+	ev, err := s.instance.SelectHostingMode(domain.HostingMode(mode))
 	s.lastErr = err
 	if err != nil {
 		return
@@ -87,7 +87,7 @@ func (s *suiteState) theUserSelectsHostingMode(ctx context.Context, mode string)
 func (s *suiteState) theInstanceShouldHaveHostingMode(ctx context.Context, mode string) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
-	require.Equal(t, mode, s.instance.HostingMode)
+	require.Equal(t, domain.HostingMode(mode), s.instance.HostingMode)
 }
 
 func eventNames(events []domain.Event) []string {

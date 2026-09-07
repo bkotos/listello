@@ -21,7 +21,7 @@ type EventMetadataInstanceCreated struct {
 // EventMetadataHostingModeSelected is the payload for a HostingModeSelected event.
 type EventMetadataHostingModeSelected struct {
 	ID   string
-	Mode string
+	Mode HostingMode
 }
 
 // EventMetadataLocalPersistenceLocationSelected is the payload for a LocalPersistenceLocationSelected event.
