@@ -25,7 +25,7 @@ func TestListService_CreateList_PersistsList(t *testing.T) {
 		})).
 		Return(nil)
 	publisher.EXPECT().
-		Publish(mock.AnythingOfType("domain.Event")).
+		Publish(mock.AnythingOfType("event.Event")).
 		Return(nil)
 
 	// Act

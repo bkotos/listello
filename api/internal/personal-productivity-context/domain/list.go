@@ -1,6 +1,10 @@
 package domain
 
-import "fmt"
+import (
+	"fmt"
+
+	event "github.com/bkotos/listello/internal/event-context"
+)
 
 const inboxListName = "Inbox"
 
@@ -24,5 +28,5 @@ func CreateList(name string) (List, Event, error) {
 		return List{}, Event{}, fmt.Errorf("cannot create a list named Inbox")
 	}
 	list := List{ID: newID("LS_"), Name: name}
-	return list, NewEvent(EventListCreated, EventMetadataListCreated{ID: list.ID}, 1), nil
+	return list, event.NewEvent(EventListCreated, EventMetadataListCreated{ID: list.ID}, 1), nil
 }

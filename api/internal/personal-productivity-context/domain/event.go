@@ -1,9 +1,9 @@
 package domain
 
-import "time"
+import event "github.com/bkotos/listello/internal/event-context"
 
-// EventName is the name of a domain event.
-type EventName string
+type EventName = event.EventName
+type Event = event.Event
 
 const (
 	EventListCreated             EventName = "ListCreated"
@@ -22,24 +22,6 @@ const (
 	EventItemMovedToOtherList    EventName = "ItemMovedToOtherList"
 	EventItemLinkedAsChildOfItem EventName = "ItemLinkedAsChildOfItem"
 )
-
-// Event is a domain event raised by a command.
-type Event struct {
-	Name      EventName
-	Metadata  any
-	Timestamp string
-	Version   int
-}
-
-// NewEvent constructs a domain event.
-func NewEvent(name EventName, metadata any, version int) Event {
-	return Event{
-		Name:      name,
-		Metadata:  metadata,
-		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
-		Version:   version,
-	}
-}
 
 // EventMetadataListCreated is the payload for a ListCreated event.
 type EventMetadataListCreated struct {

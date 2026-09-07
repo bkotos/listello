@@ -32,7 +32,7 @@ func TestItemService_DefineItem_PersistsItem(t *testing.T) {
 		})).
 		Return(nil)
 	publisher.EXPECT().
-		Publish(mock.AnythingOfType("domain.Event")).
+		Publish(mock.AnythingOfType("event.Event")).
 		Return(nil)
 
 	// Act
@@ -122,7 +122,7 @@ func TestItemService_CompleteItem_PersistsItem(t *testing.T) {
 		})).
 		Return(nil)
 	publisher.EXPECT().
-		Publish(mock.AnythingOfType("domain.Event")).
+		Publish(mock.AnythingOfType("event.Event")).
 		Return(nil)
 
 	// Act
@@ -186,7 +186,7 @@ func TestItemService_UncompleteItem_PersistsItem(t *testing.T) {
 		})).
 		Return(nil)
 	publisher.EXPECT().
-		Publish(mock.AnythingOfType("domain.Event")).
+		Publish(mock.AnythingOfType("event.Event")).
 		Return(nil)
 
 	// Act
@@ -248,7 +248,7 @@ func TestItemService_DeleteItem_DeletesItem(t *testing.T) {
 		Delete(itemID).
 		Return(nil)
 	publisher.EXPECT().
-		Publish(mock.AnythingOfType("domain.Event")).
+		Publish(mock.AnythingOfType("event.Event")).
 		Return(nil)
 
 	// Act
@@ -314,7 +314,7 @@ func TestItemService_ModifyItemTitle_PersistsItem(t *testing.T) {
 		})).
 		Return(nil)
 	publisher.EXPECT().
-		Publish(mock.AnythingOfType("domain.Event")).
+		Publish(mock.AnythingOfType("event.Event")).
 		Return(nil)
 
 	// Act
@@ -389,7 +389,7 @@ func TestItemService_MoveItem_PersistsItem(t *testing.T) {
 		})).
 		Return(nil)
 	publisher.EXPECT().
-		Publish(mock.AnythingOfType("domain.Event")).
+		Publish(mock.AnythingOfType("event.Event")).
 		Return(nil)
 
 	// Act
