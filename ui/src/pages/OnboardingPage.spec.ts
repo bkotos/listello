@@ -350,6 +350,22 @@ describe("OnboardingPage", () => {
           });
         });
       });
+
+      describe("when the Continue button is clicked", () => {
+        beforeEach(() => {
+          fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+        });
+
+        // TODO this is temporary until we implement this flow for standalone web
+        it("stays on the How should Listello be hosted heading", () => {
+          // Assert
+          expect(
+            screen.getByRole("heading", {
+              name: "How should Listello be hosted?",
+            }),
+          ).toBeInTheDocument();
+        });
+      });
     });
   });
 });
