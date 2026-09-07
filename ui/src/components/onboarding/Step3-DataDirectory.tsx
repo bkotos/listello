@@ -35,10 +35,14 @@ export function DataDirectoryStep() {
   );
 }
 
-export function DataDirectoryFooter() {
+type DataDirectoryFooterProps = {
+  onBack: () => void;
+};
+
+export function DataDirectoryFooter({ onBack }: DataDirectoryFooterProps) {
   return (
     <>
-      <button type="button" className="button is-light">
+      <button type="button" className="button is-light" onClick={onBack}>
         <span className="icon">
           <ArrowLeft size={18} />
         </span>
