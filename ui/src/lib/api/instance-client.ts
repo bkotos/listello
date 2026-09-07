@@ -6,3 +6,7 @@ export async function createInstance(): Promise<ListelloInstanceResponse> {
     method: "POST",
   });
 }
+
+export async function getInstance(init?: RequestInit): Promise<ListelloInstanceResponse | null> {
+  return request<ListelloInstanceResponse | null>("/api/instance", init);
+}

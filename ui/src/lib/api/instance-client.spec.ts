@@ -4,7 +4,7 @@ vi.mock("./util", () => ({
   request: vi.fn(),
 }));
 
-import { createInstance } from "./instance-client";
+import { createInstance, getInstance } from "./instance-client";
 import { request } from "./util";
 
 afterEach(() => {
@@ -30,5 +30,36 @@ describe("createInstance", () => {
       method: "POST",
     });
     expect(result).toEqual(instance);
+  });
+});
+
+describe("getInstance", () => {
+  it("requests the instance from the API", async () => {
+    // Arrange
+    const instance = {
+      HostingMode: "",
+      PersistenceLocation: "",
+      PersistenceState: "",
+      SetupState: "",
+    };
+    vi.mocked(request).mockResolvedValue(instance);
+
+    // Act
+    const result = await getInstance();
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/instance", undefined);
+    expect(result).toEqual(instance);
+  });
+
+  it("returns null when the instance does not exist yet", async () => {
+    // Arrange
+    vi.mocked(request).mockResolvedValue(null);
+
+    // Act
+    const result = await getInstance();
+
+    // Assert
+    expect(result).toBeNull();
   });
 });
