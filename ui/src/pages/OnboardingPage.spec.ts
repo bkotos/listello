@@ -52,15 +52,16 @@ describe("OnboardingPage", () => {
 
   it("hides phase progress from assistive tech", () => {
     // Assert
-    const progress = screen.getByText("Instance", { hidden: true }).closest(".phase-progress");
+    const progress = document.querySelector(".phase-progress");
     expect(progress).toHaveAttribute("aria-hidden", "true");
   });
 
   it("renders the Instance phase as active", () => {
     // Assert
-    const label = screen.getByText("Instance", { hidden: true });
+    const label = document.querySelector(".phase-seg.is-active .phase-seg-label");
     expect(label).toHaveClass("phase-seg-label");
-    const seg = label.closest(".phase-seg");
+    expect(label).toHaveTextContent("Instance");
+    const seg = label?.closest(".phase-seg");
     expect(seg).toHaveClass("is-active");
     expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent("1");
     expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({ width: "25%" });
@@ -68,9 +69,11 @@ describe("OnboardingPage", () => {
 
   it("renders the Workspace phase as upcoming", () => {
     // Assert
-    const label = screen.getByText("Workspace", { hidden: true });
+    const label = [...document.querySelectorAll(".phase-seg-label")].find(
+      (el) => el.textContent === "Workspace",
+    );
     expect(label).toHaveClass("phase-seg-label");
-    const seg = label.closest(".phase-seg");
+    const seg = label?.closest(".phase-seg");
     expect(seg).toHaveClass("is-upcoming");
     expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent("2");
     expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({ width: "0%" });
@@ -78,9 +81,11 @@ describe("OnboardingPage", () => {
 
   it("renders the Ready phase as upcoming", () => {
     // Assert
-    const label = screen.getByText("Ready", { hidden: true });
+    const label = [...document.querySelectorAll(".phase-seg-label")].find(
+      (el) => el.textContent === "Ready",
+    );
     expect(label).toHaveClass("phase-seg-label");
-    const seg = label.closest(".phase-seg");
+    const seg = label?.closest(".phase-seg");
     expect(seg).toHaveClass("is-upcoming");
     expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent("3");
     expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({ width: "0%" });
