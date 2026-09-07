@@ -8,6 +8,11 @@ Feature: Create and set up a Listello instance
     Then a "InstanceCreated" event should have occurred
     And the instance should exist
 
+  Scenario: Creating an instance assigns an ID prefixed with LI_
+    When the user creates an instance
+    Then the instance should have an ID prefixed with "LI_"
+    And the instance ID after the prefix "LI_" should be a UUID
+
   Scenario Outline: Selecting a hosting mode
     Given an instance exists
     When the user selects hosting mode "<mode>"

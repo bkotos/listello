@@ -6,9 +6,11 @@ import (
 	"flag"
 	"os"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/cucumber/godog"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
@@ -67,6 +69,20 @@ func (s *suiteState) aEventShouldHaveOccurred(ctx context.Context, eventName str
 
 func (s *suiteState) theInstanceShouldExist(ctx context.Context) {
 	require.NotNil(godog.T(ctx), s.instance)
+}
+
+func (s *suiteState) theInstanceShouldHaveAnIDPrefixedWith(ctx context.Context, prefix string) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.Truef(t, strings.HasPrefix(s.instance.ID, prefix), "expected instance ID to start with %q; got %q", prefix, s.instance.ID)
+}
+
+func (s *suiteState) theInstanceIDAfterThePrefixShouldBeAUUID(ctx context.Context, prefix string) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	remainder := strings.TrimPrefix(s.instance.ID, prefix)
+	_, err := uuid.Parse(remainder)
+	require.NoErrorf(t, err, "expected instance ID after prefix %q to be a UUID; got %q", prefix, remainder)
 }
 
 func (s *suiteState) anInstanceExists() {
@@ -166,6 +182,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the user selects hosting mode "([^"]*)"$`, s.theUserSelectsHostingMode)
 	ctx.Step(`^a "([^"]*)" event should have occurred$`, s.aEventShouldHaveOccurred)
 	ctx.Step(`^the instance should exist$`, s.theInstanceShouldExist)
+	ctx.Step(`^the instance should have an ID prefixed with "([^"]*)"$`, s.theInstanceShouldHaveAnIDPrefixedWith)
+	ctx.Step(`^the instance ID after the prefix "([^"]*)" should be a UUID$`, s.theInstanceIDAfterThePrefixShouldBeAUUID)
 	ctx.Step(`^the instance should have hosting mode "([^"]*)"$`, s.theInstanceShouldHaveHostingMode)
 	ctx.Step(`^the user selects persistence location "([^"]*)"$`, s.theUserSelectsPersistenceLocation)
 	ctx.Step(`^the instance should have persistence location "([^"]*)"$`, s.theInstanceShouldHavePersistenceLocation)

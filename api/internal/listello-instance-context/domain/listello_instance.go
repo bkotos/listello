@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	event "github.com/bkotos/listello/internal/event-context"
+	"github.com/bkotos/listello/internal/util"
 )
 
 // HostingMode is how a Listello instance is hosted.
@@ -41,7 +42,7 @@ type ListelloInstance struct {
 
 // CreateInstance creates a new Listello instance and raises an InstanceCreated event.
 func CreateInstance() (ListelloInstance, Event, error) {
-	instance := ListelloInstance{}
+	instance := ListelloInstance{ID: util.NewID("LI_")}
 	return instance, event.NewEvent(EventInstanceCreated, EventMetadataInstanceCreated{ID: instance.ID}, 1), nil
 }
 
