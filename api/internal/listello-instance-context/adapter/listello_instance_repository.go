@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	application "github.com/bkotos/listello/internal/listello-instance-context/application"
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 )
 
@@ -8,6 +9,8 @@ import (
 type ListelloInstanceRepository struct {
 	instances map[string]domain.ListelloInstance
 }
+
+var _ application.ListelloInstanceRepository = (*ListelloInstanceRepository)(nil)
 
 // NewListelloInstanceRepository returns an in-memory Listello instance repository.
 func NewListelloInstanceRepository() *ListelloInstanceRepository {
