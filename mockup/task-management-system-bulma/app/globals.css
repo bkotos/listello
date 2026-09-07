@@ -539,6 +539,32 @@ body {
   color: hsl(0deg 0% 18%);
 }
 
+.summary-val.is-muted {
+  font-weight: 500;
+  font-style: italic;
+  color: hsl(0deg 0% 60%);
+}
+
+/* Subtle text button to bypass an optional step */
+.skip-link {
+  display: inline-block;
+  margin-top: 1.25rem;
+  padding: 0.25rem 0;
+  border: none;
+  background: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(0deg 0% 45%);
+  cursor: pointer;
+  border-bottom: 1px solid hsl(0deg 0% 75%);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.skip-link:hover {
+  color: hsl(0deg 0% 20%);
+  border-bottom-color: hsl(0deg 0% 45%);
+}
+
 /* Footer nav — centered on the same rail as header + body */
 .onboarding-footer {
   flex-shrink: 0;

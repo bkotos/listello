@@ -167,6 +167,12 @@ export function OnboardingFlow({ onComplete }: { onComplete: (data: OnboardingDa
     if (prev) setStep(prev)
   }
 
+  // Proceed without creating a first list: clear the name so no list is created.
+  function skipList() {
+    setData((d) => ({ ...d, firstListName: '' }))
+    goNext()
+  }
+
   const canAdvance = (() => {
     if (isAutoStep) return autoReady
     if (step === 'persistence-location') return data.persistenceLocation.trim().length > 0
@@ -454,7 +460,8 @@ export function OnboardingFlow({ onComplete }: { onComplete: (data: OnboardingDa
               <p className="step-eyebrow">Workspace · First list</p>
               <h1 className="step-title text-balance">Create your first list</h1>
               <p className="step-lead text-pretty">
-                Lists hold the tasks you want to act on. Give your first one a name to get going.
+                Lists hold the tasks you want to act on. Give your first one a name, or skip and
+                create one later.
               </p>
               <div className="step-content">
                 <div className="field">
@@ -489,6 +496,9 @@ export function OnboardingFlow({ onComplete }: { onComplete: (data: OnboardingDa
                     ))}
                   </div>
                 </div>
+                <button type="button" className="skip-link" onClick={skipList}>
+                  Skip for now
+                </button>
               </div>
             </div>
           )}
@@ -526,7 +536,9 @@ export function OnboardingFlow({ onComplete }: { onComplete: (data: OnboardingDa
                 </div>
                 <div className="summary-row">
                   <span className="summary-key">First list</span>
-                  <span className="summary-val">{data.firstListName}</span>
+                  <span className={`summary-val ${data.firstListName.trim() ? '' : 'is-muted'}`}>
+                    {data.firstListName.trim() || 'Skipped'}
+                  </span>
                 </div>
                 <div className="summary-row">
                   <span className="summary-key">Inbox</span>
