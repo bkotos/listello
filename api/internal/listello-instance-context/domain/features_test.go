@@ -107,6 +107,10 @@ func (s *suiteState) theInstanceShouldHavePersistenceLocation(ctx context.Contex
 	require.Equal(t, location, s.instance.PersistenceLocation)
 }
 
+func (s *suiteState) selectingThePersistenceLocationShouldFailWithError(ctx context.Context, message string) {
+	require.EqualError(godog.T(ctx), s.lastErr, message)
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
@@ -131,6 +135,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the instance should have hosting mode "([^"]*)"$`, s.theInstanceShouldHaveHostingMode)
 	ctx.Step(`^the user selects persistence location "([^"]*)"$`, s.theUserSelectsPersistenceLocation)
 	ctx.Step(`^the instance should have persistence location "([^"]*)"$`, s.theInstanceShouldHavePersistenceLocation)
+	ctx.Step(`^selecting the persistence location should fail with error "([^"]*)"$`, s.selectingThePersistenceLocationShouldFailWithError)
 }
 
 func TestFeatures(t *testing.T) {

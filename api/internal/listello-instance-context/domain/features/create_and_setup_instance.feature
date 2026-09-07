@@ -26,7 +26,6 @@ Feature: Create and set up a Listello instance
     Then a "LocalPersistenceLocationSelected" event should have occurred
     And the instance should have persistence location "/var/listello"
 
-  @wip
   Scenario: Selecting a persistence location for a standalone-web instance fails
     Given an instance exists
     And the user selects hosting mode "standalone-web"
