@@ -58,3 +58,40 @@ func TestListelloInstanceService_CreateInstance_PublishesEvent(t *testing.T) {
 	require.True(t, ok)
 	assert.NotEmpty(t, published.Timestamp)
 }
+
+func TestListelloInstanceService_GetInstance_ReturnsInstanceFromRepository(t *testing.T) {
+	// Arrange
+	expected := &domain.ListelloInstance{ID: "LI_1"}
+	repo := NewMockListelloInstanceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListelloInstanceService(repo, publisher)
+
+	repo.EXPECT().
+		GetInstance().
+		Return(expected, nil)
+
+	// Act
+	received, err := svc.GetInstance()
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, expected, received)
+}
+
+func TestListelloInstanceService_GetInstance_ReturnsNullWhenNotExists(t *testing.T) {
+	// Arrange
+	repo := NewMockListelloInstanceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListelloInstanceService(repo, publisher)
+
+	repo.EXPECT().
+		GetInstance().
+		Return(nil, nil)
+
+	// Act
+	received, err := svc.GetInstance()
+
+	// Assert
+	require.NoError(t, err)
+	assert.Nil(t, received)
+}

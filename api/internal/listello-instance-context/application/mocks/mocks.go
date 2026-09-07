@@ -88,3 +88,58 @@ func (_c *MockListelloInstanceService_CreateInstance_Call) RunAndReturn(run func
 	_c.Call.Return(run)
 	return _c
 }
+
+// GetInstance provides a mock function for the type MockListelloInstanceService
+func (_mock *MockListelloInstanceService) GetInstance() (*domain.ListelloInstance, error) {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInstance")
+	}
+
+	var r0 *domain.ListelloInstance
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func() (*domain.ListelloInstance, error)); ok {
+		return returnFunc()
+	}
+	if returnFunc, ok := ret.Get(0).(func() *domain.ListelloInstance); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.ListelloInstance)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func() error); ok {
+		r1 = returnFunc()
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockListelloInstanceService_GetInstance_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInstance'
+type MockListelloInstanceService_GetInstance_Call struct {
+	*mock.Call
+}
+
+// GetInstance is a helper method to define mock.On call
+func (_e *MockListelloInstanceService_Expecter) GetInstance() *MockListelloInstanceService_GetInstance_Call {
+	return &MockListelloInstanceService_GetInstance_Call{Call: _e.mock.On("GetInstance")}
+}
+
+func (_c *MockListelloInstanceService_GetInstance_Call) Run(run func()) *MockListelloInstanceService_GetInstance_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockListelloInstanceService_GetInstance_Call) Return(listelloInstance *domain.ListelloInstance, err error) *MockListelloInstanceService_GetInstance_Call {
+	_c.Call.Return(listelloInstance, err)
+	return _c
+}
+
+func (_c *MockListelloInstanceService_GetInstance_Call) RunAndReturn(run func() (*domain.ListelloInstance, error)) *MockListelloInstanceService_GetInstance_Call {
+	_c.Call.Return(run)
+	return _c
+}

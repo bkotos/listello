@@ -7,11 +7,13 @@ import (
 // ListelloInstanceRepository persists Listello instances.
 type ListelloInstanceRepository interface {
 	Save(instance domain.ListelloInstance) error
+	GetInstance() (*domain.ListelloInstance, error)
 }
 
 // ListelloInstanceService defines Listello instance application operations.
 type ListelloInstanceService interface {
 	CreateInstance() (domain.ListelloInstance, error)
+	GetInstance() (*domain.ListelloInstance, error)
 }
 
 type listelloInstanceService struct {
@@ -42,4 +44,9 @@ func (s *listelloInstanceService) CreateInstance() (domain.ListelloInstance, err
 		return domain.ListelloInstance{}, err
 	}
 	return instance, nil
+}
+
+// GetInstance returns the Listello instance from persistence, or nil if none exists yet.
+func (s *listelloInstanceService) GetInstance() (*domain.ListelloInstance, error) {
+	return s.listelloInstanceRepository.GetInstance()
 }
