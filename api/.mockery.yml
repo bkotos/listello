@@ -23,3 +23,12 @@ packages:
           dir: '{{.InterfaceDir}}/mocks'
           filename: mocks.go
           pkgname: mocks
+  github.com/bkotos/listello/internal/listello-instance-context/application:
+    interfaces:
+      ListelloInstanceRepository:
+      EventPublisher:
+      ListelloInstanceService:
+        config:
+          dir: '{{.InterfaceDir}}/mocks'
+          filename: mocks.go
+          pkgname: mocks
