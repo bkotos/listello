@@ -10,9 +10,8 @@ type ListelloInstanceRepository interface {
 	Get() (*domain.ListelloInstance, error)
 }
 
-type FilesystemAdapter interface {
-	ParentDirectoryExists(path string) (bool, error)
-	ParentDirectoryWriteable(path string) (bool, error)
+type PersistenceLocationObserver interface {
+	ObservePersistenceLocation(persistenceLocation string) (domain.PersistenceLocationObservation, error)
 }
 
 // ListelloInstanceService defines Listello instance application operations.
