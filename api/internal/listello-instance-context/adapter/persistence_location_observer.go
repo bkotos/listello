@@ -21,29 +21,34 @@ func NewFilesystemPersistenceLocationObserver() *FilesystemPersistenceLocationOb
 
 // ObservePersistenceLocation reports whether the parent directory exists and is writable, and whether the location already exists.
 func (o *FilesystemPersistenceLocationObserver) ObservePersistenceLocation(persistenceLocation string) (domain.PersistenceLocationObservation, error) {
+	parent, err := inspect(filepath.Dir(persistenceLocation))
+	if err != nil {
+		return domain.PersistenceLocationObservation{}, err
+	}
+	location, err := inspect(persistenceLocation)
+	if err != nil {
+		return domain.PersistenceLocationObservation{}, err
+	}
+
 	var observation domain.PersistenceLocationObservation
-	parent := filepath.Dir(persistenceLocation)
-
-	parentInfo, err := os.Stat(parent)
-	switch {
-	case err == nil:
-		observation.SetParentExists(true)
-		observation.SetParentWritable(parentInfo.Mode().Perm()&0o200 != 0)
-	case os.IsNotExist(err):
-		observation.SetParentExists(false)
-	default:
-		return domain.PersistenceLocationObservation{}, fmt.Errorf("observe persistence location: %w", err)
-	}
-
-	_, err = os.Stat(persistenceLocation)
-	switch {
-	case err == nil:
-		observation.SetLocationExists(true)
-	case os.IsNotExist(err):
-		observation.SetLocationExists(false)
-	default:
-		return domain.PersistenceLocationObservation{}, fmt.Errorf("observe persistence location: %w", err)
-	}
-
+	observation.SetParentExists(parent.exists)
+	observation.SetParentWritable(parent.writable)
+	observation.SetLocationExists(location.exists)
 	return observation, nil
+}
+
+type pathObservation struct {
+	exists   bool
+	writable bool
+}
+
+func inspect(path string) (pathObservation, error) {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return pathObservation{}, nil
+	}
+	if err != nil {
+		return pathObservation{}, fmt.Errorf("observe persistence location: %w", err)
+	}
+	return pathObservation{exists: true, writable: info.Mode().Perm()&0o200 != 0}, nil
 }
