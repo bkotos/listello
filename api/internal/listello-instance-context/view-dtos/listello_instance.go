@@ -2,6 +2,11 @@ package viewdto
 
 import domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 
+// SelectPersistenceLocationRequest is the HTTP request body for selecting a persistence location.
+type SelectPersistenceLocationRequest struct {
+	Location string `json:"location"`
+}
+
 // ListelloInstanceResponse is the HTTP representation of a Listello instance.
 type ListelloInstanceResponse struct {
 	HostingMode         string `json:"HostingMode"`
