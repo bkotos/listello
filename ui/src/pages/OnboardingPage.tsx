@@ -9,39 +9,39 @@ import {
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 enum OnboardingStep {
-  Welcome = "step1-welcome",
-  Hosting = "step2-hosting",
-  DataDirectory = "step3-data-directory",
+  Step1Welcome = "step1-welcome",
+  Step2Hosting = "step2-hosting",
+  Step3DataDirectory = "step3-data-directory",
 }
 
 function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): string {
-  if (step === OnboardingStep.DataDirectory) {
+  if (step === OnboardingStep.Step3DataDirectory) {
     return "75%";
   }
-  if (step === OnboardingStep.Hosting) {
+  if (step === OnboardingStep.Step2Hosting) {
     return hostingMode === HostingMode.StandaloneWeb ? "67%" : "50%";
   }
   return "25%";
 }
 
 function OnboardingPage() {
-  const [step, setStep] = useState(OnboardingStep.Welcome);
+  const [step, setStep] = useState(OnboardingStep.Step1Welcome);
   const [hostingMode, setHostingMode] = useState(HostingMode.Local);
 
   async function handleCreateInstance() {
     await createInstance();
-    setStep(OnboardingStep.Hosting);
+    setStep(OnboardingStep.Step2Hosting);
   }
 
   function handleHostingContinue() {
     if (hostingMode === HostingMode.Local) {
-      setStep(OnboardingStep.DataDirectory);
+      setStep(OnboardingStep.Step3DataDirectory);
     }
   }
 
-  const isStep1Welcome = step === OnboardingStep.Welcome;
-  const isStep2Hosting = step === OnboardingStep.Hosting;
-  const isStep3DataDirectory = step === OnboardingStep.DataDirectory;
+  const isStep1Welcome = step === OnboardingStep.Step1Welcome;
+  const isStep2Hosting = step === OnboardingStep.Step2Hosting;
+  const isStep3DataDirectory = step === OnboardingStep.Step3DataDirectory;
   const instanceFill = instancePhaseFill(step, hostingMode);
 
   return (
@@ -114,7 +114,7 @@ function OnboardingPage() {
         )}
         {isStep2Hosting && <HostingFooter onContinue={handleHostingContinue} />}
         {isStep3DataDirectory && (
-          <DataDirectoryFooter onBack={() => setStep(OnboardingStep.Hosting)} />
+          <DataDirectoryFooter onBack={() => setStep(OnboardingStep.Step2Hosting)} />
         )}
       </footer>
     </div>
