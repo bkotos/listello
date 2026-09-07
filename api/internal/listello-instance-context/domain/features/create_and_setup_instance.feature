@@ -49,7 +49,6 @@ Feature: Create and set up a Listello instance
     Then a "SetupCompleted" event should have occurred
     And the instance should have setup completed
 
-  @wip
   Scenario: Creating a local instance through to setup completed
     When the user creates an instance
     And the user selects hosting mode "local"
