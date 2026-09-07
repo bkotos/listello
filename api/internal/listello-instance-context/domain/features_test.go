@@ -128,6 +128,23 @@ func (s *suiteState) theInstanceShouldHavePersistenceInitialized(ctx context.Con
 	require.True(t, s.instance.IsPersistenceInitialized())
 }
 
+func (s *suiteState) theUserCompletesSetup(ctx context.Context) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	ev, err := s.instance.CompleteSetup()
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.record(ev)
+}
+
+func (s *suiteState) theInstanceShouldHaveSetupCompleted(ctx context.Context) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.True(t, s.instance.IsSetupCompleted())
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
@@ -155,6 +172,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^selecting the persistence location should fail with error "([^"]*)"$`, s.selectingThePersistenceLocationShouldFailWithError)
 	ctx.Step(`^the user initializes persistence$`, s.theUserInitializesPersistence)
 	ctx.Step(`^the instance should have persistence initialized$`, s.theInstanceShouldHavePersistenceInitialized)
+	ctx.Step(`^the user completes setup$`, s.theUserCompletesSetup)
+	ctx.Step(`^the instance should have setup completed$`, s.theInstanceShouldHaveSetupCompleted)
 }
 
 func TestFeatures(t *testing.T) {

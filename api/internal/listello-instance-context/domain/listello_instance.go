@@ -22,12 +22,21 @@ const (
 	PersistenceInitialized   PersistenceState = "initialized"
 )
 
+// SetupState is whether instance setup has been completed.
+type SetupState string
+
+const (
+	SetupIncomplete SetupState = "incomplete"
+	SetupCompleted  SetupState = "completed"
+)
+
 // ListelloInstance is a running Listello instance.
 type ListelloInstance struct {
 	ID                  string
 	HostingMode         HostingMode
 	PersistenceLocation string
 	PersistenceState    PersistenceState
+	SetupState          SetupState
 }
 
 // CreateInstance creates a new Listello instance and raises an InstanceCreated event.
@@ -64,4 +73,15 @@ func (i *ListelloInstance) InitializePersistence() (Event, error) {
 // IsPersistenceInitialized reports whether persistence has been initialized.
 func (i ListelloInstance) IsPersistenceInitialized() bool {
 	return i.PersistenceState == PersistenceInitialized
+}
+
+// CompleteSetup completes instance setup and raises a SetupCompleted event.
+func (i *ListelloInstance) CompleteSetup() (Event, error) {
+	i.SetupState = SetupCompleted
+	return event.NewEvent(EventSetupCompleted, EventMetadataSetupCompleted{ID: i.ID}, 1), nil
+}
+
+// IsSetupCompleted reports whether instance setup has been completed.
+func (i ListelloInstance) IsSetupCompleted() bool {
+	return i.SetupState == SetupCompleted
 }
