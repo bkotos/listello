@@ -4,6 +4,12 @@
 // source: listello_instance.go
 
 /**
+ * SelectPersistenceLocationRequest is the HTTP request body for selecting a persistence location.
+ */
+export interface SelectPersistenceLocationRequest {
+  location: string;
+}
+/**
  * ListelloInstanceResponse is the HTTP representation of a Listello instance.
  */
 export interface ListelloInstanceResponse {
