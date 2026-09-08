@@ -491,12 +491,12 @@ describe("OnboardingPage", () => {
         });
       });
 
-      describe("after 2 seconds", () => {
+      describe("after 500ms", () => {
         beforeEach(() => {
           vi.useFakeTimers();
           fireEvent.click(screen.getByRole("button", { name: "Continue" }));
           act(() => {
-            vi.advanceTimersByTime(2000);
+            vi.advanceTimersByTime(500);
           });
         });
 

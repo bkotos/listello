@@ -13,7 +13,7 @@ export function InitializeStep() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDoneCount(1);
-    }, 2000);
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
