@@ -15,7 +15,7 @@ func TestListelloInstanceService_CreateInstance_PersistsInstance(t *testing.T) {
 	// Arrange
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceLocationObserver(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
 
 	repo.EXPECT().
 		Save(mock.AnythingOfType("domain.ListelloInstance")).
@@ -35,7 +35,7 @@ func TestListelloInstanceService_CreateInstance_PublishesEvent(t *testing.T) {
 	// Arrange
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceLocationObserver(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
 
 	var published domain.Event
 	repo.EXPECT().
@@ -64,7 +64,7 @@ func TestListelloInstanceService_GetInstance_ReturnsInstanceFromRepository(t *te
 	expected := &domain.ListelloInstance{ID: "LI_1"}
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceLocationObserver(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
 
 	repo.EXPECT().
 		Get().
@@ -82,7 +82,7 @@ func TestListelloInstanceService_GetInstance_ReturnsNullWhenNotExists(t *testing
 	// Arrange
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceLocationObserver(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
 
 	repo.EXPECT().
 		Get().
@@ -101,7 +101,7 @@ func TestListelloInstanceService_SelectHostingMode_PersistsInstance(t *testing.T
 	instance := domain.ListelloInstance{ID: "LI_1"}
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceLocationObserver(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
 
 	repo.EXPECT().
 		Get().
@@ -127,7 +127,7 @@ func TestListelloInstanceService_SelectHostingMode_PublishesEvent(t *testing.T) 
 	instance := domain.ListelloInstance{ID: "LI_1"}
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceLocationObserver(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
 
 	var published domain.Event
 	repo.EXPECT().
@@ -161,7 +161,7 @@ func TestListelloInstanceService_SelectPersistenceLocation_PersistsInstance(t *t
 	instance := domain.ListelloInstance{ID: "LI_1", HostingMode: domain.HostingModeLocal}
 	observation := usablePersistenceLocationObservation()
 	repo := NewMockListelloInstanceRepository(t)
-	observer := NewMockPersistenceLocationObserver(t)
+	observer := NewMockPersistenceAdapter(t)
 	publisher := NewMockEventPublisher(t)
 	svc := application.NewListelloInstanceService(repo, observer, publisher)
 
@@ -193,7 +193,7 @@ func TestListelloInstanceService_SelectPersistenceLocation_PublishesEvent(t *tes
 	instance := domain.ListelloInstance{ID: "LI_1", HostingMode: domain.HostingModeLocal}
 	observation := usablePersistenceLocationObservation()
 	repo := NewMockListelloInstanceRepository(t)
-	observer := NewMockPersistenceLocationObserver(t)
+	observer := NewMockPersistenceAdapter(t)
 	publisher := NewMockEventPublisher(t)
 	svc := application.NewListelloInstanceService(repo, observer, publisher)
 

@@ -10,7 +10,8 @@ type ListelloInstanceRepository interface {
 	Get() (*domain.ListelloInstance, error)
 }
 
-type PersistenceLocationObserver interface {
+// PersistenceAdapter observes persistence locations.
+type PersistenceAdapter interface {
 	ObservePersistenceLocation(persistenceLocation string) (domain.PersistenceLocationObservation, error)
 }
 
@@ -23,19 +24,19 @@ type ListelloInstanceService interface {
 }
 
 type listelloInstanceService struct {
-	listelloInstanceRepository  ListelloInstanceRepository
-	persistenceLocationObserver PersistenceLocationObserver
-	eventPublisher              EventPublisher
+	listelloInstanceRepository ListelloInstanceRepository
+	persistenceAdapter PersistenceAdapter
+	eventPublisher             EventPublisher
 }
 
 var _ ListelloInstanceService = (*listelloInstanceService)(nil)
 
-// NewListelloInstanceService returns a ListelloInstanceService backed by the given repository, observer, and publisher.
-func NewListelloInstanceService(listelloInstanceRepository ListelloInstanceRepository, persistenceLocationObserver PersistenceLocationObserver, eventPublisher EventPublisher) ListelloInstanceService {
+// NewListelloInstanceService returns a ListelloInstanceService backed by the given repository, adapter, and publisher.
+func NewListelloInstanceService(listelloInstanceRepository ListelloInstanceRepository, persistenceAdapter PersistenceAdapter, eventPublisher EventPublisher) ListelloInstanceService {
 	return &listelloInstanceService{
-		listelloInstanceRepository:  listelloInstanceRepository,
-		persistenceLocationObserver: persistenceLocationObserver,
-		eventPublisher:              eventPublisher,
+		listelloInstanceRepository: listelloInstanceRepository,
+		persistenceAdapter:         persistenceAdapter,
+		eventPublisher:             eventPublisher,
 	}
 }
 
@@ -84,7 +85,7 @@ func (s *listelloInstanceService) SelectPersistenceLocation(location string) (do
 	if err != nil {
 		return domain.ListelloInstance{}, err
 	}
-	observation, err := s.persistenceLocationObserver.ObservePersistenceLocation(location)
+	observation, err := s.persistenceAdapter.ObservePersistenceLocation(location)
 	if err != nil {
 		return domain.ListelloInstance{}, err
 	}

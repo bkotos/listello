@@ -12,7 +12,7 @@ import (
 // FilesystemPersistenceLocationObserver observes persistence locations on the local filesystem.
 type FilesystemPersistenceLocationObserver struct{}
 
-var _ application.PersistenceLocationObserver = (*FilesystemPersistenceLocationObserver)(nil)
+var _ application.PersistenceAdapter = (*FilesystemPersistenceLocationObserver)(nil)
 
 // NewFilesystemPersistenceLocationObserver returns a filesystem persistence location observer.
 func NewFilesystemPersistenceLocationObserver() *FilesystemPersistenceLocationObserver {
