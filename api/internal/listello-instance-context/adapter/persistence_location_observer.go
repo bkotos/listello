@@ -37,6 +37,14 @@ func (o *FilesystemPersistenceLocationObserver) ObservePersistenceLocation(persi
 	return observation, nil
 }
 
+// InitializePersistenceLocation initializes a persistence location on the filesystem.
+func (o *FilesystemPersistenceLocationObserver) InitializePersistenceLocation(persistenceLocation string) error {
+	if err := os.Mkdir(persistenceLocation, 0o755); err != nil {
+		return fmt.Errorf("initialize persistence location: %w", err)
+	}
+	return nil
+}
+
 type pathObservation struct {
 	exists   bool
 	writable bool

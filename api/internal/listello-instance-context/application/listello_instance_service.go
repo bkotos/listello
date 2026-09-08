@@ -13,6 +13,7 @@ type ListelloInstanceRepository interface {
 // PersistenceAdapter observes persistence locations.
 type PersistenceAdapter interface {
 	ObservePersistenceLocation(persistenceLocation string) (domain.PersistenceLocationObservation, error)
+	InitializePersistenceLocation(persistenceLocation string) error
 }
 
 // ListelloInstanceService defines Listello instance application operations.
@@ -25,7 +26,7 @@ type ListelloInstanceService interface {
 
 type listelloInstanceService struct {
 	listelloInstanceRepository ListelloInstanceRepository
-	persistenceAdapter PersistenceAdapter
+	persistenceAdapter         PersistenceAdapter
 	eventPublisher             EventPublisher
 }
 
