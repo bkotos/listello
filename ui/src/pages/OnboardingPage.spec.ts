@@ -588,6 +588,59 @@ describe("OnboardingPage", () => {
               ).toBeInTheDocument();
               expect(button.closest(".onboarding-footer")).toBeInTheDocument();
             });
+
+            describe("when the Back button is clicked", () => {
+              beforeEach(() => {
+                fireEvent.click(screen.getByRole("button", { name: "Back" }));
+              });
+
+              describe("when the Continue button is clicked", () => {
+                beforeEach(() => {
+                  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+                });
+
+                it("renders a Create instance setup check in progress", () => {
+                  // Assert
+                  const label = screen.getByText("Create instance");
+                  expect(label).toHaveClass("setup-check-label");
+                  const row = label.closest(".setup-check");
+                  expect(row).not.toHaveClass("is-pending");
+                  expect(row).not.toHaveClass("is-done");
+                  const loader = row?.querySelector("svg.lucide-loader-circle");
+                  expect(loader).toBeInTheDocument();
+                  expect(loader).toHaveClass("spin");
+                });
+
+                it("renders a Prepare SQLite store setup check as pending", () => {
+                  // Assert
+                  const label = screen.getByText("Prepare SQLite store");
+                  expect(label).toHaveClass("setup-check-label");
+                  const row = label.closest(".setup-check");
+                  expect(row).toHaveClass("is-pending");
+                  expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
+                });
+
+                it("renders an Initialize persistence setup check as pending", () => {
+                  // Assert
+                  const label = screen.getByText("Initialize persistence");
+                  expect(label).toHaveClass("setup-check-label");
+                  const row = label.closest(".setup-check");
+                  expect(row).toHaveClass("is-pending");
+                  expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
+                });
+
+                it("renders a disabled Continue button", () => {
+                  // Assert
+                  const button = screen.getByRole("button", { name: "Continue" });
+                  expect(button).toHaveClass("button", "is-primary", "footer-grow");
+                  expect(button).toBeDisabled();
+                  expect(
+                    button.querySelector("svg.lucide-arrow-right"),
+                  ).toBeInTheDocument();
+                  expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+                });
+              });
+            });
           });
         });
       });

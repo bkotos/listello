@@ -71,12 +71,13 @@ export function InitializeStep({ onComplete }: InitializeStepProps) {
 
 type InitializeFooterProps = {
   continueEnabled: boolean;
+  onBack: () => void;
 };
 
-export function InitializeFooter({ continueEnabled }: InitializeFooterProps) {
+export function InitializeFooter({ continueEnabled, onBack }: InitializeFooterProps) {
   return (
     <>
-      <button type="button" className="button is-light">
+      <button type="button" className="button is-light" onClick={onBack}>
         <span className="icon">
           <ArrowLeft size={18} />
         </span>

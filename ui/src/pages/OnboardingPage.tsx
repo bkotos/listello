@@ -38,6 +38,11 @@ function OnboardingPage() {
     setInitializeComplete(true);
   }, []);
 
+  function handleInitializeBack() {
+    setInitializeComplete(false);
+    setStep(OnboardingStep.Step3DataDirectory);
+  }
+
   async function handleCreateInstance() {
     await createInstance();
     setStep(OnboardingStep.Step2Hosting);
@@ -139,7 +144,10 @@ function OnboardingPage() {
           />
         )}
         {isStep4Initialize && (
-          <InitializeFooter continueEnabled={initializeComplete} />
+          <InitializeFooter
+            continueEnabled={initializeComplete}
+            onBack={handleInitializeBack}
+          />
         )}
       </footer>
     </div>
