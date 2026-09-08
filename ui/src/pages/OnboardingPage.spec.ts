@@ -559,6 +559,36 @@ describe("OnboardingPage", () => {
             expect(loader).toBeInTheDocument();
             expect(loader).toHaveClass("spin");
           });
+
+          describe("after another 500ms", () => {
+            beforeEach(() => {
+              act(() => {
+                vi.advanceTimersByTime(500);
+              });
+            });
+
+            it("renders an Initialize persistence setup check as done", () => {
+              // Assert
+              const label = screen.getByText("Initialize persistence");
+              expect(label).toHaveClass("setup-check-label");
+              const row = label.closest(".setup-check");
+              expect(row).toHaveClass("is-done");
+              expect(
+                row?.querySelector("svg.lucide-circle-check"),
+              ).toBeInTheDocument();
+            });
+
+            it("enables the Continue button", () => {
+              // Assert
+              const button = screen.getByRole("button", { name: "Continue" });
+              expect(button).toHaveClass("button", "is-primary", "footer-grow");
+              expect(button).toBeEnabled();
+              expect(
+                button.querySelector("svg.lucide-arrow-right"),
+              ).toBeInTheDocument();
+              expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+            });
+          });
         });
       });
     });

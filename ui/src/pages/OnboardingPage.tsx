@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Check } from "lucide-react";
 import { createInstance } from "../lib/api/instance-client";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
@@ -32,6 +32,11 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
 function OnboardingPage() {
   const [step, setStep] = useState(OnboardingStep.Step1Welcome);
   const [hostingMode, setHostingMode] = useState(HostingMode.Local);
+  const [initializeComplete, setInitializeComplete] = useState(false);
+
+  const handleInitializeComplete = useCallback(() => {
+    setInitializeComplete(true);
+  }, []);
 
   async function handleCreateInstance() {
     await createInstance();
@@ -111,7 +116,9 @@ function OnboardingPage() {
             />
           )}
           {isStep3DataDirectory && <DataDirectoryStep />}
-          {isStep4Initialize && <InitializeStep />}
+          {isStep4Initialize && (
+            <InitializeStep onComplete={handleInitializeComplete} />
+          )}
         </div>
       </div>
 
@@ -131,7 +138,9 @@ function OnboardingPage() {
             onContinue={() => setStep(OnboardingStep.Step4Initialize)}
           />
         )}
-        {isStep4Initialize && <InitializeFooter />}
+        {isStep4Initialize && (
+          <InitializeFooter continueEnabled={initializeComplete} />
+        )}
       </footer>
     </div>
   );

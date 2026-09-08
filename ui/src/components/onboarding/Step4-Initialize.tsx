@@ -7,7 +7,11 @@ const checks = [
   "Initialize persistence",
 ];
 
-export function InitializeStep() {
+type InitializeStepProps = {
+  onComplete: () => void;
+};
+
+export function InitializeStep({ onComplete }: InitializeStepProps) {
   const [doneCount, setDoneCount] = useState(0);
 
   useEffect(() => {
@@ -17,11 +21,16 @@ export function InitializeStep() {
     const second = setTimeout(() => {
       setDoneCount(2);
     }, 1000);
+    const third = setTimeout(() => {
+      setDoneCount(3);
+      onComplete();
+    }, 1500);
     return () => {
       clearTimeout(first);
       clearTimeout(second);
+      clearTimeout(third);
     };
-  }, []);
+  }, [onComplete]);
 
   return (
     <div>
@@ -60,7 +69,11 @@ export function InitializeStep() {
   );
 }
 
-export function InitializeFooter() {
+type InitializeFooterProps = {
+  continueEnabled: boolean;
+};
+
+export function InitializeFooter({ continueEnabled }: InitializeFooterProps) {
   return (
     <>
       <button type="button" className="button is-light">
@@ -69,7 +82,11 @@ export function InitializeFooter() {
         </span>
         <span>Back</span>
       </button>
-      <button type="button" className="button is-primary footer-grow" disabled>
+      <button
+        type="button"
+        className="button is-primary footer-grow"
+        disabled={!continueEnabled}
+      >
         <span>Continue</span>
         <span className="icon">
           <ArrowRight size={18} />
