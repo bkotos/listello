@@ -11,10 +11,16 @@ export function InitializeStep() {
   const [doneCount, setDoneCount] = useState(0);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const first = setTimeout(() => {
       setDoneCount(1);
     }, 500);
-    return () => clearTimeout(timer);
+    const second = setTimeout(() => {
+      setDoneCount(2);
+    }, 1000);
+    return () => {
+      clearTimeout(first);
+      clearTimeout(second);
+    };
   }, []);
 
   return (
