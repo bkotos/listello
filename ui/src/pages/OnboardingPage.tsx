@@ -33,6 +33,7 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
 function OnboardingPage() {
   const [step, setStep] = useState(OnboardingStep.Step1Welcome);
   const [hostingMode, setHostingMode] = useState(HostingMode.Local);
+  const [dataDirectory, setDataDirectory] = useState(defaultDataDirectory);
   const [initializeComplete, setInitializeComplete] = useState(false);
 
   const handleInitializeComplete = useCallback(() => {
@@ -56,8 +57,8 @@ function OnboardingPage() {
     }
   }
 
-  async function handleDataDirectoryContinue() {
-    await selectPersistenceLocation({ location: defaultDataDirectory });
+  function handleDataDirectoryContinue() {
+    void selectPersistenceLocation({ location: dataDirectory });
     setStep(OnboardingStep.Step4Initialize);
   }
 
@@ -127,7 +128,12 @@ function OnboardingPage() {
               onSelectHostingMode={setHostingMode}
             />
           )}
-          {isStep3DataDirectory && <DataDirectoryStep />}
+          {isStep3DataDirectory && (
+            <DataDirectoryStep
+              value={dataDirectory}
+              onChange={setDataDirectory}
+            />
+          )}
           {isStep4Initialize && (
             <InitializeStep onComplete={handleInitializeComplete} />
           )}

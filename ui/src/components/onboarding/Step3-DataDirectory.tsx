@@ -3,7 +3,12 @@ import { ArrowLeft, ArrowRight, Folder } from "lucide-react";
 export const defaultDataDirectory =
   "/Users/jdoe/Library/Application Support/listello";
 
-export function DataDirectoryStep() {
+type DataDirectoryStepProps = {
+  value: string;
+  onChange: (value: string) => void;
+};
+
+export function DataDirectoryStep({ value, onChange }: DataDirectoryStepProps) {
   return (
     <div>
       <p className="step-eyebrow">Instance · Local</p>
@@ -22,7 +27,8 @@ export function DataDirectoryStep() {
               className="input"
               type="text"
               placeholder="~/listello"
-              defaultValue={defaultDataDirectory}
+              value={value}
+              onChange={(event) => onChange(event.target.value)}
             />
             <span className="icon is-small is-left">
               <Folder size={16} />

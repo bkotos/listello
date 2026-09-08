@@ -487,6 +487,27 @@ describe("OnboardingPage", () => {
         });
       });
 
+      describe("when the Data directory field is changed", () => {
+        beforeEach(() => {
+          fireEvent.change(screen.getByLabelText("Data directory"), {
+            target: { value: "/tmp/listello" },
+          });
+        });
+
+        it("calls selectPersistenceLocation with the updated location when Continue is clicked", () => {
+          // Arrange
+          vi.mocked(selectPersistenceLocation).mockResolvedValue(createdInstance);
+
+          // Act
+          fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+          // Assert
+          expect(selectPersistenceLocation).toHaveBeenCalledWith({
+            location: "/tmp/listello",
+          });
+        });
+      });
+
       describe("when the Back button is clicked", () => {
         beforeEach(async () => {
           fireEvent.click(screen.getByRole("button", { name: "Back" }));
