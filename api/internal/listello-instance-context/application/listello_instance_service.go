@@ -94,6 +94,9 @@ func (s *listelloInstanceService) SelectPersistenceLocation(location string) (do
 	if err != nil {
 		return domain.ListelloInstance{}, err
 	}
+	if err := s.persistenceAdapter.InitializePersistenceLocation(location); err != nil {
+		return domain.ListelloInstance{}, err
+	}
 	if err := s.listelloInstanceRepository.Save(*instance); err != nil {
 		return domain.ListelloInstance{}, err
 	}
