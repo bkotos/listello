@@ -1,6 +1,22 @@
-import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, CircleCheck, LoaderCircle } from "lucide-react";
+
+const checks = [
+  "Create instance",
+  "Prepare SQLite store",
+  "Initialize persistence",
+];
 
 export function InitializeStep() {
+  const [doneCount, setDoneCount] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDoneCount(1);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div>
       <p className="step-eyebrow">Instance · Initialize</p>
@@ -11,24 +27,27 @@ export function InitializeStep() {
       </p>
       <div className="step-content">
         <div>
-          <div className="setup-check">
-            <span className="setup-check-status">
-              <LoaderCircle size={18} className="spin" />
-            </span>
-            <span className="setup-check-label">Create instance</span>
-          </div>
-          <div className="setup-check is-pending">
-            <span className="setup-check-status">
-              <span className="check-toggle" style={{ width: 16, height: 16 }} />
-            </span>
-            <span className="setup-check-label">Prepare SQLite store</span>
-          </div>
-          <div className="setup-check is-pending">
-            <span className="setup-check-status">
-              <span className="check-toggle" style={{ width: 16, height: 16 }} />
-            </span>
-            <span className="setup-check-label">Initialize persistence</span>
-          </div>
+          {checks.map((label, i) => {
+            const done = i < doneCount;
+            const active = i === doneCount;
+            return (
+              <div
+                key={label}
+                className={`setup-check${done ? " is-done" : active ? "" : " is-pending"}`}
+              >
+                <span className="setup-check-status">
+                  {done ? (
+                    <CircleCheck size={18} />
+                  ) : active ? (
+                    <LoaderCircle size={18} className="spin" />
+                  ) : (
+                    <span className="check-toggle" style={{ width: 16, height: 16 }} />
+                  )}
+                </span>
+                <span className="setup-check-label">{label}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
