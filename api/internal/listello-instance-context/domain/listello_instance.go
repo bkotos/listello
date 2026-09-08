@@ -15,6 +15,16 @@ const (
 	HostingModeStandaloneWeb HostingMode = "standalone-web"
 )
 
+// IsValid reports whether the hosting mode is a supported value.
+func (m HostingMode) IsValid() bool {
+	switch m {
+	case HostingModeLocal, HostingModeStandaloneWeb:
+		return true
+	default:
+		return false
+	}
+}
+
 // PersistenceState is whether instance persistence has been initialized.
 type PersistenceState string
 
@@ -48,7 +58,7 @@ func CreateInstance() (ListelloInstance, Event, error) {
 
 // SelectHostingMode sets the instance hosting mode and raises a HostingModeSelected event.
 func (i *ListelloInstance) SelectHostingMode(mode HostingMode) (Event, error) {
-	if mode != HostingModeLocal && mode != HostingModeStandaloneWeb {
+	if !mode.IsValid() {
 		return Event{}, fmt.Errorf("hosting mode is not supported")
 	}
 	i.HostingMode = mode
