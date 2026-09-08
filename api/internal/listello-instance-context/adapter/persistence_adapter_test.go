@@ -11,14 +11,14 @@ import (
 	adapter "github.com/bkotos/listello/internal/listello-instance-context/adapter"
 )
 
-func TestFilesystemPersistenceLocationObserver_ObservePersistenceLocation_ReportsUsableParentAndMissingLocation(t *testing.T) {
+func TestFilesystemPersistenceAdapter_ObservePersistenceLocation_ReportsUsableParentAndMissingLocation(t *testing.T) {
 	// Arrange
 	parent := t.TempDir()
 	location := filepath.Join(parent, "listello")
-	observer := adapter.NewFilesystemPersistenceLocationObserver()
+	persistence := adapter.NewFilesystemPersistenceAdapter()
 
 	// Act
-	observation, err := observer.ObservePersistenceLocation(location)
+	observation, err := persistence.ObservePersistenceLocation(location)
 
 	// Assert
 	require.NoError(t, err)
@@ -29,28 +29,28 @@ func TestFilesystemPersistenceLocationObserver_ObservePersistenceLocation_Report
 	assert.ErrorIs(t, statErr, os.ErrNotExist)
 }
 
-func TestFilesystemPersistenceLocationObserver_ObservePersistenceLocation_ReportsParentDoesNotExist(t *testing.T) {
+func TestFilesystemPersistenceAdapter_ObservePersistenceLocation_ReportsParentDoesNotExist(t *testing.T) {
 	// Arrange
 	location := filepath.Join(t.TempDir(), "missing-parent", "listello")
-	observer := adapter.NewFilesystemPersistenceLocationObserver()
+	persistence := adapter.NewFilesystemPersistenceAdapter()
 
 	// Act
-	observation, err := observer.ObservePersistenceLocation(location)
+	observation, err := persistence.ObservePersistenceLocation(location)
 
 	// Assert
 	require.NoError(t, err)
 	assert.False(t, observation.DoesParentExist())
 }
 
-func TestFilesystemPersistenceLocationObserver_ObservePersistenceLocation_ReportsLocationExists(t *testing.T) {
+func TestFilesystemPersistenceAdapter_ObservePersistenceLocation_ReportsLocationExists(t *testing.T) {
 	// Arrange
 	parent := t.TempDir()
 	location := filepath.Join(parent, "listello")
 	require.NoError(t, os.Mkdir(location, 0o755))
-	observer := adapter.NewFilesystemPersistenceLocationObserver()
+	persistence := adapter.NewFilesystemPersistenceAdapter()
 
 	// Act
-	observation, err := observer.ObservePersistenceLocation(location)
+	observation, err := persistence.ObservePersistenceLocation(location)
 
 	// Assert
 	require.NoError(t, err)
@@ -58,16 +58,16 @@ func TestFilesystemPersistenceLocationObserver_ObservePersistenceLocation_Report
 	assert.True(t, observation.DoesLocationExist())
 }
 
-func TestFilesystemPersistenceLocationObserver_ObservePersistenceLocation_ReportsParentNotWritable(t *testing.T) {
+func TestFilesystemPersistenceAdapter_ObservePersistenceLocation_ReportsParentNotWritable(t *testing.T) {
 	// Arrange
 	parent := t.TempDir()
 	require.NoError(t, os.Chmod(parent, 0o555))
 	t.Cleanup(func() { _ = os.Chmod(parent, 0o755) })
 	location := filepath.Join(parent, "listello")
-	observer := adapter.NewFilesystemPersistenceLocationObserver()
+	persistence := adapter.NewFilesystemPersistenceAdapter()
 
 	// Act
-	observation, err := observer.ObservePersistenceLocation(location)
+	observation, err := persistence.ObservePersistenceLocation(location)
 
 	// Assert
 	require.NoError(t, err)
@@ -75,14 +75,14 @@ func TestFilesystemPersistenceLocationObserver_ObservePersistenceLocation_Report
 	assert.False(t, observation.IsParentWritable())
 }
 
-func TestFilesystemPersistenceLocationObserver_InitializePersistenceLocation_CreatesLocation(t *testing.T) {
+func TestFilesystemPersistenceAdapter_InitializePersistenceLocation_CreatesLocation(t *testing.T) {
 	// Arrange
 	parent := t.TempDir()
 	location := filepath.Join(parent, "listello")
-	observer := adapter.NewFilesystemPersistenceLocationObserver()
+	persistence := adapter.NewFilesystemPersistenceAdapter()
 
 	// Act
-	err := observer.InitializePersistenceLocation(location)
+	err := persistence.InitializePersistenceLocation(location)
 
 	// Assert
 	require.NoError(t, err)

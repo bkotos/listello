@@ -9,18 +9,18 @@ import (
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 )
 
-// FilesystemPersistenceLocationObserver observes persistence locations on the local filesystem.
-type FilesystemPersistenceLocationObserver struct{}
+// FilesystemPersistenceAdapter observes persistence locations on the local filesystem.
+type FilesystemPersistenceAdapter struct{}
 
-var _ application.PersistenceAdapter = (*FilesystemPersistenceLocationObserver)(nil)
+var _ application.PersistenceAdapter = (*FilesystemPersistenceAdapter)(nil)
 
-// NewFilesystemPersistenceLocationObserver returns a filesystem persistence location observer.
-func NewFilesystemPersistenceLocationObserver() *FilesystemPersistenceLocationObserver {
-	return &FilesystemPersistenceLocationObserver{}
+// NewFilesystemPersistenceAdapter returns a filesystem persistence adapter.
+func NewFilesystemPersistenceAdapter() *FilesystemPersistenceAdapter {
+	return &FilesystemPersistenceAdapter{}
 }
 
 // ObservePersistenceLocation reports whether the parent directory exists and is writable, and whether the location already exists.
-func (o *FilesystemPersistenceLocationObserver) ObservePersistenceLocation(persistenceLocation string) (domain.PersistenceLocationObservation, error) {
+func (a *FilesystemPersistenceAdapter) ObservePersistenceLocation(persistenceLocation string) (domain.PersistenceLocationObservation, error) {
 	parent, err := inspect(filepath.Dir(persistenceLocation))
 	if err != nil {
 		return domain.PersistenceLocationObservation{}, err
@@ -38,7 +38,7 @@ func (o *FilesystemPersistenceLocationObserver) ObservePersistenceLocation(persi
 }
 
 // InitializePersistenceLocation initializes a persistence location on the filesystem.
-func (o *FilesystemPersistenceLocationObserver) InitializePersistenceLocation(persistenceLocation string) error {
+func (a *FilesystemPersistenceAdapter) InitializePersistenceLocation(persistenceLocation string) error {
 	if err := os.Mkdir(persistenceLocation, 0o755); err != nil {
 		return fmt.Errorf("initialize persistence location: %w", err)
 	}
