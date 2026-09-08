@@ -14,10 +14,10 @@ import OnboardingPage from "./OnboardingPage";
 vi.mock("../lib/api/instance-client", () => ({
   createInstance: vi.fn(),
   getInstance: vi.fn(),
-  selectPersistenceLocation: vi.fn(),
+  selectHostingMode: vi.fn(),
 }));
 
-import { createInstance, selectPersistenceLocation } from "../lib/api/instance-client";
+import { createInstance, selectHostingMode } from "../lib/api/instance-client";
 
 const createdInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -366,16 +366,16 @@ describe("OnboardingPage", () => {
       expect(button.closest(".onboarding-footer")).toBeInTheDocument();
     });
 
-    it("calls selectPersistenceLocation with local when Continue is clicked", () => {
+    it("calls selectHostingMode with local when Continue is clicked", () => {
       // Arrange
-      vi.mocked(selectPersistenceLocation).mockResolvedValue(createdInstance);
+      vi.mocked(selectHostingMode).mockResolvedValue(createdInstance);
 
       // Act
       fireEvent.click(screen.getByRole("button", { name: "Continue" }));
 
       // Assert
-      expect(selectPersistenceLocation).toHaveBeenCalledWith({
-        location: "local",
+      expect(selectHostingMode).toHaveBeenCalledWith({
+        mode: "local",
       });
     });
 

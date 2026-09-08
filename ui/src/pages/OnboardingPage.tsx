@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Check } from "lucide-react";
-import { createInstance, selectPersistenceLocation } from "../lib/api/instance-client";
+import { createInstance, selectHostingMode } from "../lib/api/instance-client";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
   DataDirectoryFooter,
@@ -50,7 +50,7 @@ function OnboardingPage() {
 
   async function handleHostingContinue() {
     if (hostingMode === HostingMode.Local) {
-      await selectPersistenceLocation({ location: hostingMode });
+      await selectHostingMode({ mode: hostingMode });
       setStep(OnboardingStep.Step3DataDirectory);
     }
   }
