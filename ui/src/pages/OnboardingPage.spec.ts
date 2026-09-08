@@ -15,9 +15,10 @@ vi.mock("../lib/api/instance-client", () => ({
   createInstance: vi.fn(),
   getInstance: vi.fn(),
   selectHostingMode: vi.fn(),
+  selectPersistenceLocation: vi.fn(),
 }));
 
-import { createInstance, selectHostingMode } from "../lib/api/instance-client";
+import { createInstance, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
 
 const createdInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -471,6 +472,19 @@ describe("OnboardingPage", () => {
           "Logs, the SQLite database, and config are stored here.",
         );
         expect(help).toHaveClass("help");
+      });
+
+      it("calls selectPersistenceLocation when Continue is clicked", () => {
+        // Arrange
+        vi.mocked(selectPersistenceLocation).mockResolvedValue(createdInstance);
+
+        // Act
+        fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+        // Assert
+        expect(selectPersistenceLocation).toHaveBeenCalledWith({
+          location: "/Users/jdoe/Library/Application Support/listello",
+        });
       });
 
       describe("when the Back button is clicked", () => {

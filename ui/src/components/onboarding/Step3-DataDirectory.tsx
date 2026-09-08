@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, Folder } from "lucide-react";
 
-const defaultDataDirectory =
+export const defaultDataDirectory =
   "/Users/jdoe/Library/Application Support/listello";
 
 export function DataDirectoryStep() {

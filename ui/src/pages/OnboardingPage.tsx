@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react";
 import { Check } from "lucide-react";
-import { createInstance, selectHostingMode } from "../lib/api/instance-client";
+import { createInstance, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
   DataDirectoryFooter,
   DataDirectoryStep,
+  defaultDataDirectory,
 } from "../components/onboarding/Step3-DataDirectory";
 import { InitializeFooter, InitializeStep } from "../components/onboarding/Step4-Initialize";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
@@ -53,6 +54,11 @@ function OnboardingPage() {
       await selectHostingMode({ mode: hostingMode });
       setStep(OnboardingStep.Step3DataDirectory);
     }
+  }
+
+  async function handleDataDirectoryContinue() {
+    await selectPersistenceLocation({ location: defaultDataDirectory });
+    setStep(OnboardingStep.Step4Initialize);
   }
 
   const isStep1Welcome = step === OnboardingStep.Step1Welcome;
@@ -141,7 +147,7 @@ function OnboardingPage() {
         {isStep3DataDirectory && (
           <DataDirectoryFooter
             onBack={() => setStep(OnboardingStep.Step2Hosting)}
-            onContinue={() => setStep(OnboardingStep.Step4Initialize)}
+            onContinue={handleDataDirectoryContinue}
           />
         )}
         {isStep4Initialize && (
