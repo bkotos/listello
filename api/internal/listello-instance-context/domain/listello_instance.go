@@ -7,40 +7,6 @@ import (
 	"github.com/bkotos/listello/internal/util"
 )
 
-// HostingMode is how a Listello instance is hosted.
-type HostingMode string
-
-const (
-	HostingModeLocal         HostingMode = "local"
-	HostingModeStandaloneWeb HostingMode = "standalone-web"
-)
-
-// IsValid reports whether the hosting mode is a supported value.
-func (m HostingMode) IsValid() bool {
-	switch m {
-	case HostingModeLocal, HostingModeStandaloneWeb:
-		return true
-	default:
-		return false
-	}
-}
-
-// PersistenceState is whether instance persistence has been initialized.
-type PersistenceState string
-
-const (
-	PersistenceUninitialized PersistenceState = "uninitialized"
-	PersistenceInitialized   PersistenceState = "initialized"
-)
-
-// SetupState is whether instance setup has been completed.
-type SetupState string
-
-const (
-	SetupIncomplete SetupState = "incomplete"
-	SetupCompleted  SetupState = "completed"
-)
-
 // ListelloInstance is a running Listello instance.
 type ListelloInstance struct {
 	ID                  string
@@ -63,43 +29,6 @@ func (i *ListelloInstance) SelectHostingMode(mode HostingMode) (Event, error) {
 	}
 	i.HostingMode = mode
 	return event.NewEvent(EventHostingModeSelected, EventMetadataHostingModeSelected{ID: i.ID, Mode: mode}, 1), nil
-}
-
-// PersistenceLocationObservation is the observed filesystem state of a persistence location.
-type PersistenceLocationObservation struct {
-	parentExists   bool
-	parentWritable bool
-	locationExists bool
-}
-
-// SetParentExists records whether the parent directory exists.
-func (o *PersistenceLocationObservation) SetParentExists(exists bool) {
-	o.parentExists = exists
-}
-
-// DoesParentExist reports whether the parent directory exists.
-func (o PersistenceLocationObservation) DoesParentExist() bool {
-	return o.parentExists
-}
-
-// SetParentWritable records whether the parent directory is writable.
-func (o *PersistenceLocationObservation) SetParentWritable(writable bool) {
-	o.parentWritable = writable
-}
-
-// IsParentWritable reports whether the parent directory is writable.
-func (o PersistenceLocationObservation) IsParentWritable() bool {
-	return o.parentWritable
-}
-
-// SetLocationExists records whether the persistence location already exists.
-func (o *PersistenceLocationObservation) SetLocationExists(exists bool) {
-	o.locationExists = exists
-}
-
-// DoesLocationExist reports whether the persistence location already exists.
-func (o PersistenceLocationObservation) DoesLocationExist() bool {
-	return o.locationExists
 }
 
 // SelectPersistenceLocation sets the instance persistence location and raises a LocalPersistenceLocationSelected event.
