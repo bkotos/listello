@@ -4,7 +4,7 @@ vi.mock("./util", () => ({
   request: vi.fn(),
 }));
 
-import { createInstance, getInstance } from "./instance-client";
+import { createInstance, getInstance, selectPersistenceLocation } from "./instance-client";
 import { request } from "./util";
 
 afterEach(() => {
@@ -61,5 +61,28 @@ describe("getInstance", () => {
 
     // Assert
     expect(result).toBeNull();
+  });
+});
+
+describe("selectPersistenceLocation", () => {
+  it("posts the persistence location to the API", async () => {
+    // Arrange
+    const instance = {
+      HostingMode: "local",
+      PersistenceLocation: "/var/listello",
+      PersistenceState: "",
+      SetupState: "",
+    };
+    vi.mocked(request).mockResolvedValue(instance);
+
+    // Act
+    const result = await selectPersistenceLocation({ location: "/var/listello" });
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/instance/persistence-location", {
+      method: "POST",
+      body: JSON.stringify({ location: "/var/listello" }),
+    });
+    expect(result).toEqual(instance);
   });
 });
