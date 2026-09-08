@@ -176,6 +176,10 @@ func (s *suiteState) selectingThePersistenceLocationShouldFailWithError(ctx cont
 	require.EqualError(godog.T(ctx), s.lastErr, message)
 }
 
+func (s *suiteState) selectingTheHostingModeShouldFailWithError(ctx context.Context, message string) {
+	require.EqualError(godog.T(ctx), s.lastErr, message)
+}
+
 func (s *suiteState) theUserInitializesPersistence(ctx context.Context) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
@@ -234,6 +238,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the instance should have an ID prefixed with "([^"]*)"$`, s.theInstanceShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the instance ID after the prefix "([^"]*)" should be a UUID$`, s.theInstanceIDAfterThePrefixShouldBeAUUID)
 	ctx.Step(`^the instance should have hosting mode "([^"]*)"$`, s.theInstanceShouldHaveHostingMode)
+	ctx.Step(`^selecting the hosting mode should fail with error "([^"]*)"$`, s.selectingTheHostingModeShouldFailWithError)
 	ctx.Step(`^the parent directory of "([^"]*)" exists$`, s.theParentDirectoryOfExists)
 	ctx.Step(`^the parent directory of "([^"]*)" is writable$`, s.theParentDirectoryOfIsWritable)
 	ctx.Step(`^the parent directory of "([^"]*)" does not exist$`, s.theParentDirectoryOfDoesNotExist)

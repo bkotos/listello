@@ -24,6 +24,11 @@ Feature: Create and set up a Listello instance
       | local          |
       | standalone-web |
 
+  Scenario: Selecting an unknown hosting mode fails
+    Given an instance exists
+    When the user selects hosting mode "cloud"
+    Then selecting the hosting mode should fail with error "hosting mode is not supported"
+
   Scenario: Selecting a persistence location for a local instance
     Given an instance exists
     And the user selects hosting mode "local"

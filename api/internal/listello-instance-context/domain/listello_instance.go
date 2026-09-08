@@ -48,6 +48,9 @@ func CreateInstance() (ListelloInstance, Event, error) {
 
 // SelectHostingMode sets the instance hosting mode and raises a HostingModeSelected event.
 func (i *ListelloInstance) SelectHostingMode(mode HostingMode) (Event, error) {
+	if mode != HostingModeLocal && mode != HostingModeStandaloneWeb {
+		return Event{}, fmt.Errorf("hosting mode is not supported")
+	}
 	i.HostingMode = mode
 	return event.NewEvent(EventHostingModeSelected, EventMetadataHostingModeSelected{ID: i.ID, Mode: mode}, 1), nil
 }
