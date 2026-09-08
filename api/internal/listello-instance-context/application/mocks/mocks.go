@@ -144,6 +144,66 @@ func (_c *MockListelloInstanceService_GetInstance_Call) RunAndReturn(run func() 
 	return _c
 }
 
+// SelectHostingMode provides a mock function for the type MockListelloInstanceService
+func (_mock *MockListelloInstanceService) SelectHostingMode(mode domain.HostingMode) (domain.ListelloInstance, error) {
+	ret := _mock.Called(mode)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SelectHostingMode")
+	}
+
+	var r0 domain.ListelloInstance
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(domain.HostingMode) (domain.ListelloInstance, error)); ok {
+		return returnFunc(mode)
+	}
+	if returnFunc, ok := ret.Get(0).(func(domain.HostingMode) domain.ListelloInstance); ok {
+		r0 = returnFunc(mode)
+	} else {
+		r0 = ret.Get(0).(domain.ListelloInstance)
+	}
+	if returnFunc, ok := ret.Get(1).(func(domain.HostingMode) error); ok {
+		r1 = returnFunc(mode)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockListelloInstanceService_SelectHostingMode_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SelectHostingMode'
+type MockListelloInstanceService_SelectHostingMode_Call struct {
+	*mock.Call
+}
+
+// SelectHostingMode is a helper method to define mock.On call
+//   - mode domain.HostingMode
+func (_e *MockListelloInstanceService_Expecter) SelectHostingMode(mode any) *MockListelloInstanceService_SelectHostingMode_Call {
+	return &MockListelloInstanceService_SelectHostingMode_Call{Call: _e.mock.On("SelectHostingMode", mode)}
+}
+
+func (_c *MockListelloInstanceService_SelectHostingMode_Call) Run(run func(mode domain.HostingMode)) *MockListelloInstanceService_SelectHostingMode_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 domain.HostingMode
+		if args[0] != nil {
+			arg0 = args[0].(domain.HostingMode)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockListelloInstanceService_SelectHostingMode_Call) Return(listelloInstance domain.ListelloInstance, err error) *MockListelloInstanceService_SelectHostingMode_Call {
+	_c.Call.Return(listelloInstance, err)
+	return _c
+}
+
+func (_c *MockListelloInstanceService_SelectHostingMode_Call) RunAndReturn(run func(mode domain.HostingMode) (domain.ListelloInstance, error)) *MockListelloInstanceService_SelectHostingMode_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SelectPersistenceLocation provides a mock function for the type MockListelloInstanceService
 func (_mock *MockListelloInstanceService) SelectPersistenceLocation(location string) (domain.ListelloInstance, error) {
 	ret := _mock.Called(location)

@@ -96,6 +96,65 @@ func TestListelloInstanceService_GetInstance_ReturnsNullWhenNotExists(t *testing
 	assert.Nil(t, received)
 }
 
+func TestListelloInstanceService_SelectHostingMode_PersistsInstance(t *testing.T) {
+	// Arrange
+	instance := domain.ListelloInstance{ID: "LI_1"}
+	repo := NewMockListelloInstanceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceLocationObserver(t), publisher)
+
+	repo.EXPECT().
+		Get().
+		Return(&instance, nil)
+	repo.EXPECT().
+		Save(mock.MatchedBy(func(saved domain.ListelloInstance) bool {
+			return saved.HostingMode == domain.HostingModeLocal
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil)
+
+	// Act
+	_, err := svc.SelectHostingMode(domain.HostingModeLocal)
+
+	// Assert
+	require.NoError(t, err)
+}
+
+func TestListelloInstanceService_SelectHostingMode_PublishesEvent(t *testing.T) {
+	// Arrange
+	instance := domain.ListelloInstance{ID: "LI_1"}
+	repo := NewMockListelloInstanceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceLocationObserver(t), publisher)
+
+	var published domain.Event
+	repo.EXPECT().
+		Get().
+		Return(&instance, nil)
+	repo.EXPECT().
+		Save(mock.AnythingOfType("domain.ListelloInstance")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			_, ok := event.Metadata.(domain.EventMetadataHostingModeSelected)
+			return event.Name == domain.EventHostingModeSelected && ok
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.SelectHostingMode(domain.HostingModeLocal)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataHostingModeSelected)
+	require.True(t, ok)
+	assert.Equal(t, domain.HostingModeLocal, metadata.Mode)
+	assert.NotEmpty(t, published.Timestamp)
+}
+
 func TestListelloInstanceService_SelectPersistenceLocation_PersistsInstance(t *testing.T) {
 	// Arrange
 	const location = "/var/listello"
