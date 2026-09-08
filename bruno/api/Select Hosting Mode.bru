@@ -1,0 +1,20 @@
+meta {
+  name: Select Hosting Mode
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{apiBase}}/api/instance/hosting-mode
+  body: json
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "mode": "local"
+  }
+}

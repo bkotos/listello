@@ -25,6 +25,7 @@ func newAPIServer(listService application.ListService, itemService application.I
 	mux.HandleFunc("DELETE /api/items/{id}", handlers.DeleteItem(itemService))
 	mux.HandleFunc("GET /api/instance", instancehandlers.GetInstance(instanceService))
 	mux.HandleFunc("POST /api/instance", instancehandlers.CreateInstance(instanceService))
+	mux.HandleFunc("POST /api/instance/hosting-mode", instancehandlers.SelectHostingMode(instanceService))
 	mux.HandleFunc("POST /api/instance/persistence-location", instancehandlers.SelectPersistenceLocation(instanceService))
 	return mux
 }

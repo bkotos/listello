@@ -10,6 +10,12 @@ export interface SelectPersistenceLocationRequest {
   location: string;
 }
 /**
+ * SelectHostingModeRequest is the HTTP request body for selecting a hosting mode.
+ */
+export interface SelectHostingModeRequest {
+  mode: string;
+}
+/**
  * ListelloInstanceResponse is the HTTP representation of a Listello instance.
  */
 export interface ListelloInstanceResponse {
