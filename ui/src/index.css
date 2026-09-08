@@ -483,6 +483,20 @@ body {
   color: hsl(0deg 0% 30%);
 }
 
+.setup-check.is-pending .setup-check-label {
+  color: hsl(0deg 0% 60%);
+}
+
+.spin {
+  animation: onb-spin 0.9s linear infinite;
+}
+
+@keyframes onb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .onboarding-footer {
   flex-shrink: 0;
   display: flex;

@@ -6,15 +6,20 @@ import {
   DataDirectoryFooter,
   DataDirectoryStep,
 } from "../components/onboarding/Step3-DataDirectory";
+import { InitializeFooter, InitializeStep } from "../components/onboarding/Step4-Initialize";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 enum OnboardingStep {
   Step1Welcome = "step1-welcome",
   Step2Hosting = "step2-hosting",
   Step3DataDirectory = "step3-data-directory",
+  Step4Initialize = "step4-initialize",
 }
 
 function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): string {
+  if (step === OnboardingStep.Step4Initialize) {
+    return "100%";
+  }
   if (step === OnboardingStep.Step3DataDirectory) {
     return "75%";
   }
@@ -42,6 +47,7 @@ function OnboardingPage() {
   const isStep1Welcome = step === OnboardingStep.Step1Welcome;
   const isStep2Hosting = step === OnboardingStep.Step2Hosting;
   const isStep3DataDirectory = step === OnboardingStep.Step3DataDirectory;
+  const isStep4Initialize = step === OnboardingStep.Step4Initialize;
   const instanceFill = instancePhaseFill(step, hostingMode);
 
   return (
@@ -105,6 +111,7 @@ function OnboardingPage() {
             />
           )}
           {isStep3DataDirectory && <DataDirectoryStep />}
+          {isStep4Initialize && <InitializeStep />}
         </div>
       </div>
 
@@ -119,8 +126,12 @@ function OnboardingPage() {
           />
         )}
         {isStep3DataDirectory && (
-          <DataDirectoryFooter onBack={() => setStep(OnboardingStep.Step2Hosting)} />
+          <DataDirectoryFooter
+            onBack={() => setStep(OnboardingStep.Step2Hosting)}
+            onContinue={() => setStep(OnboardingStep.Step4Initialize)}
+          />
         )}
+        {isStep4Initialize && <InitializeFooter />}
       </footer>
     </div>
   );

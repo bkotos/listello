@@ -37,9 +37,10 @@ export function DataDirectoryStep() {
 
 type DataDirectoryFooterProps = {
   onBack: () => void;
+  onContinue: () => void;
 };
 
-export function DataDirectoryFooter({ onBack }: DataDirectoryFooterProps) {
+export function DataDirectoryFooter({ onBack, onContinue }: DataDirectoryFooterProps) {
   return (
     <>
       <button type="button" className="button is-light" onClick={onBack}>
@@ -48,7 +49,7 @@ export function DataDirectoryFooter({ onBack }: DataDirectoryFooterProps) {
         </span>
         <span>Back</span>
       </button>
-      <button type="button" className="button is-primary footer-grow">
+      <button type="button" className="button is-primary footer-grow" onClick={onContinue}>
         <span>Continue</span>
         <span className="icon">
           <ArrowRight size={18} />

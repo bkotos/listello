@@ -390,6 +390,104 @@ describe("OnboardingPage", () => {
           expect(heading).toHaveClass("step-title", "text-balance");
         });
       });
+
+      describe("when the Continue button is clicked", () => {
+        beforeEach(async () => {
+          fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+          await waitFor(() => {
+            expect(
+              screen.getByRole("heading", { name: "Setting up persistence" }),
+            ).toBeInTheDocument();
+          });
+        });
+
+        it("renders the Setting up persistence heading", () => {
+          // Assert
+          const heading = screen.getByRole("heading", {
+            name: "Setting up persistence",
+          });
+          expect(heading).toHaveClass("step-title", "text-balance");
+        });
+
+        it("renders the Instance · Initialize eyebrow", () => {
+          // Assert
+          const eyebrow = screen.getByText("Instance · Initialize");
+          expect(eyebrow).toHaveClass("step-eyebrow");
+        });
+
+        it("renders the initialize lead", () => {
+          // Assert
+          const lead = screen.getByText(/We're initializing the/);
+          expect(lead).toHaveClass("step-lead", "text-pretty");
+          expect(lead).toHaveTextContent(
+            "We're initializing the SQLite store for your local instance.",
+          );
+          expect(lead.querySelector("strong")).toHaveTextContent("SQLite");
+          expect(lead.querySelectorAll("strong")[1]).toHaveTextContent("local");
+        });
+
+        it("renders the Instance phase fill at 100%", () => {
+          // Assert
+          const label = document.querySelector(
+            ".phase-seg.is-active .phase-seg-label",
+          );
+          expect(label).toHaveTextContent("Instance");
+          expect(
+            label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
+          ).toHaveStyle({
+            width: "100%",
+          });
+        });
+
+        it("renders a Create instance setup check in progress", () => {
+          // Assert
+          const label = screen.getByText("Create instance");
+          expect(label).toHaveClass("setup-check-label");
+          const row = label.closest(".setup-check");
+          expect(row).not.toHaveClass("is-pending");
+          expect(row).not.toHaveClass("is-done");
+          const loader = row?.querySelector("svg.lucide-loader-circle");
+          expect(loader).toBeInTheDocument();
+          expect(loader).toHaveClass("spin");
+        });
+
+        it("renders a Prepare SQLite store setup check as pending", () => {
+          // Assert
+          const label = screen.getByText("Prepare SQLite store");
+          expect(label).toHaveClass("setup-check-label");
+          const row = label.closest(".setup-check");
+          expect(row).toHaveClass("is-pending");
+          expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
+        });
+
+        it("renders an Initialize persistence setup check as pending", () => {
+          // Assert
+          const label = screen.getByText("Initialize persistence");
+          expect(label).toHaveClass("setup-check-label");
+          const row = label.closest(".setup-check");
+          expect(row).toHaveClass("is-pending");
+          expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
+        });
+
+        it("renders a Back button", () => {
+          // Assert
+          const back = screen.getByRole("button", { name: "Back" });
+          expect(back).toHaveClass("button", "is-light");
+          expect(back.querySelector("svg.lucide-arrow-left")).toBeInTheDocument();
+          expect(back.closest(".onboarding-footer")).toBeInTheDocument();
+        });
+
+        it("renders a disabled Continue button", () => {
+          // Assert
+          const button = screen.getByRole("button", { name: "Continue" });
+          expect(button).toHaveClass("button", "is-primary", "footer-grow");
+          expect(button).toBeDisabled();
+          expect(
+            button.querySelector("svg.lucide-arrow-right"),
+          ).toBeInTheDocument();
+          expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+        });
+      });
     });
 
     describe("when the Standalone Web choice card is clicked", () => {
