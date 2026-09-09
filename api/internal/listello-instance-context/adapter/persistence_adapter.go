@@ -37,6 +37,14 @@ func (a *FilesystemPersistenceAdapter) ObservePersistenceLocation(persistenceLoc
 	return observation, nil
 }
 
+// ProvisionStorage creates the persistence location directory.
+func (a *FilesystemPersistenceAdapter) ProvisionStorage(persistenceLocation string) error {
+	if err := os.Mkdir(persistenceLocation, 0o755); err != nil {
+		return fmt.Errorf("provision storage: %w", err)
+	}
+	return nil
+}
+
 type pathObservation struct {
 	exists   bool
 	writable bool

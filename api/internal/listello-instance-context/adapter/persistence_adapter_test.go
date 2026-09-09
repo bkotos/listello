@@ -58,6 +58,22 @@ func TestFilesystemPersistenceAdapter_ObservePersistenceLocation_ReportsLocation
 	assert.True(t, observation.DoesLocationExist())
 }
 
+func TestFilesystemPersistenceAdapter_ProvisionStorage_CreatesLocation(t *testing.T) {
+	// Arrange
+	parent := t.TempDir()
+	location := filepath.Join(parent, "listello")
+	persistence := adapter.NewFilesystemPersistenceAdapter()
+
+	// Act
+	err := persistence.ProvisionStorage(location)
+
+	// Assert
+	require.NoError(t, err)
+	info, statErr := os.Stat(location)
+	require.NoError(t, statErr)
+	assert.True(t, info.IsDir())
+}
+
 func TestFilesystemPersistenceAdapter_ObservePersistenceLocation_ReportsParentNotWritable(t *testing.T) {
 	// Arrange
 	parent := t.TempDir()
