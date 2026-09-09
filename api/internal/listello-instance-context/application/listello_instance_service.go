@@ -22,6 +22,7 @@ type ListelloInstanceService interface {
 	GetInstance() (*domain.ListelloInstance, error)
 	SelectHostingMode(mode domain.HostingMode) (domain.ListelloInstance, error)
 	SelectPersistenceLocation(location string) (domain.ListelloInstance, error)
+	InitializePersistence() (domain.ListelloInstance, error)
 }
 
 type listelloInstanceService struct {
@@ -95,6 +96,25 @@ func (s *listelloInstanceService) SelectPersistenceLocation(location string) (do
 		return domain.ListelloInstance{}, err
 	}
 	if err := s.persistenceAdapter.InitializePersistenceLocation(location); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.listelloInstanceRepository.Save(*instance); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	return *instance, nil
+}
+
+// InitializePersistence initializes persistence via the domain and persists it.
+func (s *listelloInstanceService) InitializePersistence() (domain.ListelloInstance, error) {
+	instance, err := s.listelloInstanceRepository.Get()
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	event, err := instance.InitializePersistence()
+	if err != nil {
 		return domain.ListelloInstance{}, err
 	}
 	if err := s.listelloInstanceRepository.Save(*instance); err != nil {

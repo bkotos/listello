@@ -265,6 +265,65 @@ func TestListelloInstanceService_SelectPersistenceLocation_PublishesEvent(t *tes
 	assert.NotEmpty(t, published.Timestamp)
 }
 
+func TestListelloInstanceService_InitializePersistence_PersistsInstance(t *testing.T) {
+	// Arrange
+	instance := domain.ListelloInstance{ID: "LI_1"}
+	repo := NewMockListelloInstanceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
+
+	repo.EXPECT().
+		Get().
+		Return(&instance, nil)
+	repo.EXPECT().
+		Save(mock.MatchedBy(func(saved domain.ListelloInstance) bool {
+			return saved.PersistenceState == domain.PersistenceInitialized
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil)
+
+	// Act
+	_, err := svc.InitializePersistence()
+
+	// Assert
+	require.NoError(t, err)
+}
+
+func TestListelloInstanceService_InitializePersistence_PublishesEvent(t *testing.T) {
+	// Arrange
+	instance := domain.ListelloInstance{ID: "LI_1"}
+	repo := NewMockListelloInstanceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
+
+	var published domain.Event
+	repo.EXPECT().
+		Get().
+		Return(&instance, nil)
+	repo.EXPECT().
+		Save(mock.AnythingOfType("domain.ListelloInstance")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			_, ok := event.Metadata.(domain.EventMetadataPersistenceInitialized)
+			return event.Name == domain.EventPersistenceInitialized && ok
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.InitializePersistence()
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataPersistenceInitialized)
+	require.True(t, ok)
+	assert.Equal(t, instance.ID, metadata.ID)
+	assert.NotEmpty(t, published.Timestamp)
+}
+
 func usablePersistenceLocationObservation() domain.PersistenceLocationObservation {
 	var observation domain.PersistenceLocationObservation
 	observation.SetParentExists(true)
