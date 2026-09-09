@@ -55,7 +55,6 @@ func (i ListelloInstance) isLocalHostingMode() bool {
 // InitializePersistence initializes persistence and raises a PersistenceInitialized event.
 func (i *ListelloInstance) InitializePersistence() (Event, error) {
 	i.Persistence.Initialize()
-	i.Persistence.InitializeLocalDatabase()
 	return event.NewEvent(EventPersistenceInitialized, EventMetadataPersistenceInitialized{ID: i.ID, Mode: i.HostingMode, Location: i.Persistence.Location}, 1), nil
 }
 
