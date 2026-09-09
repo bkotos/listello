@@ -19,8 +19,8 @@ func TestSelectPersistenceLocation(t *testing.T) {
 	// Arrange
 	const location = "/var/listello"
 	expected := domain.ListelloInstance{
-		HostingMode:         domain.HostingModeLocal,
-		PersistenceLocation: location,
+		HostingMode: domain.HostingModeLocal,
+		Persistence: domain.Persistence{Location: location},
 	}
 	instanceService := appmocks.NewMockListelloInstanceService(t)
 	instanceService.EXPECT().SelectPersistenceLocation(location).Return(expected, nil)
@@ -37,5 +37,5 @@ func TestSelectPersistenceLocation(t *testing.T) {
 
 	var received viewdto.ListelloInstanceResponse
 	require.NoError(t, json.NewDecoder(rec.Body).Decode(&received))
-	assert.Equal(t, expected.PersistenceLocation, received.PersistenceLocation)
+	assert.Equal(t, expected.Persistence.Location, received.PersistenceLocation)
 }

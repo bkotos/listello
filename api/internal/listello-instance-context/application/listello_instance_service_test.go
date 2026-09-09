@@ -173,7 +173,7 @@ func TestListelloInstanceService_SelectPersistenceLocation_PersistsInstance(t *t
 		Return(observation, nil)
 	repo.EXPECT().
 		Save(mock.MatchedBy(func(saved domain.ListelloInstance) bool {
-			return saved.PersistenceLocation == location
+			return saved.Persistence.Location == location
 		})).
 		Return(nil)
 	publisher.EXPECT().
@@ -238,7 +238,7 @@ func TestListelloInstanceService_InitializePersistence_PersistsInstance(t *testi
 		Return(&instance, nil)
 	repo.EXPECT().
 		Save(mock.MatchedBy(func(saved domain.ListelloInstance) bool {
-			return saved.PersistenceState == domain.PersistenceInitialized
+			return saved.Persistence.IsInitialized()
 		})).
 		Return(nil)
 	publisher.EXPECT().

@@ -24,8 +24,8 @@ type ListelloInstanceResponse struct {
 func ListelloInstanceFromDomain(instance domain.ListelloInstance) ListelloInstanceResponse {
 	return ListelloInstanceResponse{
 		HostingMode:         string(instance.HostingMode),
-		PersistenceLocation: instance.PersistenceLocation,
-		PersistenceState:    string(instance.PersistenceState),
+		PersistenceLocation: instance.Persistence.Location,
+		PersistenceState:    string(instance.Persistence.State),
 		SetupState:          string(instance.SetupState),
 	}
 }

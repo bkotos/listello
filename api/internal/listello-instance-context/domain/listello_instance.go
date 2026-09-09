@@ -9,11 +9,10 @@ import (
 
 // ListelloInstance is a running Listello instance.
 type ListelloInstance struct {
-	ID                  string
-	HostingMode         HostingMode
-	PersistenceLocation string
-	PersistenceState    PersistenceState
-	SetupState          SetupState
+	ID          string
+	HostingMode HostingMode
+	Persistence Persistence
+	SetupState  SetupState
 }
 
 // CreateInstance creates a new Listello instance and raises an InstanceCreated event.
@@ -45,7 +44,7 @@ func (i *ListelloInstance) SelectPersistenceLocation(location string, observatio
 	if observation.DoesLocationExist() {
 		return Event{}, fmt.Errorf("persistence location already exists")
 	}
-	i.PersistenceLocation = location
+	i.Persistence.SetLocation(location)
 	return event.NewEvent(EventLocalPersistenceLocationSelected, EventMetadataLocalPersistenceLocationSelected{ID: i.ID, Location: location}, 1), nil
 }
 
@@ -55,13 +54,8 @@ func (i ListelloInstance) isLocalHostingMode() bool {
 
 // InitializePersistence initializes persistence and raises a PersistenceInitialized event.
 func (i *ListelloInstance) InitializePersistence() (Event, error) {
-	i.PersistenceState = PersistenceInitialized
+	i.Persistence.Initialize()
 	return event.NewEvent(EventPersistenceInitialized, EventMetadataPersistenceInitialized{ID: i.ID}, 1), nil
-}
-
-// IsPersistenceInitialized reports whether persistence has been initialized.
-func (i ListelloInstance) IsPersistenceInitialized() bool {
-	return i.PersistenceState == PersistenceInitialized
 }
 
 // CompleteSetup completes instance setup and raises a SetupCompleted event.

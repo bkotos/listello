@@ -169,7 +169,7 @@ func (s *suiteState) theUserSelectsPersistenceLocation(ctx context.Context, loca
 func (s *suiteState) theInstanceShouldHavePersistenceLocation(ctx context.Context, location string) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
-	require.Equal(t, location, s.instance.PersistenceLocation)
+	require.Equal(t, location, s.instance.Persistence.Location)
 }
 
 func (s *suiteState) selectingThePersistenceLocationShouldFailWithError(ctx context.Context, message string) {
@@ -194,7 +194,7 @@ func (s *suiteState) theUserInitializesPersistence(ctx context.Context) {
 func (s *suiteState) theInstanceShouldHavePersistenceInitialized(ctx context.Context) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
-	require.True(t, s.instance.IsPersistenceInitialized())
+	require.True(t, s.instance.Persistence.IsInitialized())
 }
 
 func (s *suiteState) theUserCompletesSetup(ctx context.Context) {

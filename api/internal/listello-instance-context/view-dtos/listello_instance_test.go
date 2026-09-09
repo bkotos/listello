@@ -12,10 +12,12 @@ import (
 func TestListelloInstanceFromDomain(t *testing.T) {
 	// Arrange
 	instance := domain.ListelloInstance{
-		HostingMode:         domain.HostingModeLocal,
-		PersistenceLocation: "/var/listello",
-		PersistenceState:    domain.PersistenceInitialized,
-		SetupState:          domain.SetupCompleted,
+		HostingMode: domain.HostingModeLocal,
+		Persistence: domain.Persistence{
+			Location: "/var/listello",
+			State:    domain.PersistenceInitialized,
+		},
+		SetupState: domain.SetupCompleted,
 	}
 
 	// Act
@@ -23,7 +25,7 @@ func TestListelloInstanceFromDomain(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, string(instance.HostingMode), received.HostingMode)
-	assert.Equal(t, instance.PersistenceLocation, received.PersistenceLocation)
-	assert.Equal(t, string(instance.PersistenceState), received.PersistenceState)
+	assert.Equal(t, instance.Persistence.Location, received.PersistenceLocation)
+	assert.Equal(t, string(instance.Persistence.State), received.PersistenceState)
 	assert.Equal(t, string(instance.SetupState), received.SetupState)
 }
