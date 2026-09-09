@@ -78,7 +78,9 @@ Feature: Create and set up a Listello instance
     And the user selects persistence location "/var/listello"
     When the user initializes persistence
     Then a "PersistenceInitialized" event should have occurred
+    And a "LocalDatabaseInitialized" event should have occurred
     And the instance should have persistence initialized
+    And the instance should have the local database initialized
 
   Scenario: Completing setup
     Given an instance exists
@@ -105,8 +107,10 @@ Feature: Create and set up a Listello instance
     And a "HostingModeSelected" event should have occurred
     And a "LocalPersistenceLocationSelected" event should have occurred
     And a "PersistenceInitialized" event should have occurred
+    And a "LocalDatabaseInitialized" event should have occurred
     And a "SetupCompleted" event should have occurred
     And the instance should have hosting mode "local"
     And the instance should have persistence location "/var/listello"
     And the instance should have persistence initialized
+    And the instance should have the local database initialized
     And the instance should have setup completed

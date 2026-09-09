@@ -243,7 +243,8 @@ func TestListelloInstanceService_InitializePersistence_PersistsInstance(t *testi
 		Return(nil)
 	publisher.EXPECT().
 		Publish(mock.AnythingOfType("event.Event")).
-		Return(nil)
+		Return(nil).
+		Times(2)
 
 	// Act
 	_, err := svc.InitializePersistence()
@@ -259,7 +260,7 @@ func TestListelloInstanceService_InitializePersistence_PublishesEvent(t *testing
 	publisher := NewMockEventPublisher(t)
 	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
 
-	var published domain.Event
+	var published []domain.Event
 	repo.EXPECT().
 		Get().
 		Return(&instance, nil)
@@ -268,21 +269,30 @@ func TestListelloInstanceService_InitializePersistence_PublishesEvent(t *testing
 		Return(nil)
 	publisher.EXPECT().
 		Publish(mock.MatchedBy(func(event domain.Event) bool {
-			published = event
-			_, ok := event.Metadata.(domain.EventMetadataPersistenceInitialized)
-			return event.Name == domain.EventPersistenceInitialized && ok
+			published = append(published, event)
+			return true
 		})).
-		Return(nil)
+		Return(nil).
+		Times(2)
 
 	// Act
 	_, err := svc.InitializePersistence()
 
 	// Assert
 	require.NoError(t, err)
-	metadata, ok := published.Metadata.(domain.EventMetadataPersistenceInitialized)
+	require.Len(t, published, 2)
+
+	persistenceInitialized, ok := published[0].Metadata.(domain.EventMetadataPersistenceInitialized)
 	require.True(t, ok)
-	assert.Equal(t, instance.ID, metadata.ID)
-	assert.NotEmpty(t, published.Timestamp)
+	assert.Equal(t, domain.EventPersistenceInitialized, published[0].Name)
+	assert.Equal(t, instance.ID, persistenceInitialized.ID)
+	assert.NotEmpty(t, published[0].Timestamp)
+
+	localDatabaseInitialized, ok := published[1].Metadata.(domain.EventMetadataLocalDatabaseInitialized)
+	require.True(t, ok)
+	assert.Equal(t, domain.EventLocalDatabaseInitialized, published[1].Name)
+	assert.Equal(t, instance.ID, localDatabaseInitialized.ID)
+	assert.NotEmpty(t, published[1].Timestamp)
 }
 
 func usablePersistenceLocationObservation() domain.PersistenceLocationObservation {

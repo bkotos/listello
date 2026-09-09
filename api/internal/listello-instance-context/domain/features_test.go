@@ -183,18 +183,26 @@ func (s *suiteState) selectingTheHostingModeShouldFailWithError(ctx context.Cont
 func (s *suiteState) theUserInitializesPersistence(ctx context.Context) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
-	ev, err := s.instance.InitializePersistence()
+	events, err := s.instance.InitializePersistence()
 	s.lastErr = err
 	if err != nil {
 		return
 	}
-	s.record(ev)
+	for _, ev := range events {
+		s.record(ev)
+	}
 }
 
 func (s *suiteState) theInstanceShouldHavePersistenceInitialized(ctx context.Context) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
 	require.True(t, s.instance.Persistence.IsInitialized())
+}
+
+func (s *suiteState) theInstanceShouldHaveTheLocalDatabaseInitialized(ctx context.Context) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.True(t, s.instance.Persistence.IsLocalDatabaseInitialized())
 }
 
 func (s *suiteState) theUserCompletesSetup(ctx context.Context) {
@@ -250,6 +258,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^selecting the persistence location should fail with error "([^"]*)"$`, s.selectingThePersistenceLocationShouldFailWithError)
 	ctx.Step(`^the user initializes persistence$`, s.theUserInitializesPersistence)
 	ctx.Step(`^the instance should have persistence initialized$`, s.theInstanceShouldHavePersistenceInitialized)
+	ctx.Step(`^the instance should have the local database initialized$`, s.theInstanceShouldHaveTheLocalDatabaseInitialized)
 	ctx.Step(`^the user completes setup$`, s.theUserCompletesSetup)
 	ctx.Step(`^the instance should have setup completed$`, s.theInstanceShouldHaveSetupCompleted)
 }

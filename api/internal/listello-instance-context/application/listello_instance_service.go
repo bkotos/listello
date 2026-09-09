@@ -109,15 +109,17 @@ func (s *listelloInstanceService) InitializePersistence() (domain.ListelloInstan
 	if err != nil {
 		return domain.ListelloInstance{}, err
 	}
-	event, err := instance.InitializePersistence()
+	events, err := instance.InitializePersistence()
 	if err != nil {
 		return domain.ListelloInstance{}, err
 	}
 	if err := s.listelloInstanceRepository.Save(*instance); err != nil {
 		return domain.ListelloInstance{}, err
 	}
-	if err := s.eventPublisher.Publish(event); err != nil {
-		return domain.ListelloInstance{}, err
+	for _, event := range events {
+		if err := s.eventPublisher.Publish(event); err != nil {
+			return domain.ListelloInstance{}, err
+		}
 	}
 	return *instance, nil
 }
