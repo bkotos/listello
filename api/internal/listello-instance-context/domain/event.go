@@ -10,7 +10,6 @@ const (
 	EventHostingModeSelected              EventName = "HostingModeSelected"
 	EventLocalPersistenceLocationSelected EventName = "LocalPersistenceLocationSelected"
 	EventPersistenceInitialized           EventName = "PersistenceInitialized"
-	EventLocalDatabaseInitialized         EventName = "LocalDatabaseInitialized"
 	EventSetupCompleted                   EventName = "SetupCompleted"
 )
 
@@ -33,12 +32,8 @@ type EventMetadataLocalPersistenceLocationSelected struct {
 
 // EventMetadataPersistenceInitialized is the payload for a PersistenceInitialized event.
 type EventMetadataPersistenceInitialized struct {
-	ID string
-}
-
-// EventMetadataLocalDatabaseInitialized is the payload for a LocalDatabaseInitialized event.
-type EventMetadataLocalDatabaseInitialized struct {
-	ID string
+	ID   string
+	Mode HostingMode
 }
 
 // EventMetadataSetupCompleted is the payload for a SetupCompleted event.

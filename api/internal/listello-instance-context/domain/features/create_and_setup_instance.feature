@@ -77,8 +77,7 @@ Feature: Create and set up a Listello instance
     And the directory "/var/listello" does not exist
     And the user selects persistence location "/var/listello"
     When the user initializes persistence
-    Then a "PersistenceInitialized" event should have occurred
-    And a "LocalDatabaseInitialized" event should have occurred
+    Then a "PersistenceInitialized" event should have occurred with hosting mode of "local"
     And the instance should have persistence initialized
     And the instance should have the local database initialized
 
@@ -106,8 +105,7 @@ Feature: Create and set up a Listello instance
     Then a "InstanceCreated" event should have occurred
     And a "HostingModeSelected" event should have occurred
     And a "LocalPersistenceLocationSelected" event should have occurred
-    And a "PersistenceInitialized" event should have occurred
-    And a "LocalDatabaseInitialized" event should have occurred
+    And a "PersistenceInitialized" event should have occurred with hosting mode of "local"
     And a "SetupCompleted" event should have occurred
     And the instance should have hosting mode "local"
     And the instance should have persistence location "/var/listello"

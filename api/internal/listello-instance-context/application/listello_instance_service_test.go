@@ -243,8 +243,7 @@ func TestListelloInstanceService_InitializePersistence_PersistsInstance(t *testi
 		Return(nil)
 	publisher.EXPECT().
 		Publish(mock.AnythingOfType("event.Event")).
-		Return(nil).
-		Times(2)
+		Return(nil)
 
 	// Act
 	_, err := svc.InitializePersistence()
@@ -255,12 +254,12 @@ func TestListelloInstanceService_InitializePersistence_PersistsInstance(t *testi
 
 func TestListelloInstanceService_InitializePersistence_PublishesEvent(t *testing.T) {
 	// Arrange
-	instance := domain.ListelloInstance{ID: "LI_1"}
+	instance := domain.ListelloInstance{ID: "LI_1", HostingMode: domain.HostingModeLocal}
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
 	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
 
-	var published []domain.Event
+	var published domain.Event
 	repo.EXPECT().
 		Get().
 		Return(&instance, nil)
@@ -269,30 +268,22 @@ func TestListelloInstanceService_InitializePersistence_PublishesEvent(t *testing
 		Return(nil)
 	publisher.EXPECT().
 		Publish(mock.MatchedBy(func(event domain.Event) bool {
-			published = append(published, event)
-			return true
+			published = event
+			_, ok := event.Metadata.(domain.EventMetadataPersistenceInitialized)
+			return event.Name == domain.EventPersistenceInitialized && ok
 		})).
-		Return(nil).
-		Times(2)
+		Return(nil)
 
 	// Act
 	_, err := svc.InitializePersistence()
 
 	// Assert
 	require.NoError(t, err)
-	require.Len(t, published, 2)
-
-	persistenceInitialized, ok := published[0].Metadata.(domain.EventMetadataPersistenceInitialized)
+	metadata, ok := published.Metadata.(domain.EventMetadataPersistenceInitialized)
 	require.True(t, ok)
-	assert.Equal(t, domain.EventPersistenceInitialized, published[0].Name)
-	assert.Equal(t, instance.ID, persistenceInitialized.ID)
-	assert.NotEmpty(t, published[0].Timestamp)
-
-	localDatabaseInitialized, ok := published[1].Metadata.(domain.EventMetadataLocalDatabaseInitialized)
-	require.True(t, ok)
-	assert.Equal(t, domain.EventLocalDatabaseInitialized, published[1].Name)
-	assert.Equal(t, instance.ID, localDatabaseInitialized.ID)
-	assert.NotEmpty(t, published[1].Timestamp)
+	assert.Equal(t, instance.ID, metadata.ID)
+	assert.Equal(t, domain.HostingModeLocal, metadata.Mode)
+	assert.NotEmpty(t, published.Timestamp)
 }
 
 func usablePersistenceLocationObservation() domain.PersistenceLocationObservation {

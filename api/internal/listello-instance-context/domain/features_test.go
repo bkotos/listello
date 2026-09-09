@@ -106,6 +106,22 @@ func (s *suiteState) aEventShouldHaveOccurred(ctx context.Context, eventName str
 	)
 }
 
+func (s *suiteState) aEventShouldHaveOccurredWithHostingModeOf(ctx context.Context, eventName, mode string) {
+	t := godog.T(ctx)
+	var matched domain.Event
+	found := slices.ContainsFunc(s.events, func(e domain.Event) bool {
+		if e.Name != domain.EventName(eventName) {
+			return false
+		}
+		matched = e
+		return true
+	})
+	require.Truef(t, found, "expected event %q to have occurred; got %v", eventName, eventNames(s.events))
+	metadata, ok := matched.Metadata.(domain.EventMetadataPersistenceInitialized)
+	require.Truef(t, ok, "expected event %q metadata to be EventMetadataPersistenceInitialized", eventName)
+	require.Equal(t, domain.HostingMode(mode), metadata.Mode)
+}
+
 func (s *suiteState) theInstanceShouldExist(ctx context.Context) {
 	require.NotNil(godog.T(ctx), s.instance)
 }
@@ -183,14 +199,12 @@ func (s *suiteState) selectingTheHostingModeShouldFailWithError(ctx context.Cont
 func (s *suiteState) theUserInitializesPersistence(ctx context.Context) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
-	events, err := s.instance.InitializePersistence()
+	ev, err := s.instance.InitializePersistence()
 	s.lastErr = err
 	if err != nil {
 		return
 	}
-	for _, ev := range events {
-		s.record(ev)
-	}
+	s.record(ev)
 }
 
 func (s *suiteState) theInstanceShouldHavePersistenceInitialized(ctx context.Context) {
@@ -242,6 +256,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^an instance exists$`, s.anInstanceExists)
 	ctx.Step(`^the user selects hosting mode "([^"]*)"$`, s.theUserSelectsHostingMode)
 	ctx.Step(`^a "([^"]*)" event should have occurred$`, s.aEventShouldHaveOccurred)
+	ctx.Step(`^a "([^"]*)" event should have occurred with hosting mode of "([^"]*)"$`, s.aEventShouldHaveOccurredWithHostingModeOf)
 	ctx.Step(`^the instance should exist$`, s.theInstanceShouldExist)
 	ctx.Step(`^the instance should have an ID prefixed with "([^"]*)"$`, s.theInstanceShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the instance ID after the prefix "([^"]*)" should be a UUID$`, s.theInstanceIDAfterThePrefixShouldBeAUUID)

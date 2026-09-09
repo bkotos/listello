@@ -52,14 +52,11 @@ func (i ListelloInstance) isLocalHostingMode() bool {
 	return i.HostingMode == HostingModeLocal
 }
 
-// InitializePersistence initializes persistence and raises PersistenceInitialized and LocalDatabaseInitialized events.
-func (i *ListelloInstance) InitializePersistence() ([]Event, error) {
+// InitializePersistence initializes persistence and raises a PersistenceInitialized event.
+func (i *ListelloInstance) InitializePersistence() (Event, error) {
 	i.Persistence.Initialize()
 	i.Persistence.InitializeLocalDatabase()
-	return []Event{
-		event.NewEvent(EventPersistenceInitialized, EventMetadataPersistenceInitialized{ID: i.ID}, 1),
-		event.NewEvent(EventLocalDatabaseInitialized, EventMetadataLocalDatabaseInitialized{ID: i.ID}, 1),
-	}, nil
+	return event.NewEvent(EventPersistenceInitialized, EventMetadataPersistenceInitialized{ID: i.ID, Mode: i.HostingMode}, 1), nil
 }
 
 // CompleteSetup completes instance setup and raises a SetupCompleted event.
