@@ -151,6 +151,22 @@ func TestListelloInstanceRepository_Get_LoadsInstanceFromLocatorWhenNotInMemory(
 	assert.Equal(t, domain.SetupIncomplete, got.SetupState)
 }
 
+func TestListelloInstanceRepository_Get_ReturnsNilWhenNotInMemoryAndLocatorFileAbsent(t *testing.T) {
+	// Arrange
+	locatorPath := filepath.Join(t.TempDir(), "listello_instance")
+	_, err := os.Stat(locatorPath)
+	require.ErrorIs(t, err, os.ErrNotExist)
+
+	repo := adapter.NewListelloInstanceRepositoryWithLocator(locatorPath)
+
+	// Act
+	got, err := repo.Get()
+
+	// Assert
+	require.NoError(t, err)
+	assert.Nil(t, got)
+}
+
 func TestListelloInstanceRepository_Get_ReturnsNilWhenNotExists(t *testing.T) {
 	// Arrange
 	repo := adapter.NewListelloInstanceRepository()

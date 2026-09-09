@@ -2,6 +2,7 @@ package adapter
 
 import (
 	"encoding/gob"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -87,6 +88,9 @@ func (r *ListelloInstanceRepository) Get() (*domain.ListelloInstance, error) {
 		return nil, nil
 	}
 	instance, err := readListelloInstanceFile(r.locatorPath)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
