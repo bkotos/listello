@@ -117,6 +117,40 @@ func TestListelloInstanceRepository_Save_DoesNotAttemptDeleteWhenPersistenceNotI
 	require.NoError(t, err)
 }
 
+func TestListelloInstanceRepository_Get_LoadsInstanceFromLocatorWhenNotInMemory(t *testing.T) {
+	// Arrange
+	locatorPath := filepath.Join(t.TempDir(), "listello_instance")
+	location := filepath.Join(t.TempDir(), "listello")
+	file := adapter.ListelloInstanceFile{
+		SchemaVersion: adapter.ListelloInstanceSchemaVersion,
+		Data: adapter.ListelloInstanceData{
+			ID:                  "LI_6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+			HostingMode:         string(domain.HostingModeLocal),
+			PersistenceLocation: location,
+			PersistenceState:    string(domain.PersistenceUninitialized),
+			SetupState:          string(domain.SetupIncomplete),
+		},
+	}
+	f, err := os.Create(locatorPath)
+	require.NoError(t, err)
+	require.NoError(t, gob.NewEncoder(f).Encode(file))
+	require.NoError(t, f.Close())
+
+	repo := adapter.NewListelloInstanceRepositoryWithLocator(locatorPath)
+
+	// Act
+	got, err := repo.Get()
+
+	// Assert
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, file.Data.ID, got.ID)
+	assert.Equal(t, domain.HostingModeLocal, got.HostingMode)
+	assert.Equal(t, location, got.Persistence.Location)
+	assert.Equal(t, domain.PersistenceUninitialized, got.Persistence.State)
+	assert.Equal(t, domain.SetupIncomplete, got.SetupState)
+}
+
 func TestListelloInstanceRepository_Get_ReturnsNilWhenNotExists(t *testing.T) {
 	// Arrange
 	repo := adapter.NewListelloInstanceRepository()

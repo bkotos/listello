@@ -12,7 +12,8 @@ import (
 
 // ListelloInstanceRepository persists the Listello instance in memory.
 type ListelloInstanceRepository struct {
-	instance *domain.ListelloInstance
+	instance    *domain.ListelloInstance
+	locatorPath string
 }
 
 var _ application.ListelloInstanceRepository = (*ListelloInstanceRepository)(nil)
@@ -20,6 +21,11 @@ var _ application.ListelloInstanceRepository = (*ListelloInstanceRepository)(nil
 // NewListelloInstanceRepository returns an in-memory Listello instance repository.
 func NewListelloInstanceRepository() *ListelloInstanceRepository {
 	return &ListelloInstanceRepository{}
+}
+
+// NewListelloInstanceRepositoryWithLocator returns a repository that loads the instance from locatorPath when it is not in memory.
+func NewListelloInstanceRepositoryWithLocator(locatorPath string) *ListelloInstanceRepository {
+	return &ListelloInstanceRepository{locatorPath: locatorPath}
 }
 
 // Save stores the instance, replacing any previously stored instance.
@@ -72,6 +78,40 @@ func writeListelloInstanceFile(instance domain.ListelloInstance) error {
 }
 
 // Get returns the stored instance, or nil if none exists yet.
+// When nothing is stored in memory, it loads the instance from the locator file if that file exists.
 func (r *ListelloInstanceRepository) Get() (*domain.ListelloInstance, error) {
+	if r.instance != nil {
+		return r.instance, nil
+	}
+	if r.locatorPath == "" {
+		return nil, nil
+	}
+	instance, err := readListelloInstanceFile(r.locatorPath)
+	if err != nil {
+		return nil, err
+	}
+	r.instance = instance
 	return r.instance, nil
+}
+
+func readListelloInstanceFile(path string) (*domain.ListelloInstance, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("find listello instance: %w", err)
+	}
+	defer f.Close()
+
+	var file ListelloInstanceFile
+	if err := gob.NewDecoder(f).Decode(&file); err != nil {
+		return nil, fmt.Errorf("find listello instance: %w", err)
+	}
+	return &domain.ListelloInstance{
+		ID:          file.Data.ID,
+		HostingMode: domain.HostingMode(file.Data.HostingMode),
+		Persistence: domain.Persistence{
+			Location: file.Data.PersistenceLocation,
+			State:    domain.PersistenceState(file.Data.PersistenceState),
+		},
+		SetupState: domain.SetupState(file.Data.SetupState),
+	}, nil
 }
