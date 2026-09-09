@@ -106,7 +106,7 @@ func (s *suiteState) aEventShouldHaveOccurred(ctx context.Context, eventName str
 	)
 }
 
-func (s *suiteState) aEventShouldHaveOccurredWithHostingModeOf(ctx context.Context, eventName, mode string) {
+func (s *suiteState) aEventShouldHaveOccurredWithHostingModeOfAndPersistenceLocation(ctx context.Context, eventName, mode, location string) {
 	t := godog.T(ctx)
 	var matched domain.Event
 	found := slices.ContainsFunc(s.events, func(e domain.Event) bool {
@@ -120,6 +120,7 @@ func (s *suiteState) aEventShouldHaveOccurredWithHostingModeOf(ctx context.Conte
 	metadata, ok := matched.Metadata.(domain.EventMetadataPersistenceInitialized)
 	require.Truef(t, ok, "expected event %q metadata to be EventMetadataPersistenceInitialized", eventName)
 	require.Equal(t, domain.HostingMode(mode), metadata.Mode)
+	require.Equal(t, location, metadata.Location)
 }
 
 func (s *suiteState) theInstanceShouldExist(ctx context.Context) {
@@ -256,7 +257,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^an instance exists$`, s.anInstanceExists)
 	ctx.Step(`^the user selects hosting mode "([^"]*)"$`, s.theUserSelectsHostingMode)
 	ctx.Step(`^a "([^"]*)" event should have occurred$`, s.aEventShouldHaveOccurred)
-	ctx.Step(`^a "([^"]*)" event should have occurred with hosting mode of "([^"]*)"$`, s.aEventShouldHaveOccurredWithHostingModeOf)
+	ctx.Step(`^a "([^"]*)" event should have occurred with hosting mode of "([^"]*)" and persistence location "([^"]*)"$`, s.aEventShouldHaveOccurredWithHostingModeOfAndPersistenceLocation)
 	ctx.Step(`^the instance should exist$`, s.theInstanceShouldExist)
 	ctx.Step(`^the instance should have an ID prefixed with "([^"]*)"$`, s.theInstanceShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the instance ID after the prefix "([^"]*)" should be a UUID$`, s.theInstanceIDAfterThePrefixShouldBeAUUID)

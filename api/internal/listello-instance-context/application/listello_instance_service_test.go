@@ -254,7 +254,12 @@ func TestListelloInstanceService_InitializePersistence_PersistsInstance(t *testi
 
 func TestListelloInstanceService_InitializePersistence_PublishesEvent(t *testing.T) {
 	// Arrange
-	instance := domain.ListelloInstance{ID: "LI_1", HostingMode: domain.HostingModeLocal}
+	const location = "/var/listello"
+	instance := domain.ListelloInstance{
+		ID:          "LI_1",
+		HostingMode: domain.HostingModeLocal,
+		Persistence: domain.Persistence{Location: location},
+	}
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
 	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
@@ -283,6 +288,7 @@ func TestListelloInstanceService_InitializePersistence_PublishesEvent(t *testing
 	require.True(t, ok)
 	assert.Equal(t, instance.ID, metadata.ID)
 	assert.Equal(t, domain.HostingModeLocal, metadata.Mode)
+	assert.Equal(t, location, metadata.Location)
 	assert.NotEmpty(t, published.Timestamp)
 }
 

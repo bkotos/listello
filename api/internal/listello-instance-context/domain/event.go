@@ -32,8 +32,9 @@ type EventMetadataLocalPersistenceLocationSelected struct {
 
 // EventMetadataPersistenceInitialized is the payload for a PersistenceInitialized event.
 type EventMetadataPersistenceInitialized struct {
-	ID   string
-	Mode HostingMode
+	ID       string
+	Mode     HostingMode
+	Location string
 }
 
 // EventMetadataSetupCompleted is the payload for a SetupCompleted event.
