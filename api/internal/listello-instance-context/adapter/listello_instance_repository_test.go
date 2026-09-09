@@ -59,6 +59,24 @@ func TestListelloInstanceRepository_Save_WritesGobWhenPersistenceInitialized(t *
 	assert.Equal(t, string(instance.SetupState), file.Data.SetupState)
 }
 
+func TestListelloInstanceRepository_Save_DoesNotWriteGobWhenPersistenceNotInitialized(t *testing.T) {
+	// Arrange
+	location := filepath.Join(t.TempDir(), "listello")
+	require.NoError(t, os.Mkdir(location, 0o755))
+
+	repo := adapter.NewListelloInstanceRepository()
+	instance, _, err := domain.CreateInstance()
+	require.NoError(t, err)
+	instance.Persistence.SetLocation(location)
+
+	// Act
+	require.NoError(t, repo.Save(instance))
+
+	// Assert
+	_, err = os.Stat(filepath.Join(location, "listello_instance"))
+	assert.ErrorIs(t, err, os.ErrNotExist)
+}
+
 func TestListelloInstanceRepository_Get_ReturnsNilWhenNotExists(t *testing.T) {
 	// Arrange
 	repo := adapter.NewListelloInstanceRepository()
