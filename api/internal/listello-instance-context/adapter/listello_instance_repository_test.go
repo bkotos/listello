@@ -97,6 +97,26 @@ func TestListelloInstanceRepository_Save_DeletesGobWhenPersistenceNotInitialized
 	assert.ErrorIs(t, err, os.ErrNotExist)
 }
 
+func TestListelloInstanceRepository_Save_DoesNotAttemptDeleteWhenPersistenceNotInitializedAndLocationEmpty(t *testing.T) {
+	// Arrange
+	dir := t.TempDir()
+	t.Chdir(dir)
+	path := filepath.Join(dir, "listello_instance")
+	require.NoError(t, os.WriteFile(path, []byte("previous"), 0o644))
+
+	repo := adapter.NewListelloInstanceRepository()
+	instance, _, err := domain.CreateInstance()
+	require.NoError(t, err)
+	require.Empty(t, instance.Persistence.Location)
+
+	// Act
+	require.NoError(t, repo.Save(instance))
+
+	// Assert
+	_, err = os.Stat(path)
+	require.NoError(t, err)
+}
+
 func TestListelloInstanceRepository_Get_ReturnsNilWhenNotExists(t *testing.T) {
 	// Arrange
 	repo := adapter.NewListelloInstanceRepository()

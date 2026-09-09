@@ -27,6 +27,9 @@ func NewListelloInstanceRepository() *ListelloInstanceRepository {
 func (r *ListelloInstanceRepository) Save(instance domain.ListelloInstance) error {
 	r.instance = &instance
 	if !instance.Persistence.IsInitialized() {
+		if instance.Persistence.Location == "" {
+			return nil
+		}
 		return deleteListelloInstanceFile(instance.Persistence.Location)
 	}
 	return writeListelloInstanceFile(instance)
