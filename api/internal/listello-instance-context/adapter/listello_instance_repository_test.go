@@ -15,7 +15,9 @@ import (
 
 func newListelloInstanceRepository(t *testing.T) *adapter.ListelloInstanceRepository {
 	t.Helper()
-	return adapter.NewListelloInstanceRepository(filepath.Join(t.TempDir(), "listello_instance"))
+	repo, err := adapter.NewListelloInstanceRepository(filepath.Join(t.TempDir(), "listello_instance"))
+	require.NoError(t, err)
+	return repo
 }
 
 func TestListelloInstanceRepository_SaveAndGet(t *testing.T) {
@@ -141,7 +143,8 @@ func TestListelloInstanceRepository_Get_LoadsInstanceFromLocatorWhenNotInMemory(
 	require.NoError(t, gob.NewEncoder(f).Encode(file))
 	require.NoError(t, f.Close())
 
-	repo := adapter.NewListelloInstanceRepository(locatorPath)
+	repo, err := adapter.NewListelloInstanceRepository(locatorPath)
+	require.NoError(t, err)
 
 	// Act
 	got, err := repo.Get()
@@ -162,7 +165,8 @@ func TestListelloInstanceRepository_Get_ReturnsNilWhenNotInMemoryAndLocatorFileA
 	_, err := os.Stat(locatorPath)
 	require.ErrorIs(t, err, os.ErrNotExist)
 
-	repo := adapter.NewListelloInstanceRepository(locatorPath)
+	repo, err := adapter.NewListelloInstanceRepository(locatorPath)
+	require.NoError(t, err)
 
 	// Act
 	got, err := repo.Get()
@@ -182,4 +186,13 @@ func TestListelloInstanceRepository_Get_ReturnsNilWhenNotExists(t *testing.T) {
 	// Assert
 	require.NoError(t, err)
 	assert.Nil(t, got)
+}
+
+func TestListelloInstanceRepository_New_ErrorsWhenLocatorPathEmpty(t *testing.T) {
+	// Act
+	repo, err := adapter.NewListelloInstanceRepository("")
+
+	// Assert
+	require.Error(t, err)
+	assert.Nil(t, repo)
 }

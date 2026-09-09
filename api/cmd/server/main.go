@@ -33,8 +33,12 @@ func main() {
 			if err != nil {
 				return err
 			}
+			repo, err := instanceadapter.NewListelloInstanceRepository(locatorPath)
+			if err != nil {
+				return err
+			}
 			instanceService := instanceapp.NewListelloInstanceService(
-				instanceadapter.NewListelloInstanceRepository(locatorPath),
+				repo,
 				instanceadapter.NewFilesystemPersistenceAdapter(),
 				ppadapter.NewLoggingEventPublisher(eventLog),
 			)

@@ -20,8 +20,11 @@ type ListelloInstanceRepository struct {
 var _ application.ListelloInstanceRepository = (*ListelloInstanceRepository)(nil)
 
 // NewListelloInstanceRepository returns a repository that loads the instance from locatorPath when it is not in memory.
-func NewListelloInstanceRepository(locatorPath string) *ListelloInstanceRepository {
-	return &ListelloInstanceRepository{locatorPath: locatorPath}
+func NewListelloInstanceRepository(locatorPath string) (*ListelloInstanceRepository, error) {
+	if locatorPath == "" {
+		return nil, fmt.Errorf("locator path is required")
+	}
+	return &ListelloInstanceRepository{locatorPath: locatorPath}, nil
 }
 
 // ListelloInstanceLocatorPath returns the well-known locator file under the user config directory.
