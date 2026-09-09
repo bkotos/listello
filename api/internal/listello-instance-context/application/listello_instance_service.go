@@ -13,7 +13,6 @@ type ListelloInstanceRepository interface {
 // PersistenceAdapter observes persistence locations.
 type PersistenceAdapter interface {
 	ObservePersistenceLocation(persistenceLocation string) (domain.PersistenceLocationObservation, error)
-	InitializePersistenceLocation(persistenceLocation string) error
 }
 
 // ListelloInstanceService defines Listello instance application operations.
@@ -93,9 +92,6 @@ func (s *listelloInstanceService) SelectPersistenceLocation(location string) (do
 	}
 	event, err := instance.SelectPersistenceLocation(location, observation)
 	if err != nil {
-		return domain.ListelloInstance{}, err
-	}
-	if err := s.persistenceAdapter.InitializePersistenceLocation(location); err != nil {
 		return domain.ListelloInstance{}, err
 	}
 	if err := s.listelloInstanceRepository.Save(*instance); err != nil {

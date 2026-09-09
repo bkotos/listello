@@ -171,46 +171,10 @@ func TestListelloInstanceService_SelectPersistenceLocation_PersistsInstance(t *t
 	observer.EXPECT().
 		ObservePersistenceLocation(location).
 		Return(observation, nil)
-	observer.EXPECT().
-		InitializePersistenceLocation(location).
-		Return(nil)
 	repo.EXPECT().
 		Save(mock.MatchedBy(func(saved domain.ListelloInstance) bool {
 			return saved.PersistenceLocation == location
 		})).
-		Return(nil)
-	publisher.EXPECT().
-		Publish(mock.AnythingOfType("event.Event")).
-		Return(nil)
-
-	// Act
-	_, err := svc.SelectPersistenceLocation(location)
-
-	// Assert
-	require.NoError(t, err)
-}
-
-func TestListelloInstanceService_SelectPersistenceLocation_InitializesPersistenceLocation(t *testing.T) {
-	// Arrange
-	const location = "/var/listello"
-	instance := domain.ListelloInstance{ID: "LI_1", HostingMode: domain.HostingModeLocal}
-	observation := usablePersistenceLocationObservation()
-	repo := NewMockListelloInstanceRepository(t)
-	persistence := NewMockPersistenceAdapter(t)
-	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, persistence, publisher)
-
-	repo.EXPECT().
-		Get().
-		Return(&instance, nil)
-	persistence.EXPECT().
-		ObservePersistenceLocation(location).
-		Return(observation, nil)
-	persistence.EXPECT().
-		InitializePersistenceLocation(location).
-		Return(nil)
-	repo.EXPECT().
-		Save(mock.AnythingOfType("domain.ListelloInstance")).
 		Return(nil)
 	publisher.EXPECT().
 		Publish(mock.AnythingOfType("event.Event")).
@@ -240,9 +204,6 @@ func TestListelloInstanceService_SelectPersistenceLocation_PublishesEvent(t *tes
 	observer.EXPECT().
 		ObservePersistenceLocation(location).
 		Return(observation, nil)
-	observer.EXPECT().
-		InitializePersistenceLocation(location).
-		Return(nil)
 	repo.EXPECT().
 		Save(mock.AnythingOfType("domain.ListelloInstance")).
 		Return(nil)
