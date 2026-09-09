@@ -27,13 +27,25 @@ func NewListelloInstanceRepository() *ListelloInstanceRepository {
 func (r *ListelloInstanceRepository) Save(instance domain.ListelloInstance) error {
 	r.instance = &instance
 	if !instance.Persistence.IsInitialized() {
-		return nil
+		return deleteListelloInstanceFile(instance.Persistence.Location)
 	}
 	return writeListelloInstanceFile(instance)
 }
 
+func listelloInstanceFilePath(location string) string {
+	return filepath.Join(location, "listello_instance")
+}
+
+func deleteListelloInstanceFile(location string) error {
+	err := os.Remove(listelloInstanceFilePath(location))
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("save listello instance: %w", err)
+	}
+	return nil
+}
+
 func writeListelloInstanceFile(instance domain.ListelloInstance) error {
-	path := filepath.Join(instance.Persistence.Location, "listello_instance")
+	path := listelloInstanceFilePath(instance.Persistence.Location)
 	f, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("save listello instance: %w", err)
