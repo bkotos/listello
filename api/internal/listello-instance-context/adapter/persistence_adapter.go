@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	ppadapter "github.com/bkotos/listello/internal/personal-productivity-context/adapter"
 	application "github.com/bkotos/listello/internal/listello-instance-context/application"
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 )
@@ -37,9 +38,16 @@ func (a *FilesystemPersistenceAdapter) ObservePersistenceLocation(persistenceLoc
 	return observation, nil
 }
 
-// ProvisionStorage creates the persistence location directory.
+// ProvisionStorage creates the persistence location directory and initializes its SQLite database.
 func (a *FilesystemPersistenceAdapter) ProvisionStorage(persistenceLocation string) error {
 	if err := os.Mkdir(persistenceLocation, 0o755); err != nil {
+		return fmt.Errorf("provision storage: %w", err)
+	}
+	db, err := ppadapter.OpenSQLite(filepath.Join(persistenceLocation, "listello.db"))
+	if err != nil {
+		return fmt.Errorf("provision storage: %w", err)
+	}
+	if err := db.Close(); err != nil {
 		return fmt.Errorf("provision storage: %w", err)
 	}
 	return nil
