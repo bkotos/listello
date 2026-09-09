@@ -13,12 +13,13 @@ import (
 
 	adapter "github.com/bkotos/listello/internal/personal-productivity-context/adapter"
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
+	"github.com/bkotos/listello/internal/sqlite"
 )
 
 func TestSQLiteItemRepository_Save_PersistsItem(t *testing.T) {
 	// Arrange
 	path := filepath.Join(t.TempDir(), "items.db")
-	db, err := adapter.OpenSQLite(path)
+	db, err := sqlite.OpenSQLite(path)
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = db.Close() })
 
@@ -56,7 +57,7 @@ func TestSQLiteItemRepository_Save_PersistsItem(t *testing.T) {
 
 func TestSQLiteItemRepository_GetAll_ReturnsItemsForList(t *testing.T) {
 	// Arrange
-	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
+	db, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = db.Close() })
 
@@ -91,7 +92,7 @@ func TestSQLiteItemRepository_GetAll_ReturnsItemsForList(t *testing.T) {
 
 func TestSQLiteItemRepository_SaveAndGetByID(t *testing.T) {
 	// Arrange
-	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
+	db, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = db.Close() })
 
@@ -116,7 +117,7 @@ func TestSQLiteItemRepository_SaveAndGetByID(t *testing.T) {
 
 func TestSQLiteItemRepository_Delete_RemovesItem(t *testing.T) {
 	// Arrange
-	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
+	db, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = db.Close() })
 

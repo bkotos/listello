@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
+	"github.com/bkotos/listello/internal/sqlite"
 )
 
 // SQLiteListRepository persists lists in SQLite.
@@ -13,8 +14,8 @@ type SQLiteListRepository struct {
 }
 
 // NewSQLiteListRepository returns a list repository using the given SQLite connection.
-func NewSQLiteListRepository(sqlite *SQLite) *SQLiteListRepository {
-	return &SQLiteListRepository{db: sqlite.db}
+func NewSQLiteListRepository(sqlite *sqlite.SQLite) *SQLiteListRepository {
+	return &SQLiteListRepository{db: sqlite.DB()}
 }
 
 // Save stores the list.

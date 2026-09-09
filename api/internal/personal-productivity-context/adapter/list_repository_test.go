@@ -9,11 +9,12 @@ import (
 
 	adapter "github.com/bkotos/listello/internal/personal-productivity-context/adapter"
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
+	"github.com/bkotos/listello/internal/sqlite"
 )
 
 func TestSQLiteListRepository_SaveAndGetByID(t *testing.T) {
 	// Arrange
-	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "lists.db"))
+	db, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "lists.db"))
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = db.Close() })
 
@@ -33,7 +34,7 @@ func TestSQLiteListRepository_SaveAndGetByID(t *testing.T) {
 
 func TestSQLiteListRepository_GetAll(t *testing.T) {
 	// Arrange
-	db, err := adapter.OpenSQLite(filepath.Join(t.TempDir(), "lists.db"))
+	db, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "lists.db"))
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = db.Close() })
 

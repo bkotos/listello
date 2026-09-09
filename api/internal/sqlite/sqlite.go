@@ -1,4 +1,4 @@
-package adapter
+package sqlite
 
 import (
 	"database/sql"
@@ -52,6 +52,11 @@ CREATE TABLE IF NOT EXISTS items (
 		return fmt.Errorf("migrate items: %w", err)
 	}
 	return nil
+}
+
+// DB returns the underlying database connection.
+func (s *SQLite) DB() *sql.DB {
+	return s.db
 }
 
 // Close closes the underlying database.

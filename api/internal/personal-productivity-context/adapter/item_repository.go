@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
+	"github.com/bkotos/listello/internal/sqlite"
 )
 
 // SQLiteItemRepository persists items in SQLite.
@@ -13,8 +14,8 @@ type SQLiteItemRepository struct {
 }
 
 // NewSQLiteItemRepository returns an item repository using the given SQLite connection.
-func NewSQLiteItemRepository(sqlite *SQLite) *SQLiteItemRepository {
-	return &SQLiteItemRepository{db: sqlite.db}
+func NewSQLiteItemRepository(sqlite *sqlite.SQLite) *SQLiteItemRepository {
+	return &SQLiteItemRepository{db: sqlite.DB()}
 }
 
 // Save stores the item.

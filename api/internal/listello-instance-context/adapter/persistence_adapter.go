@@ -7,7 +7,7 @@ import (
 
 	application "github.com/bkotos/listello/internal/listello-instance-context/application"
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
-	ppadapter "github.com/bkotos/listello/internal/personal-productivity-context/adapter"
+	"github.com/bkotos/listello/internal/sqlite"
 )
 
 // FilesystemPersistenceAdapter observes persistence locations on the local filesystem.
@@ -59,7 +59,7 @@ func (*FilesystemPersistenceAdapter) createPersistenceLocation(persistenceLocati
 }
 
 func (*FilesystemPersistenceAdapter) provisionDatabase(persistenceLocation string) error {
-	db, err := ppadapter.OpenSQLite(filepath.Join(persistenceLocation, "listello.db"))
+	db, err := sqlite.OpenSQLite(filepath.Join(persistenceLocation, "listello.db"))
 	if err != nil {
 		return fmt.Errorf("provision storage: %w", err)
 	}
