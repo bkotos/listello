@@ -13,9 +13,14 @@ import (
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 )
 
+func newListelloInstanceRepository(t *testing.T) *adapter.ListelloInstanceRepository {
+	t.Helper()
+	return adapter.NewListelloInstanceRepository(filepath.Join(t.TempDir(), "listello_instance"))
+}
+
 func TestListelloInstanceRepository_SaveAndGet(t *testing.T) {
 	// Arrange
-	repo := adapter.NewListelloInstanceRepository()
+	repo := newListelloInstanceRepository(t)
 	instance, _, err := domain.CreateInstance()
 	require.NoError(t, err)
 
@@ -33,7 +38,7 @@ func TestListelloInstanceRepository_Save_WritesGobWhenPersistenceInitialized(t *
 	location := filepath.Join(t.TempDir(), "listello")
 	require.NoError(t, os.Mkdir(location, 0o755))
 
-	repo := adapter.NewListelloInstanceRepository()
+	repo := newListelloInstanceRepository(t)
 	instance, _, err := domain.CreateInstance()
 	require.NoError(t, err)
 	_, err = instance.SelectHostingMode(domain.HostingModeLocal)
@@ -64,7 +69,7 @@ func TestListelloInstanceRepository_Save_DoesNotWriteGobWhenPersistenceNotInitia
 	location := filepath.Join(t.TempDir(), "listello")
 	require.NoError(t, os.Mkdir(location, 0o755))
 
-	repo := adapter.NewListelloInstanceRepository()
+	repo := newListelloInstanceRepository(t)
 	instance, _, err := domain.CreateInstance()
 	require.NoError(t, err)
 	instance.Persistence.SetLocation(location)
@@ -84,7 +89,7 @@ func TestListelloInstanceRepository_Save_DeletesGobWhenPersistenceNotInitialized
 	path := filepath.Join(location, "listello_instance")
 	require.NoError(t, os.WriteFile(path, []byte("previous"), 0o644))
 
-	repo := adapter.NewListelloInstanceRepository()
+	repo := newListelloInstanceRepository(t)
 	instance, _, err := domain.CreateInstance()
 	require.NoError(t, err)
 	instance.Persistence.SetLocation(location)
@@ -104,7 +109,7 @@ func TestListelloInstanceRepository_Save_DoesNotAttemptDeleteWhenPersistenceNotI
 	path := filepath.Join(dir, "listello_instance")
 	require.NoError(t, os.WriteFile(path, []byte("previous"), 0o644))
 
-	repo := adapter.NewListelloInstanceRepository()
+	repo := newListelloInstanceRepository(t)
 	instance, _, err := domain.CreateInstance()
 	require.NoError(t, err)
 	require.Empty(t, instance.Persistence.Location)
@@ -136,7 +141,7 @@ func TestListelloInstanceRepository_Get_LoadsInstanceFromLocatorWhenNotInMemory(
 	require.NoError(t, gob.NewEncoder(f).Encode(file))
 	require.NoError(t, f.Close())
 
-	repo := adapter.NewListelloInstanceRepositoryWithLocator(locatorPath)
+	repo := adapter.NewListelloInstanceRepository(locatorPath)
 
 	// Act
 	got, err := repo.Get()
@@ -157,7 +162,7 @@ func TestListelloInstanceRepository_Get_ReturnsNilWhenNotInMemoryAndLocatorFileA
 	_, err := os.Stat(locatorPath)
 	require.ErrorIs(t, err, os.ErrNotExist)
 
-	repo := adapter.NewListelloInstanceRepositoryWithLocator(locatorPath)
+	repo := adapter.NewListelloInstanceRepository(locatorPath)
 
 	// Act
 	got, err := repo.Get()
@@ -169,7 +174,7 @@ func TestListelloInstanceRepository_Get_ReturnsNilWhenNotInMemoryAndLocatorFileA
 
 func TestListelloInstanceRepository_Get_ReturnsNilWhenNotExists(t *testing.T) {
 	// Arrange
-	repo := adapter.NewListelloInstanceRepository()
+	repo := newListelloInstanceRepository(t)
 
 	// Act
 	got, err := repo.Get()

@@ -29,8 +29,12 @@ func main() {
 
 			listService := bootstrap.NewListService(db, eventLog)
 			itemService := bootstrap.NewItemService(db, eventLog)
+			locatorPath, err := instanceadapter.ListelloInstanceLocatorPath()
+			if err != nil {
+				return err
+			}
 			instanceService := instanceapp.NewListelloInstanceService(
-				instanceadapter.NewListelloInstanceRepository(),
+				instanceadapter.NewListelloInstanceRepository(locatorPath),
 				instanceadapter.NewFilesystemPersistenceAdapter(),
 				ppadapter.NewLoggingEventPublisher(eventLog),
 			)

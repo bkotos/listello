@@ -19,14 +19,18 @@ type ListelloInstanceRepository struct {
 
 var _ application.ListelloInstanceRepository = (*ListelloInstanceRepository)(nil)
 
-// NewListelloInstanceRepository returns an in-memory Listello instance repository.
-func NewListelloInstanceRepository() *ListelloInstanceRepository {
-	return &ListelloInstanceRepository{}
+// NewListelloInstanceRepository returns a repository that loads the instance from locatorPath when it is not in memory.
+func NewListelloInstanceRepository(locatorPath string) *ListelloInstanceRepository {
+	return &ListelloInstanceRepository{locatorPath: locatorPath}
 }
 
-// NewListelloInstanceRepositoryWithLocator returns a repository that loads the instance from locatorPath when it is not in memory.
-func NewListelloInstanceRepositoryWithLocator(locatorPath string) *ListelloInstanceRepository {
-	return &ListelloInstanceRepository{locatorPath: locatorPath}
+// ListelloInstanceLocatorPath returns the well-known locator file under the user config directory.
+func ListelloInstanceLocatorPath() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("listello instance locator: %w", err)
+	}
+	return filepath.Join(configDir, "listello", "listello_instance"), nil
 }
 
 // Save stores the instance, replacing any previously stored instance.
@@ -83,9 +87,6 @@ func writeListelloInstanceFile(instance domain.ListelloInstance) error {
 func (r *ListelloInstanceRepository) Get() (*domain.ListelloInstance, error) {
 	if r.instance != nil {
 		return r.instance, nil
-	}
-	if r.locatorPath == "" {
-		return nil, nil
 	}
 	instance, err := readListelloInstanceFile(r.locatorPath)
 	if errors.Is(err, os.ErrNotExist) {
