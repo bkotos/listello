@@ -247,57 +247,6 @@ func (_m *MockPersistenceAdapter) EXPECT() *MockPersistenceAdapter_Expecter {
 	return &MockPersistenceAdapter_Expecter{mock: &_m.Mock}
 }
 
-// InitializePersistenceLocation provides a mock function for the type MockPersistenceAdapter
-func (_mock *MockPersistenceAdapter) InitializePersistenceLocation(persistenceLocation string) error {
-	ret := _mock.Called(persistenceLocation)
-
-	if len(ret) == 0 {
-		panic("no return value specified for InitializePersistenceLocation")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(string) error); ok {
-		r0 = returnFunc(persistenceLocation)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
-}
-
-// MockPersistenceAdapter_InitializePersistenceLocation_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'InitializePersistenceLocation'
-type MockPersistenceAdapter_InitializePersistenceLocation_Call struct {
-	*mock.Call
-}
-
-// InitializePersistenceLocation is a helper method to define mock.On call
-//   - persistenceLocation string
-func (_e *MockPersistenceAdapter_Expecter) InitializePersistenceLocation(persistenceLocation any) *MockPersistenceAdapter_InitializePersistenceLocation_Call {
-	return &MockPersistenceAdapter_InitializePersistenceLocation_Call{Call: _e.mock.On("InitializePersistenceLocation", persistenceLocation)}
-}
-
-func (_c *MockPersistenceAdapter_InitializePersistenceLocation_Call) Run(run func(persistenceLocation string)) *MockPersistenceAdapter_InitializePersistenceLocation_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 string
-		if args[0] != nil {
-			arg0 = args[0].(string)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *MockPersistenceAdapter_InitializePersistenceLocation_Call) Return(err error) *MockPersistenceAdapter_InitializePersistenceLocation_Call {
-	_c.Call.Return(err)
-	return _c
-}
-
-func (_c *MockPersistenceAdapter_InitializePersistenceLocation_Call) RunAndReturn(run func(persistenceLocation string) error) *MockPersistenceAdapter_InitializePersistenceLocation_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // ObservePersistenceLocation provides a mock function for the type MockPersistenceAdapter
 func (_mock *MockPersistenceAdapter) ObservePersistenceLocation(persistenceLocation string) (domain.PersistenceLocationObservation, error) {
 	ret := _mock.Called(persistenceLocation)
@@ -354,6 +303,57 @@ func (_c *MockPersistenceAdapter_ObservePersistenceLocation_Call) Return(persist
 }
 
 func (_c *MockPersistenceAdapter_ObservePersistenceLocation_Call) RunAndReturn(run func(persistenceLocation string) (domain.PersistenceLocationObservation, error)) *MockPersistenceAdapter_ObservePersistenceLocation_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ProvisionStorage provides a mock function for the type MockPersistenceAdapter
+func (_mock *MockPersistenceAdapter) ProvisionStorage(persistenceLocation string) error {
+	ret := _mock.Called(persistenceLocation)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ProvisionStorage")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(string) error); ok {
+		r0 = returnFunc(persistenceLocation)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockPersistenceAdapter_ProvisionStorage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ProvisionStorage'
+type MockPersistenceAdapter_ProvisionStorage_Call struct {
+	*mock.Call
+}
+
+// ProvisionStorage is a helper method to define mock.On call
+//   - persistenceLocation string
+func (_e *MockPersistenceAdapter_Expecter) ProvisionStorage(persistenceLocation any) *MockPersistenceAdapter_ProvisionStorage_Call {
+	return &MockPersistenceAdapter_ProvisionStorage_Call{Call: _e.mock.On("ProvisionStorage", persistenceLocation)}
+}
+
+func (_c *MockPersistenceAdapter_ProvisionStorage_Call) Run(run func(persistenceLocation string)) *MockPersistenceAdapter_ProvisionStorage_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockPersistenceAdapter_ProvisionStorage_Call) Return(err error) *MockPersistenceAdapter_ProvisionStorage_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockPersistenceAdapter_ProvisionStorage_Call) RunAndReturn(run func(persistenceLocation string) error) *MockPersistenceAdapter_ProvisionStorage_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -1,6 +1,7 @@
 package application_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -228,14 +229,22 @@ func TestListelloInstanceService_SelectPersistenceLocation_PublishesEvent(t *tes
 
 func TestListelloInstanceService_InitializePersistence_PersistsInstance(t *testing.T) {
 	// Arrange
-	instance := domain.ListelloInstance{ID: "LI_1"}
+	const location = "/var/listello"
+	instance := domain.ListelloInstance{
+		ID:          "LI_1",
+		Persistence: domain.Persistence{Location: location},
+	}
 	repo := NewMockListelloInstanceRepository(t)
+	persistence := NewMockPersistenceAdapter(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
+	svc := application.NewListelloInstanceService(repo, persistence, publisher)
 
 	repo.EXPECT().
 		Get().
 		Return(&instance, nil)
+	persistence.EXPECT().
+		ProvisionStorage(location).
+		Return(nil)
 	repo.EXPECT().
 		Save(mock.MatchedBy(func(saved domain.ListelloInstance) bool {
 			return saved.Persistence.IsInitialized()
@@ -261,13 +270,17 @@ func TestListelloInstanceService_InitializePersistence_PublishesEvent(t *testing
 		Persistence: domain.Persistence{Location: location},
 	}
 	repo := NewMockListelloInstanceRepository(t)
+	persistence := NewMockPersistenceAdapter(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
+	svc := application.NewListelloInstanceService(repo, persistence, publisher)
 
 	var published domain.Event
 	repo.EXPECT().
 		Get().
 		Return(&instance, nil)
+	persistence.EXPECT().
+		ProvisionStorage(location).
+		Return(nil)
 	repo.EXPECT().
 		Save(mock.AnythingOfType("domain.ListelloInstance")).
 		Return(nil)
@@ -290,6 +303,34 @@ func TestListelloInstanceService_InitializePersistence_PublishesEvent(t *testing
 	assert.Equal(t, domain.HostingModeLocal, metadata.Mode)
 	assert.Equal(t, location, metadata.Location)
 	assert.NotEmpty(t, published.Timestamp)
+}
+
+func TestListelloInstanceService_InitializePersistence_DoesNotInitializeWhenProvisionStorageFails(t *testing.T) {
+	// Arrange
+	const location = "/var/listello"
+	instance := domain.ListelloInstance{
+		ID:          "LI_1",
+		HostingMode: domain.HostingModeLocal,
+		Persistence: domain.Persistence{Location: location},
+	}
+	repo := NewMockListelloInstanceRepository(t)
+	persistence := NewMockPersistenceAdapter(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListelloInstanceService(repo, persistence, publisher)
+
+	repo.EXPECT().
+		Get().
+		Return(&instance, nil)
+	persistence.EXPECT().
+		ProvisionStorage(location).
+		Return(errors.New("provision failed"))
+
+	// Act
+	_, err := svc.InitializePersistence()
+
+	// Assert
+	require.Error(t, err)
+	assert.False(t, instance.Persistence.IsInitialized())
 }
 
 func usablePersistenceLocationObservation() domain.PersistenceLocationObservation {
