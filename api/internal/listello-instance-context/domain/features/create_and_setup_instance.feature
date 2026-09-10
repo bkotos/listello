@@ -69,6 +69,12 @@ Feature: Create and set up a Listello instance
     When the user selects persistence location "/var/listello"
     Then selecting the persistence location should fail with error "persistence location is only applicable for local"
 
+  Scenario: Persistence is not initialized when the user has not initialized it
+    Given the user creates an instance
+    And the user has not initialized persistence
+    When the system checks if persistence has been initialized
+    Then the instance should not have persistence initialized
+
   Scenario: Initializing persistence
     Given an instance exists
     And the user selects hosting mode "local"

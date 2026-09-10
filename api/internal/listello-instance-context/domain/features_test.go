@@ -38,10 +38,11 @@ type directoryState struct {
 }
 
 type suiteState struct {
-	instance *domain.ListelloInstance
-	events   []domain.Event
-	lastErr  error
-	dirs     map[string]*directoryState
+	instance                     *domain.ListelloInstance
+	events                       []domain.Event
+	lastErr                      error
+	dirs                         map[string]*directoryState
+	persistenceInitializedCheck  *bool
 }
 
 func (s *suiteState) reset() {
@@ -49,6 +50,7 @@ func (s *suiteState) reset() {
 	s.events = nil
 	s.lastErr = nil
 	s.dirs = map[string]*directoryState{}
+	s.persistenceInitializedCheck = nil
 }
 
 func (s *suiteState) directory(p string) *directoryState {
@@ -214,6 +216,31 @@ func (s *suiteState) theInstanceShouldHavePersistenceInitialized(ctx context.Con
 	require.True(t, s.instance.Persistence.IsInitialized())
 }
 
+func (s *suiteState) theUserHasNotInitializedPersistence(ctx context.Context) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.Falsef(
+		t,
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			return e.Name == domain.EventPersistenceInitialized
+		}),
+		"expected persistence not to have been initialized; got events %v", eventNames(s.events),
+	)
+}
+
+func (s *suiteState) theSystemChecksIfPersistenceHasBeenInitialized(ctx context.Context) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	initialized := s.instance.Persistence.IsInitialized()
+	s.persistenceInitializedCheck = &initialized
+}
+
+func (s *suiteState) theInstanceShouldNotHavePersistenceInitialized(ctx context.Context) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.persistenceInitializedCheck)
+	require.False(t, *s.persistenceInitializedCheck)
+}
+
 func (s *suiteState) theUserCompletesSetup(ctx context.Context) {
 	t := godog.T(ctx)
 	require.NotNil(t, s.instance)
@@ -267,7 +294,10 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the instance should have persistence location "([^"]*)"$`, s.theInstanceShouldHavePersistenceLocation)
 	ctx.Step(`^selecting the persistence location should fail with error "([^"]*)"$`, s.selectingThePersistenceLocationShouldFailWithError)
 	ctx.Step(`^the user initializes persistence$`, s.theUserInitializesPersistence)
+	ctx.Step(`^the user has not initialized persistence$`, s.theUserHasNotInitializedPersistence)
+	ctx.Step(`^the system checks if persistence has been initialized$`, s.theSystemChecksIfPersistenceHasBeenInitialized)
 	ctx.Step(`^the instance should have persistence initialized$`, s.theInstanceShouldHavePersistenceInitialized)
+	ctx.Step(`^the instance should not have persistence initialized$`, s.theInstanceShouldNotHavePersistenceInitialized)
 	ctx.Step(`^the user completes setup$`, s.theUserCompletesSetup)
 	ctx.Step(`^the instance should have setup completed$`, s.theInstanceShouldHaveSetupCompleted)
 }
