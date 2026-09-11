@@ -4,11 +4,26 @@ vi.mock("./util", () => ({
   request: vi.fn(),
 }));
 
-import { createInstance, getInstance, selectHostingMode, selectPersistenceLocation } from "./instance-client";
+import { createInstance, getDefaultPersistenceLocation, getInstance, selectHostingMode, selectPersistenceLocation } from "./instance-client";
 import { request } from "./util";
 
 afterEach(() => {
   vi.clearAllMocks();
+});
+
+describe("getDefaultPersistenceLocation", () => {
+  it("requests the default persistence location from the API", async () => {
+    // Arrange
+    const expected = { Location: "/Users/me/Library/Application Support/listello" };
+    vi.mocked(request).mockResolvedValue(expected);
+
+    // Act
+    const result = await getDefaultPersistenceLocation();
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/instance/default-persistence-location", undefined);
+    expect(result).toEqual(expected);
+  });
 });
 
 describe("createInstance", () => {

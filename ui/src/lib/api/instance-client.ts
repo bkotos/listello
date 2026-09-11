@@ -1,4 +1,9 @@
-import type { ListelloInstanceResponse, SelectHostingModeRequest, SelectPersistenceLocationRequest } from "api-types/listello-instance";
+import type {
+  DefaultPersistenceLocationResponse,
+  ListelloInstanceResponse,
+  SelectHostingModeRequest,
+  SelectPersistenceLocationRequest,
+} from "api-types/listello-instance";
 import { request } from "./util";
 
 export async function createInstance(): Promise<ListelloInstanceResponse> {
@@ -9,6 +14,15 @@ export async function createInstance(): Promise<ListelloInstanceResponse> {
 
 export async function getInstance(init?: RequestInit): Promise<ListelloInstanceResponse | null> {
   return request<ListelloInstanceResponse | null>("/api/instance", init);
+}
+
+export async function getDefaultPersistenceLocation(
+  init?: RequestInit,
+): Promise<DefaultPersistenceLocationResponse> {
+  return request<DefaultPersistenceLocationResponse>(
+    "/api/instance/default-persistence-location",
+    init,
+  );
 }
 
 export async function selectHostingMode(
