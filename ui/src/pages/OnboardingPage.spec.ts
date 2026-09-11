@@ -9,16 +9,23 @@ import {
 import { createElement } from "react";
 import type { ListelloInstanceResponse } from "api-types/listello-instance";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createQueryWrapper } from "../test/renderWithQueryClient";
 import OnboardingPage from "./OnboardingPage";
 
 vi.mock("../lib/api/instance-client", () => ({
   createInstance: vi.fn(),
   getInstance: vi.fn(),
+  getDefaultPersistenceLocation: vi.fn(),
   selectHostingMode: vi.fn(),
   selectPersistenceLocation: vi.fn(),
 }));
 
-import { createInstance, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
+import {
+  createInstance,
+  getDefaultPersistenceLocation,
+  selectHostingMode,
+  selectPersistenceLocation,
+} from "../lib/api/instance-client";
 
 const createdInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -26,6 +33,14 @@ const createdInstance: ListelloInstanceResponse = {
   PersistenceState: "",
   SetupState: "",
 };
+
+const apiDefaultPersistenceLocation =
+  "/Users/api/Library/Application Support/listello";
+
+function renderOnboardingPage() {
+  const { QueryWrapper } = createQueryWrapper();
+  return render(createElement(QueryWrapper, null, createElement(OnboardingPage)));
+}
 
 function itRendersInitializeStepBeforeTimeouts() {
   it("renders the Setting up persistence heading", () => {
@@ -122,7 +137,10 @@ afterEach(() => {
 
 describe("OnboardingPage", () => {
   beforeEach(() => {
-    render(createElement(OnboardingPage));
+    vi.mocked(getDefaultPersistenceLocation).mockResolvedValue({
+      Location: apiDefaultPersistenceLocation,
+    });
+    renderOnboardingPage();
   });
 
   it("renders the Welcome to Listello heading", () => {
@@ -447,14 +465,17 @@ describe("OnboardingPage", () => {
         });
       });
 
-      it("renders a Data directory field", () => {
+      it("renders a Data directory field", async () => {
         // Assert
         const input = screen.getByLabelText("Data directory");
         expect(input).toHaveClass("input");
         expect(input).toHaveAttribute("id", "onb-location");
         expect(input).toHaveAttribute("placeholder", "~/listello");
-        expect(input).toHaveValue(
-          "/Users/jdoe/Library/Application Support/listello",
+        await waitFor(() => {
+          expect(input).toHaveValue(apiDefaultPersistenceLocation);
+        });
+        expect(getDefaultPersistenceLocation).toHaveBeenCalledWith(
+          expect.objectContaining({ signal: expect.any(AbortSignal) }),
         );
         expect(screen.getByText("Data directory")).toHaveClass("label");
       });
@@ -474,16 +495,21 @@ describe("OnboardingPage", () => {
         expect(help).toHaveClass("help");
       });
 
-      it("calls selectPersistenceLocation when Continue is clicked", () => {
+      it("calls selectPersistenceLocation when Continue is clicked", async () => {
         // Arrange
         vi.mocked(selectPersistenceLocation).mockResolvedValue(createdInstance);
+        await waitFor(() => {
+          expect(screen.getByLabelText("Data directory")).toHaveValue(
+            apiDefaultPersistenceLocation,
+          );
+        });
 
         // Act
         fireEvent.click(screen.getByRole("button", { name: "Continue" }));
 
         // Assert
         expect(selectPersistenceLocation).toHaveBeenCalledWith({
-          location: "/Users/jdoe/Library/Application Support/listello",
+          location: apiDefaultPersistenceLocation,
         });
       });
 

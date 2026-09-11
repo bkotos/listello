@@ -1,8 +1,5 @@
 import { ArrowLeft, ArrowRight, Folder } from "lucide-react";
 
-export const defaultDataDirectory =
-  "/Users/jdoe/Library/Application Support/listello";
-
 type DataDirectoryStepProps = {
   value: string;
   onChange: (value: string) => void;

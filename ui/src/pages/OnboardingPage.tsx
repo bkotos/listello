@@ -1,11 +1,11 @@
 import { useCallback, useState } from "react";
 import { Check } from "lucide-react";
 import { createInstance, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
+import { useDefaultPersistenceLocationQuery } from "../lib/api/instance-queries";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
   DataDirectoryFooter,
   DataDirectoryStep,
-  defaultDataDirectory,
 } from "../components/onboarding/Step3-DataDirectory";
 import { InitializeFooter, InitializeStep } from "../components/onboarding/Step4-Initialize";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
@@ -31,10 +31,14 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
 }
 
 function OnboardingPage() {
+  const { data: defaultPersistenceLocation } = useDefaultPersistenceLocationQuery();
   const [step, setStep] = useState(OnboardingStep.Step1Welcome);
   const [hostingMode, setHostingMode] = useState(HostingMode.Local);
-  const [dataDirectory, setDataDirectory] = useState(defaultDataDirectory);
+  const [dataDirectoryOverride, setDataDirectoryOverride] = useState<string | null>(null);
   const [initializeComplete, setInitializeComplete] = useState(false);
+
+  const dataDirectory =
+    dataDirectoryOverride ?? defaultPersistenceLocation?.Location ?? "";
 
   const handleInitializeComplete = useCallback(() => {
     setInitializeComplete(true);
@@ -131,7 +135,7 @@ function OnboardingPage() {
           {isStep3DataDirectory && (
             <DataDirectoryStep
               value={dataDirectory}
-              onChange={setDataDirectory}
+              onChange={setDataDirectoryOverride}
             />
           )}
           {isStep4Initialize && (
