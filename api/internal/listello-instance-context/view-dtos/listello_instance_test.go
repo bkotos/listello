@@ -29,3 +29,14 @@ func TestListelloInstanceFromDomain(t *testing.T) {
 	assert.Equal(t, string(instance.Persistence.State), received.PersistenceState)
 	assert.Equal(t, string(instance.SetupState), received.SetupState)
 }
+
+func TestDefaultPersistenceLocationFromPath(t *testing.T) {
+	// Arrange
+	const location = "/Users/me/Library/Application Support/listello"
+
+	// Act
+	received := viewdto.DefaultPersistenceLocationFromPath(location)
+
+	// Assert
+	assert.Equal(t, location, received.Location)
+}

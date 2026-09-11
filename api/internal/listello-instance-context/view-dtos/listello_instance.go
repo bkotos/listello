@@ -12,6 +12,16 @@ type SelectHostingModeRequest struct {
 	Mode string `json:"mode"`
 }
 
+// DefaultPersistenceLocationResponse is the HTTP representation of the default persistence location.
+type DefaultPersistenceLocationResponse struct {
+	Location string `json:"Location"`
+}
+
+// DefaultPersistenceLocationFromPath maps a persistence location path to its response DTO.
+func DefaultPersistenceLocationFromPath(location string) DefaultPersistenceLocationResponse {
+	return DefaultPersistenceLocationResponse{Location: location}
+}
+
 // ListelloInstanceResponse is the HTTP representation of a Listello instance.
 type ListelloInstanceResponse struct {
 	HostingMode         string `json:"HostingMode"`

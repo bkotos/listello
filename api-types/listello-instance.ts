@@ -16,6 +16,12 @@ export interface SelectHostingModeRequest {
   mode: string;
 }
 /**
+ * DefaultPersistenceLocationResponse is the HTTP representation of the default persistence location.
+ */
+export interface DefaultPersistenceLocationResponse {
+  Location: string;
+}
+/**
  * ListelloInstanceResponse is the HTTP representation of a Listello instance.
  */
 export interface ListelloInstanceResponse {
