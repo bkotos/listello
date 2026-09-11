@@ -29,11 +29,20 @@ func NewListelloInstanceRepository(locatorPath string) (*ListelloInstanceReposit
 
 // ListelloInstanceLocatorPath returns the well-known locator file under the user config directory.
 func ListelloInstanceLocatorPath() (string, error) {
-	configDir, err := os.UserConfigDir()
+	configDir, err := GetDefaultPersistenceLocation()
 	if err != nil {
 		return "", fmt.Errorf("listello instance locator: %w", err)
 	}
-	return filepath.Join(configDir, "listello", "listello_instance"), nil
+	return filepath.Join(configDir, "listello_instance"), nil
+}
+
+// GetDefaultPersistenceLocation returns the well-known Listello directory under the user config directory.
+func GetDefaultPersistenceLocation() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("listello config dir: %w", err)
+	}
+	return filepath.Join(configDir, "listello"), nil
 }
 
 // Save stores the instance, replacing any previously stored instance.

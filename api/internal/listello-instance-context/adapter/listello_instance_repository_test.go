@@ -20,6 +20,19 @@ func newListelloInstanceRepository(t *testing.T) *adapter.ListelloInstanceReposi
 	return repo
 }
 
+func TestGetDefaultPersistenceLocation(t *testing.T) {
+	// Arrange
+	configDir, err := os.UserConfigDir()
+	require.NoError(t, err)
+
+	// Act
+	got, err := adapter.GetDefaultPersistenceLocation()
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, filepath.Join(configDir, "listello"), got)
+}
+
 func TestListelloInstanceRepository_SaveAndGet(t *testing.T) {
 	// Arrange
 	repo := newListelloInstanceRepository(t)
