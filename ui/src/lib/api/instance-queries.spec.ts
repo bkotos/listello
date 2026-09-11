@@ -4,13 +4,35 @@ import { createQueryWrapper } from "../../test/renderWithQueryClient";
 
 vi.mock("./instance-client", () => ({
   getInstance: vi.fn(),
+  getDefaultPersistenceLocation: vi.fn(),
 }));
 
-import { getInstance } from "./instance-client";
-import { useInstanceQuery } from "./instance-queries";
+import { getDefaultPersistenceLocation, getInstance } from "./instance-client";
+import { useDefaultPersistenceLocationQuery, useInstanceQuery } from "./instance-queries";
 
 afterEach(() => {
   vi.clearAllMocks();
+});
+
+describe("useDefaultPersistenceLocationQuery", () => {
+  it("loads the default persistence location from the client", async () => {
+    // Arrange
+    const expected = { Location: "/Users/me/Library/Application Support/listello" };
+    vi.mocked(getDefaultPersistenceLocation).mockResolvedValue(expected);
+
+    const { QueryWrapper } = createQueryWrapper();
+    const { result } = renderHook(() => useDefaultPersistenceLocationQuery(), {
+      wrapper: QueryWrapper,
+    });
+
+    // Assert
+    await waitFor(() => {
+      expect(result.current.data).toEqual(expected);
+    });
+    expect(getDefaultPersistenceLocation).toHaveBeenCalledWith(
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
 });
 
 describe("useInstanceQuery", () => {
