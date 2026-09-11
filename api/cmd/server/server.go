@@ -28,5 +28,6 @@ func newAPIServer(listService application.ListService, itemService application.I
 	mux.HandleFunc("POST /api/instance", instancehandlers.CreateInstance(instanceService))
 	mux.HandleFunc("POST /api/instance/hosting-mode", instancehandlers.SelectHostingMode(instanceService))
 	mux.HandleFunc("POST /api/instance/persistence-location", instancehandlers.SelectPersistenceLocation(instanceService))
+	mux.HandleFunc("POST /api/instance/initialize-persistence", instancehandlers.InitializePersistence(instanceService))
 	return mux
 }
