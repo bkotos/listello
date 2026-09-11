@@ -10,23 +10,27 @@ import (
 
 // SQLiteItemRepository persists items in SQLite.
 type SQLiteItemRepository struct {
-	db *sql.DB
+	workspace *sqlite.WorkspaceDB
 }
 
-// NewSQLiteItemRepository returns an item repository using the given SQLite connection.
-func NewSQLiteItemRepository(sqlite *sqlite.SQLite) *SQLiteItemRepository {
-	return &SQLiteItemRepository{db: sqlite.DB()}
+// NewSQLiteItemRepository returns an item repository using the given workspace database.
+func NewSQLiteItemRepository(workspace *sqlite.WorkspaceDB) *SQLiteItemRepository {
+	return &SQLiteItemRepository{workspace: workspace}
 }
 
 // Save stores the item.
 func (r *SQLiteItemRepository) Save(item domain.Item) error {
+	db, err := r.workspace.DB()
+	if err != nil {
+		return fmt.Errorf("save item: %w", err)
+	}
 	const q = `
 INSERT INTO items (id, list_id, title, state) VALUES (?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
 	list_id = excluded.list_id,
 	title = excluded.title,
 	state = excluded.state;`
-	if _, err := r.db.Exec(q, item.ID, item.ListID, item.Title, string(item.State)); err != nil {
+	if _, err := db.Exec(q, item.ID, item.ListID, item.Title, string(item.State)); err != nil {
 		return fmt.Errorf("save item: %w", err)
 	}
 	return nil
@@ -34,9 +38,13 @@ ON CONFLICT(id) DO UPDATE SET
 
 // GetByID returns the item with the given ID.
 func (r *SQLiteItemRepository) GetByID(id string) (domain.Item, error) {
+	db, err := r.workspace.DB()
+	if err != nil {
+		return domain.Item{}, fmt.Errorf("find item: %w", err)
+	}
 	const q = `SELECT id, list_id, title, state FROM items WHERE id = ?`
 	var itemID, listID, title, state string
-	err := r.db.QueryRow(q, id).Scan(&itemID, &listID, &title, &state)
+	err = db.QueryRow(q, id).Scan(&itemID, &listID, &title, &state)
 	if err == sql.ErrNoRows {
 		return domain.Item{}, fmt.Errorf("item %q not found", id)
 	}
@@ -53,8 +61,12 @@ func (r *SQLiteItemRepository) GetByID(id string) (domain.Item, error) {
 
 // GetAll returns all items for the given list in insertion order.
 func (r *SQLiteItemRepository) GetAll(listID string) ([]domain.Item, error) {
+	db, err := r.workspace.DB()
+	if err != nil {
+		return nil, fmt.Errorf("list items: %w", err)
+	}
 	const q = `SELECT id, list_id, title, state FROM items WHERE list_id = ? ORDER BY rowid`
-	rows, err := r.db.Query(q, listID)
+	rows, err := db.Query(q, listID)
 	if err != nil {
 		return nil, fmt.Errorf("list items: %w", err)
 	}
@@ -81,8 +93,12 @@ func (r *SQLiteItemRepository) GetAll(listID string) ([]domain.Item, error) {
 
 // Delete removes the item with the given ID.
 func (r *SQLiteItemRepository) Delete(id string) error {
+	db, err := r.workspace.DB()
+	if err != nil {
+		return fmt.Errorf("delete item: %w", err)
+	}
 	const q = `DELETE FROM items WHERE id = ?`
-	if _, err := r.db.Exec(q, id); err != nil {
+	if _, err := db.Exec(q, id); err != nil {
 		return fmt.Errorf("delete item: %w", err)
 	}
 	return nil

@@ -19,12 +19,12 @@ import (
 func TestSQLiteItemRepository_Save_PersistsItem(t *testing.T) {
 	// Arrange
 	path := filepath.Join(t.TempDir(), "items.db")
-	db, err := sqlite.OpenSQLite(path)
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = db.Close() })
+	workspace := sqlite.NewWorkspaceDB()
+	require.NoError(t, workspace.Open(path))
+	t.Cleanup(func() { _ = workspace.Close() })
 
-	listRepo := adapter.NewSQLiteListRepository(db)
-	itemRepo := adapter.NewSQLiteItemRepository(db)
+	listRepo := adapter.NewSQLiteListRepository(workspace)
+	itemRepo := adapter.NewSQLiteItemRepository(workspace)
 
 	list, _, err := domain.CreateList("Next actions")
 	require.NoError(t, err)
@@ -57,12 +57,9 @@ func TestSQLiteItemRepository_Save_PersistsItem(t *testing.T) {
 
 func TestSQLiteItemRepository_GetAll_ReturnsItemsForList(t *testing.T) {
 	// Arrange
-	db, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = db.Close() })
-
-	listRepo := adapter.NewSQLiteListRepository(db)
-	itemRepo := adapter.NewSQLiteItemRepository(db)
+	workspace := openWorkspaceDB(t, "items.db")
+	listRepo := adapter.NewSQLiteListRepository(workspace)
+	itemRepo := adapter.NewSQLiteItemRepository(workspace)
 
 	work, _, err := domain.CreateList("Work")
 	require.NoError(t, err)
@@ -92,12 +89,9 @@ func TestSQLiteItemRepository_GetAll_ReturnsItemsForList(t *testing.T) {
 
 func TestSQLiteItemRepository_SaveAndGetByID(t *testing.T) {
 	// Arrange
-	db, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = db.Close() })
-
-	listRepo := adapter.NewSQLiteListRepository(db)
-	itemRepo := adapter.NewSQLiteItemRepository(db)
+	workspace := openWorkspaceDB(t, "items.db")
+	listRepo := adapter.NewSQLiteListRepository(workspace)
+	itemRepo := adapter.NewSQLiteItemRepository(workspace)
 
 	list, _, err := domain.CreateList("Next actions")
 	require.NoError(t, err)
@@ -117,12 +111,9 @@ func TestSQLiteItemRepository_SaveAndGetByID(t *testing.T) {
 
 func TestSQLiteItemRepository_Delete_RemovesItem(t *testing.T) {
 	// Arrange
-	db, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "items.db"))
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = db.Close() })
-
-	listRepo := adapter.NewSQLiteListRepository(db)
-	itemRepo := adapter.NewSQLiteItemRepository(db)
+	workspace := openWorkspaceDB(t, "items.db")
+	listRepo := adapter.NewSQLiteListRepository(workspace)
+	itemRepo := adapter.NewSQLiteItemRepository(workspace)
 
 	list, _, err := domain.CreateList("Next actions")
 	require.NoError(t, err)

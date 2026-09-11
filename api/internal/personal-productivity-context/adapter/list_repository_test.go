@@ -1,7 +1,6 @@
 package adapter_test
 
 import (
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,16 +8,12 @@ import (
 
 	adapter "github.com/bkotos/listello/internal/personal-productivity-context/adapter"
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
-	"github.com/bkotos/listello/internal/sqlite"
 )
 
 func TestSQLiteListRepository_SaveAndGetByID(t *testing.T) {
 	// Arrange
-	db, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "lists.db"))
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = db.Close() })
-
-	repo := adapter.NewSQLiteListRepository(db)
+	workspace := openWorkspaceDB(t, "lists.db")
+	repo := adapter.NewSQLiteListRepository(workspace)
 	list, _, err := domain.CreateList("Next actions")
 	require.NoError(t, err)
 
@@ -34,11 +29,8 @@ func TestSQLiteListRepository_SaveAndGetByID(t *testing.T) {
 
 func TestSQLiteListRepository_GetAll(t *testing.T) {
 	// Arrange
-	db, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "lists.db"))
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = db.Close() })
-
-	repo := adapter.NewSQLiteListRepository(db)
+	workspace := openWorkspaceDB(t, "lists.db")
+	repo := adapter.NewSQLiteListRepository(workspace)
 	work, _, err := domain.CreateList("Work")
 	require.NoError(t, err)
 	personal, _, err := domain.CreateList("Personal")

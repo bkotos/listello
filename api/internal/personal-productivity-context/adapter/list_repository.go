@@ -10,20 +10,24 @@ import (
 
 // SQLiteListRepository persists lists in SQLite.
 type SQLiteListRepository struct {
-	db *sql.DB
+	workspace *sqlite.WorkspaceDB
 }
 
-// NewSQLiteListRepository returns a list repository using the given SQLite connection.
-func NewSQLiteListRepository(sqlite *sqlite.SQLite) *SQLiteListRepository {
-	return &SQLiteListRepository{db: sqlite.DB()}
+// NewSQLiteListRepository returns a list repository using the given workspace database.
+func NewSQLiteListRepository(workspace *sqlite.WorkspaceDB) *SQLiteListRepository {
+	return &SQLiteListRepository{workspace: workspace}
 }
 
 // Save stores the list.
 func (r *SQLiteListRepository) Save(list domain.List) error {
+	db, err := r.workspace.DB()
+	if err != nil {
+		return fmt.Errorf("save list: %w", err)
+	}
 	const q = `
 INSERT INTO lists (id, name) VALUES (?, ?)
 ON CONFLICT(id) DO UPDATE SET name = excluded.name;`
-	if _, err := r.db.Exec(q, list.ID, list.Name); err != nil {
+	if _, err := db.Exec(q, list.ID, list.Name); err != nil {
 		return fmt.Errorf("save list: %w", err)
 	}
 	return nil
@@ -31,9 +35,13 @@ ON CONFLICT(id) DO UPDATE SET name = excluded.name;`
 
 // GetByID returns the list with the given ID.
 func (r *SQLiteListRepository) GetByID(id string) (domain.List, error) {
+	db, err := r.workspace.DB()
+	if err != nil {
+		return domain.List{}, fmt.Errorf("find list: %w", err)
+	}
 	const q = `SELECT id, name FROM lists WHERE id = ?`
 	var listID, name string
-	err := r.db.QueryRow(q, id).Scan(&listID, &name)
+	err = db.QueryRow(q, id).Scan(&listID, &name)
 	if err == sql.ErrNoRows {
 		return domain.List{}, fmt.Errorf("list %q not found", id)
 	}
@@ -45,8 +53,12 @@ func (r *SQLiteListRepository) GetByID(id string) (domain.List, error) {
 
 // GetAll returns all lists in insertion order.
 func (r *SQLiteListRepository) GetAll() ([]domain.List, error) {
+	db, err := r.workspace.DB()
+	if err != nil {
+		return nil, fmt.Errorf("list lists: %w", err)
+	}
 	const q = `SELECT id, name FROM lists ORDER BY rowid`
-	rows, err := r.db.Query(q)
+	rows, err := db.Query(q)
 	if err != nil {
 		return nil, fmt.Errorf("list lists: %w", err)
 	}
