@@ -42,3 +42,9 @@ export async function selectPersistenceLocation(
     body: JSON.stringify(body),
   });
 }
+
+export async function initializePersistence(): Promise<ListelloInstanceResponse> {
+  return request<ListelloInstanceResponse>("/api/instance/initialize-persistence", {
+    method: "POST",
+  });
+}
