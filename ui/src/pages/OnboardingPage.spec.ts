@@ -18,11 +18,13 @@ vi.mock("../lib/api/instance-client", () => ({
   getDefaultPersistenceLocation: vi.fn(),
   selectHostingMode: vi.fn(),
   selectPersistenceLocation: vi.fn(),
+  initializePersistence: vi.fn(),
 }));
 
 import {
   createInstance,
   getDefaultPersistenceLocation,
+  initializePersistence,
   selectHostingMode,
   selectPersistenceLocation,
 } from "../lib/api/instance-client";
@@ -511,6 +513,48 @@ describe("OnboardingPage", () => {
         expect(selectPersistenceLocation).toHaveBeenCalledWith({
           location: apiDefaultPersistenceLocation,
         });
+      });
+
+      it("calls initializePersistence when Continue is clicked", async () => {
+        // Arrange
+        vi.mocked(selectPersistenceLocation).mockResolvedValue(createdInstance);
+        vi.mocked(initializePersistence).mockResolvedValue(createdInstance);
+        await waitFor(() => {
+          expect(screen.getByLabelText("Data directory")).toHaveValue(
+            apiDefaultPersistenceLocation,
+          );
+        });
+
+        // Act
+        fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+        // Assert
+        await waitFor(() => {
+          expect(initializePersistence).toHaveBeenCalledOnce();
+        });
+        expect(initializePersistence).toHaveBeenCalledWith();
+      });
+
+      it("calls initializePersistence after selectPersistenceLocation", async () => {
+        // Arrange
+        vi.mocked(selectPersistenceLocation).mockResolvedValue(createdInstance);
+        vi.mocked(initializePersistence).mockResolvedValue(createdInstance);
+        await waitFor(() => {
+          expect(screen.getByLabelText("Data directory")).toHaveValue(
+            apiDefaultPersistenceLocation,
+          );
+        });
+
+        // Act
+        fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+        // Assert
+        await waitFor(() => {
+          expect(initializePersistence).toHaveBeenCalledOnce();
+        });
+        expect(selectPersistenceLocation.mock.invocationCallOrder[0]).toBeLessThan(
+          initializePersistence.mock.invocationCallOrder[0],
+        );
       });
 
       describe("when the Data directory field is changed", () => {

@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Check } from "lucide-react";
-import { createInstance, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
+import { createInstance, initializePersistence, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
 import { useDefaultPersistenceLocationQuery } from "../lib/api/instance-queries";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
@@ -61,9 +61,10 @@ function OnboardingPage() {
     }
   }
 
-  function handleDataDirectoryContinue() {
-    void selectPersistenceLocation({ location: dataDirectory });
+  async function handleDataDirectoryContinue() {
     setStep(OnboardingStep.Step4Initialize);
+    await selectPersistenceLocation({ location: dataDirectory });
+    await initializePersistence();
   }
 
   const isStep1Welcome = step === OnboardingStep.Step1Welcome;
