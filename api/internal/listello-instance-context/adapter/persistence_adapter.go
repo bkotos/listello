@@ -51,6 +51,11 @@ func (a *FilesystemPersistenceAdapter) ProvisionStorage(persistenceLocation stri
 	return nil
 }
 
+// GetDefaultPersistenceLocation returns the well-known Listello directory under the user config directory.
+func (*FilesystemPersistenceAdapter) GetDefaultPersistenceLocation() (string, error) {
+	return GetDefaultPersistenceLocation()
+}
+
 func (*FilesystemPersistenceAdapter) createPersistenceLocation(persistenceLocation string) error {
 	if err := os.Mkdir(persistenceLocation, 0o755); err != nil {
 		return fmt.Errorf("provision storage: %w", err)

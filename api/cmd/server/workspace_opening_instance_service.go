@@ -47,6 +47,10 @@ func (s *workspaceOpeningInstanceService) InitializePersistence() (domain.Listel
 	return instance, nil
 }
 
+func (s *workspaceOpeningInstanceService) GetDefaultPersistenceLocation() (string, error) {
+	return s.inner.GetDefaultPersistenceLocation()
+}
+
 func openWorkspaceDB(workspace *sqlite.WorkspaceDB, persistenceLocation string) error {
 	return workspace.Open(filepath.Join(persistenceLocation, "listello.db"))
 }

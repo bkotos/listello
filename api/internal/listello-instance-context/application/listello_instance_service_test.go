@@ -340,3 +340,23 @@ func usablePersistenceLocationObservation() domain.PersistenceLocationObservatio
 	observation.SetLocationExists(false)
 	return observation
 }
+
+func TestListelloInstanceService_GetDefaultPersistenceLocation_ReturnsLocationFromAdapter(t *testing.T) {
+	// Arrange
+	const location = "/Users/me/Library/Application Support/listello"
+	repo := NewMockListelloInstanceRepository(t)
+	persistence := NewMockPersistenceAdapter(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListelloInstanceService(repo, persistence, publisher)
+
+	persistence.EXPECT().
+		GetDefaultPersistenceLocation().
+		Return(location, nil)
+
+	// Act
+	got, err := svc.GetDefaultPersistenceLocation()
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, location, got)
+}

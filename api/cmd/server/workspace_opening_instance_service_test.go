@@ -36,6 +36,10 @@ func (s *stubInstanceService) InitializePersistence() (domain.ListelloInstance, 
 	return s.instance, s.err
 }
 
+func (s *stubInstanceService) GetDefaultPersistenceLocation() (string, error) {
+	return "", nil
+}
+
 func TestWorkspaceOpeningInstanceService_InitializePersistence_OpensWorkspaceDB(t *testing.T) {
 	// Arrange
 	location := t.TempDir()

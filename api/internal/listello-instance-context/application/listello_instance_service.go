@@ -14,6 +14,7 @@ type ListelloInstanceRepository interface {
 type PersistenceAdapter interface {
 	ObservePersistenceLocation(persistenceLocation string) (domain.PersistenceLocationObservation, error)
 	ProvisionStorage(persistenceLocation string) error
+	GetDefaultPersistenceLocation() (string, error)
 }
 
 // ListelloInstanceService defines Listello instance application operations.
@@ -23,6 +24,7 @@ type ListelloInstanceService interface {
 	SelectHostingMode(mode domain.HostingMode) (domain.ListelloInstance, error)
 	SelectPersistenceLocation(location string) (domain.ListelloInstance, error)
 	InitializePersistence() (domain.ListelloInstance, error)
+	GetDefaultPersistenceLocation() (string, error)
 }
 
 type listelloInstanceService struct {
@@ -124,4 +126,9 @@ func (s *listelloInstanceService) InitializePersistence() (domain.ListelloInstan
 		return domain.ListelloInstance{}, err
 	}
 	return *instance, nil
+}
+
+// GetDefaultPersistenceLocation returns the well-known default persistence location.
+func (s *listelloInstanceService) GetDefaultPersistenceLocation() (string, error) {
+	return s.persistenceAdapter.GetDefaultPersistenceLocation()
 }
