@@ -1,4 +1,3 @@
-@wip
 Feature: Set up personal productivity
   As a user
   I want to create a space and myself as a user, then have the system create an inbox and assign the space, then create my first list
@@ -8,11 +7,13 @@ Feature: Set up personal productivity
     When the user creates a space named "Personal"
     Then a "SpaceCreated" event should have occurred
     And the space "Personal" should exist
+    And the space "Personal" should have an ID prefixed with "SP_"
 
   Scenario: Creating themselves as a user
     When the user creates themselves as a user named "Alex"
     Then a "UserCreated" event should have occurred
     And the user "Alex" should exist
+    And the user "Alex" should have an ID prefixed with "US_"
 
   Scenario: Creating an inbox
     Given a space named "Personal" exists
@@ -52,7 +53,9 @@ Feature: Set up personal productivity
     And a "ListCreated" event should have occurred
     And a "FirstListCreated" event should have occurred
     And the space "Personal" should exist
+    And the space "Personal" should have an ID prefixed with "SP_"
     And the user "Alex" should exist
+    And the user "Alex" should have an ID prefixed with "US_"
     And the list "Inbox" should exist
     And the space "Personal" should be assigned to the user "Alex"
     And the list "Next actions" should exist

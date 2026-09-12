@@ -7,6 +7,7 @@ type Event = event.Event
 
 const (
 	EventListCreated             EventName = "ListCreated"
+	EventFirstListCreated        EventName = "FirstListCreated"
 	EventItemDefined             EventName = "ItemDefined"
 	EventItemCompleted           EventName = "ItemCompleted"
 	EventItemUncompleted         EventName = "ItemUncompleted"
@@ -21,11 +22,41 @@ const (
 	EventSubtaskPriorityChanged  EventName = "SubtaskPriorityChanged"
 	EventItemMovedToOtherList    EventName = "ItemMovedToOtherList"
 	EventItemLinkedAsChildOfItem EventName = "ItemLinkedAsChildOfItem"
+	EventSpaceCreated            EventName = "SpaceCreated"
+	EventUserCreated             EventName = "UserCreated"
+	EventInboxCreated            EventName = "InboxCreated"
+	EventSpaceAssignedToUser     EventName = "SpaceAssignedToUser"
 )
 
 // EventMetadataListCreated is the payload for a ListCreated event.
 type EventMetadataListCreated struct {
 	ID string
+}
+
+// EventMetadataFirstListCreated is the payload for a FirstListCreated event.
+type EventMetadataFirstListCreated struct {
+	ID string
+}
+
+// EventMetadataSpaceCreated is the payload for a SpaceCreated event.
+type EventMetadataSpaceCreated struct {
+	ID string
+}
+
+// EventMetadataUserCreated is the payload for a UserCreated event.
+type EventMetadataUserCreated struct {
+	ID string
+}
+
+// EventMetadataInboxCreated is the payload for an InboxCreated event.
+type EventMetadataInboxCreated struct {
+	ID string
+}
+
+// EventMetadataSpaceAssignedToUser is the payload for a SpaceAssignedToUser event.
+type EventMetadataSpaceAssignedToUser struct {
+	ID     string
+	UserID string
 }
 
 // EventMetadataItemDefined is the payload for an ItemDefined event.

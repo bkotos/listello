@@ -37,6 +37,8 @@ type suiteState struct {
 	lists        map[string]domain.List
 	items        map[string]*domain.Item
 	deletedItems map[string]domain.Item
+	spaces       map[string]domain.Space
+	users        map[string]domain.User
 	events       []domain.Event
 	lastErr      error
 }
@@ -46,6 +48,8 @@ func (s *suiteState) reset() {
 	s.lists = make(map[string]domain.List)
 	s.items = make(map[string]*domain.Item)
 	s.deletedItems = make(map[string]domain.Item)
+	s.spaces = make(map[string]domain.Space)
+	s.users = make(map[string]domain.User)
 	s.events = nil
 	s.lastErr = nil
 }
@@ -84,6 +88,116 @@ func (s *suiteState) aEventShouldHaveOccurred(ctx context.Context, eventName str
 
 func (s *suiteState) theListShouldExist(ctx context.Context, name string) {
 	require.Contains(godog.T(ctx), s.lists, name)
+}
+
+func (s *suiteState) theUserCreatesASpaceNamed(name string) {
+	space, ev, err := domain.CreateSpace(name)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.spaces[space.Name] = space
+	s.record(ev)
+}
+
+func (s *suiteState) aSpaceNamedExists(ctx context.Context, name string) {
+	s.theUserCreatesASpaceNamed(name)
+	require.NoError(godog.T(ctx), s.lastErr)
+}
+
+func (s *suiteState) theSpaceShouldExist(ctx context.Context, name string) {
+	require.Contains(godog.T(ctx), s.spaces, name)
+}
+
+func (s *suiteState) theSpaceShouldHaveAnIDPrefixedWith(ctx context.Context, name, prefix string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.spaces, name)
+	require.Truef(t, strings.HasPrefix(s.spaces[name].ID, prefix), "expected space %q ID to start with %q; got %q", name, prefix, s.spaces[name].ID)
+}
+
+func (s *suiteState) theUserCreatesThemselvesAsAUserNamed(name string) {
+	user, ev, err := domain.CreateUser(name)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.users[user.Name] = user
+	s.record(ev)
+}
+
+func (s *suiteState) aUserNamedExists(ctx context.Context, name string) {
+	s.theUserCreatesThemselvesAsAUserNamed(name)
+	require.NoError(godog.T(ctx), s.lastErr)
+}
+
+func (s *suiteState) theUserShouldExist(ctx context.Context, name string) {
+	require.Contains(godog.T(ctx), s.users, name)
+}
+
+func (s *suiteState) theUserShouldHaveAnIDPrefixedWith(ctx context.Context, name, prefix string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.users, name)
+	require.Truef(t, strings.HasPrefix(s.users[name].ID, prefix), "expected user %q ID to start with %q; got %q", name, prefix, s.users[name].ID)
+}
+
+func (s *suiteState) theSystemCreatesAnInbox() {
+	var space domain.Space
+	for _, sp := range s.spaces {
+		space = sp
+		break
+	}
+	list, ev, err := domain.CreateInbox(space)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.lists[list.Name] = list
+	s.record(ev)
+}
+
+func (s *suiteState) theInboxShouldBeAttachedToTheSpace(ctx context.Context, spaceName string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.lists, "Inbox")
+	require.Contains(t, s.spaces, spaceName)
+	require.Equal(t, spaceName, s.lists["Inbox"].SpaceName)
+}
+
+func (s *suiteState) theSystemAssignsTheSpaceToTheUser(spaceName, userName string) {
+	space := s.spaces[spaceName]
+	ev, err := space.AssignToUser(s.users[userName])
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.spaces[spaceName] = space
+	s.record(ev)
+}
+
+func (s *suiteState) theSpaceShouldBeAssignedToTheUser(ctx context.Context, spaceName, userName string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.spaces, spaceName)
+	require.Contains(t, s.users, userName)
+	require.Equal(t, s.users[userName].ID, s.spaces[spaceName].UserID)
+}
+
+func (s *suiteState) theUserHasNoListsOtherThanTheInbox(ctx context.Context) {
+	t := godog.T(ctx)
+	require.Contains(t, s.lists, "Inbox")
+	for name, list := range s.lists {
+		require.Truef(t, list.IsInbox(), "expected no lists other than the inbox; got %q", name)
+	}
+}
+
+func (s *suiteState) theUserCreatesTheirFirstListNamed(name string) {
+	list, events, err := domain.CreateFirstList(name)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.lists[list.Name] = list
+	for _, ev := range events {
+		s.record(ev)
+	}
 }
 
 func (s *suiteState) aListNamedExists(ctx context.Context, name string) {
@@ -571,6 +685,21 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the user creates a list named "([^"]*)"$`, s.theUserCreatesAListNamed)
 	ctx.Step(`^a "([^"]*)" event should have occurred$`, s.aEventShouldHaveOccurred)
 	ctx.Step(`^the list "([^"]*)" should exist$`, s.theListShouldExist)
+	ctx.Step(`^the user creates a space named "([^"]*)"$`, s.theUserCreatesASpaceNamed)
+	ctx.Step(`^a space named "([^"]*)" exists$`, s.aSpaceNamedExists)
+	ctx.Step(`^the space "([^"]*)" should exist$`, s.theSpaceShouldExist)
+	ctx.Step(`^the space "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theSpaceShouldHaveAnIDPrefixedWith)
+	ctx.Step(`^the user creates themselves as a user named "([^"]*)"$`, s.theUserCreatesThemselvesAsAUserNamed)
+	ctx.Step(`^a user named "([^"]*)" exists$`, s.aUserNamedExists)
+	ctx.Step(`^the user "([^"]*)" should exist$`, s.theUserShouldExist)
+	ctx.Step(`^the user "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theUserShouldHaveAnIDPrefixedWith)
+	ctx.Step(`^the system creates an inbox$`, s.theSystemCreatesAnInbox)
+	ctx.Step(`^the system created an inbox$`, s.theSystemCreatesAnInbox)
+	ctx.Step(`^the inbox should be attached to the space "([^"]*)"$`, s.theInboxShouldBeAttachedToTheSpace)
+	ctx.Step(`^the system assigns the space "([^"]*)" to the user "([^"]*)"$`, s.theSystemAssignsTheSpaceToTheUser)
+	ctx.Step(`^the space "([^"]*)" should be assigned to the user "([^"]*)"$`, s.theSpaceShouldBeAssignedToTheUser)
+	ctx.Step(`^the user has no lists other than the inbox$`, s.theUserHasNoListsOtherThanTheInbox)
+	ctx.Step(`^the user creates their first list named "([^"]*)"$`, s.theUserCreatesTheirFirstListNamed)
 	ctx.Step(`^a list named "([^"]*)" exists$`, s.aListNamedExists)
 	ctx.Step(`^an inbox list exists$`, s.anInboxListExists)
 	ctx.Step(`^the user defines an item titled "([^"]*)" on the list "([^"]*)"$`, s.theUserDefinesAnItemTitledOnTheList)

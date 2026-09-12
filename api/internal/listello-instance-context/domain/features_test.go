@@ -38,11 +38,11 @@ type directoryState struct {
 }
 
 type suiteState struct {
-	instance                     *domain.ListelloInstance
-	events                       []domain.Event
-	lastErr                      error
-	dirs                         map[string]*directoryState
-	persistenceInitializedCheck  *bool
+	instance                    *domain.ListelloInstance
+	events                      []domain.Event
+	lastErr                     error
+	dirs                        map[string]*directoryState
+	persistenceInitializedCheck *bool
 }
 
 func (s *suiteState) reset() {
