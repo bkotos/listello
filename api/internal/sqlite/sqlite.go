@@ -59,6 +59,15 @@ CREATE TABLE IF NOT EXISTS users (
 	if _, err := s.db.Exec(usersQ); err != nil {
 		return fmt.Errorf("migrate users: %w", err)
 	}
+	const spacesQ = `
+CREATE TABLE IF NOT EXISTS spaces (
+	id TEXT PRIMARY KEY NOT NULL,
+	name TEXT NOT NULL,
+	user_id TEXT
+);`
+	if _, err := s.db.Exec(spacesQ); err != nil {
+		return fmt.Errorf("migrate spaces: %w", err)
+	}
 	return nil
 }
 

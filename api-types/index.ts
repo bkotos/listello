@@ -48,6 +48,23 @@ export interface ListResponse {
 }
 
 //////////
+// source: space.go
+
+/**
+ * CreateSpaceRequest is the HTTP request body for creating a space.
+ */
+export interface CreateSpaceRequest {
+  name: string;
+}
+/**
+ * SpaceResponse is the HTTP representation of a space.
+ */
+export interface SpaceResponse {
+  ID: string;
+  Name: string;
+}
+
+//////////
 // source: user.go
 
 /**
