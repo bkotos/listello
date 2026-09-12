@@ -1,11 +1,20 @@
 import { ArrowRight } from "lucide-react";
+import { useEffect } from "react";
 
 type SystemSetupStepProps = {
   spaceName: string;
   userName: string;
+  onComplete: () => void;
 };
 
-export function SystemSetupStep({ spaceName, userName }: SystemSetupStepProps) {
+export function SystemSetupStep({ spaceName, userName, onComplete }: SystemSetupStepProps) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onComplete();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
   return (
     <div>
       <p className="step-eyebrow">Workspace · Automatic</p>

@@ -73,6 +73,10 @@ function OnboardingPage() {
     setInitializeComplete(true);
   }, []);
 
+  const handleSystemSetupComplete = useCallback(() => {
+    setSystemSetupComplete(true);
+  }, []);
+
   function handleInitializeBack() {
     setInitializeComplete(false);
     setStep(OnboardingStep.Step3DataDirectory);
@@ -193,7 +197,7 @@ function OnboardingPage() {
           )}
           {isStep5NameSpace && <NameSpaceStep value={spaceName} onChange={setSpaceName} />}
           {isStep6YourName && <YourNameStep value={userName} onChange={setUserName} />}
-          {isStep7SystemSetup && <SystemSetupStep spaceName={spaceName} userName={userName} />}
+          {isStep7SystemSetup && <SystemSetupStep spaceName={spaceName} userName={userName} onComplete={handleSystemSetupComplete} />}
         </div>
       </div>
 

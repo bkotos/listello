@@ -11,6 +11,7 @@ describe("SystemSetupStep", () => {
       createElement(SystemSetupStep, {
         spaceName: "Personal",
         userName: "Alex",
+        onComplete: () => {},
       })
     );
   });
