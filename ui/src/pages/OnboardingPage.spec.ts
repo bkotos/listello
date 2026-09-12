@@ -843,6 +843,124 @@ describe("OnboardingPage", () => {
                 ).toBeInTheDocument();
                 expect(button.closest(".onboarding-footer")).toBeInTheDocument();
               });
+
+              describe("when the Continue button is clicked", () => {
+                beforeEach(() => {
+                  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+                });
+
+                it("renders the What should we call you heading", () => {
+                  // Assert
+                  const heading = screen.getByRole("heading", {
+                    name: "What should we call you?",
+                  });
+                  expect(heading).toHaveClass("step-title", "text-balance");
+                });
+
+                it("renders the Workspace · You eyebrow", () => {
+                  // Assert
+                  const eyebrow = screen.getByText("Workspace · You");
+                  expect(eyebrow).toHaveClass("step-eyebrow");
+                });
+
+                it("renders the name lead", () => {
+                  // Assert
+                  const lead = screen.getByText(
+                    /Your name shows up on comments and activity/,
+                  );
+                  expect(lead).toHaveClass("step-lead", "text-pretty");
+                  expect(lead).toHaveTextContent(
+                    "Your name shows up on comments and activity. It's just for you — no account needed.",
+                  );
+                });
+
+                it("renders the Instance phase as done", () => {
+                  // Assert
+                  const label = [
+                    ...document.querySelectorAll(".phase-seg-label"),
+                  ].find((el) => el.textContent === "Instance");
+                  expect(label).toHaveClass("phase-seg-label");
+                  const seg = label?.closest(".phase-seg");
+                  expect(seg).toHaveClass("is-done");
+                  expect(
+                    seg?.querySelector(".phase-seg-index svg.lucide-check"),
+                  ).toBeInTheDocument();
+                  expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({
+                    width: "100%",
+                  });
+                });
+
+                it("renders the Workspace phase fill at 50%", () => {
+                  // Assert
+                  const label = document.querySelector(
+                    ".phase-seg.is-active .phase-seg-label",
+                  );
+                  expect(label).toHaveTextContent("Workspace");
+                  expect(
+                    label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
+                  ).toHaveStyle({
+                    width: "50%",
+                  });
+                });
+
+                it("renders the Ready phase as upcoming", () => {
+                  // Assert
+                  const label = [
+                    ...document.querySelectorAll(".phase-seg-label"),
+                  ].find((el) => el.textContent === "Ready");
+                  expect(label).toHaveClass("phase-seg-label");
+                  const seg = label?.closest(".phase-seg");
+                  expect(seg).toHaveClass("is-upcoming");
+                  expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent(
+                    "3",
+                  );
+                  expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({
+                    width: "0%",
+                  });
+                });
+
+                it("renders a Your name field", () => {
+                  // Assert
+                  const input = screen.getByLabelText("Your name");
+                  expect(input).toHaveClass("input");
+                  expect(input).toHaveAttribute("id", "onb-user");
+                  expect(input).toHaveAttribute("placeholder", "e.g. Alex");
+                  expect(input).toHaveValue("");
+                  expect(screen.getByText("Your name")).toHaveClass("label");
+                });
+
+                it("renders a user icon in the Your name field", () => {
+                  // Assert
+                  const control = screen
+                    .getByLabelText("Your name")
+                    .closest(".control");
+                  expect(control).toHaveClass("has-icons-left");
+                  expect(
+                    control?.querySelector("svg.lucide-user"),
+                  ).toBeInTheDocument();
+                });
+
+                it("renders a Back button", () => {
+                  // Assert
+                  const back = screen.getByRole("button", { name: "Back" });
+                  expect(back).toHaveClass("button", "is-light");
+                  expect(
+                    back.querySelector("svg.lucide-arrow-left"),
+                  ).toBeInTheDocument();
+                  expect(back.closest(".onboarding-footer")).toBeInTheDocument();
+                });
+
+                it("renders a disabled Continue button", () => {
+                  // Assert
+                  const button = screen.getByRole("button", { name: "Continue" });
+                  expect(button).toHaveClass("button", "is-primary", "footer-grow");
+                  expect(button).toBeDisabled();
+                  expect(
+                    button.querySelector("svg.lucide-arrow-right"),
+                  ).toBeInTheDocument();
+                  expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+                });
+              });
             });
           });
         });

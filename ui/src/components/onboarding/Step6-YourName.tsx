@@ -1,28 +1,27 @@
-import { ArrowLeft, ArrowRight, Layers } from "lucide-react";
+import { ArrowLeft, ArrowRight, User } from "lucide-react";
 
-export function NameSpaceStep() {
+export function YourNameStep() {
   return (
     <div>
-      <p className="step-eyebrow">Workspace · Space</p>
-      <h1 className="step-title text-balance">Name your space</h1>
+      <p className="step-eyebrow">Workspace · You</p>
+      <h1 className="step-title text-balance">What should we call you?</h1>
       <p className="step-lead text-pretty">
-        A space groups your lists together. Most people start with a single personal space.
+        Your name shows up on comments and activity. It's just for you — no account needed.
       </p>
       <div className="step-content">
         <div className="field">
-          <label className="label" htmlFor="onb-space">
-            Space name
+          <label className="label" htmlFor="onb-user">
+            Your name
           </label>
           <div className="control has-icons-left">
             <input
-              id="onb-space"
+              id="onb-user"
               className="input"
               type="text"
-              placeholder="Personal"
-              defaultValue="Personal"
+              placeholder="e.g. Alex"
             />
             <span className="icon is-small is-left">
-              <Layers size={16} />
+              <User size={16} />
             </span>
           </div>
         </div>
@@ -31,11 +30,7 @@ export function NameSpaceStep() {
   );
 }
 
-type NameSpaceFooterProps = {
-  onContinue: () => void;
-};
-
-export function NameSpaceFooter({ onContinue }: NameSpaceFooterProps) {
+export function YourNameFooter() {
   return (
     <>
       <button type="button" className="button is-light">
@@ -44,7 +39,7 @@ export function NameSpaceFooter({ onContinue }: NameSpaceFooterProps) {
         </span>
         <span>Back</span>
       </button>
-      <button type="button" className="button is-primary footer-grow" onClick={onContinue}>
+      <button type="button" className="button is-primary footer-grow" disabled>
         <span>Continue</span>
         <span className="icon">
           <ArrowRight size={18} />

@@ -9,6 +9,7 @@ import {
 } from "../components/onboarding/Step3-DataDirectory";
 import { InitializeFooter, InitializeStep } from "../components/onboarding/Step4-Initialize";
 import { NameSpaceFooter, NameSpaceStep } from "../components/onboarding/Step5-NameSpace";
+import { YourNameFooter, YourNameStep } from "../components/onboarding/Step6-YourName";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 enum OnboardingStep {
@@ -17,10 +18,15 @@ enum OnboardingStep {
   Step3DataDirectory = "step3-data-directory",
   Step4Initialize = "step4-initialize",
   Step5NameSpace = "step5-name-space",
+  Step6YourName = "step6-your-name",
 }
 
 function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): string {
-  if (step === OnboardingStep.Step4Initialize || step === OnboardingStep.Step5NameSpace) {
+  if (
+    step === OnboardingStep.Step4Initialize ||
+    step === OnboardingStep.Step5NameSpace ||
+    step === OnboardingStep.Step6YourName
+  ) {
     return "100%";
   }
   if (step === OnboardingStep.Step3DataDirectory) {
@@ -30,6 +36,16 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
     return hostingMode === HostingMode.StandaloneWeb ? "67%" : "50%";
   }
   return "25%";
+}
+
+function workspacePhaseFill(step: OnboardingStep): string {
+  if (step === OnboardingStep.Step6YourName) {
+    return "50%";
+  }
+  if (step === OnboardingStep.Step5NameSpace) {
+    return "25%";
+  }
+  return "0%";
 }
 
 function OnboardingPage() {
@@ -74,7 +90,10 @@ function OnboardingPage() {
   const isStep3DataDirectory = step === OnboardingStep.Step3DataDirectory;
   const isStep4Initialize = step === OnboardingStep.Step4Initialize;
   const isStep5NameSpace = step === OnboardingStep.Step5NameSpace;
+  const isStep6YourName = step === OnboardingStep.Step6YourName;
+  const isWorkspacePhase = isStep5NameSpace || isStep6YourName;
   const instanceFill = instancePhaseFill(step, hostingMode);
+  const workspaceFill = workspacePhaseFill(step);
 
   return (
     <div className="onboarding-page">
@@ -91,10 +110,10 @@ function OnboardingPage() {
           </div>
 
           <div className="phase-progress" aria-hidden="true">
-            <div className={`phase-seg ${isStep5NameSpace ? "is-done" : "is-active"}`}>
+            <div className={`phase-seg ${isWorkspacePhase ? "is-done" : "is-active"}`}>
               <span className="phase-seg-head">
                 <span className="phase-seg-index">
-                  {isStep5NameSpace ? <Check size={12} strokeWidth={3} /> : "1"}
+                  {isWorkspacePhase ? <Check size={12} strokeWidth={3} /> : "1"}
                 </span>
                 <span className="phase-seg-label">Instance</span>
               </span>
@@ -107,7 +126,7 @@ function OnboardingPage() {
                 />
               </span>
             </div>
-            <div className={`phase-seg ${isStep5NameSpace ? "is-active" : "is-upcoming"}`}>
+            <div className={`phase-seg ${isWorkspacePhase ? "is-active" : "is-upcoming"}`}>
               <span className="phase-seg-head">
                 <span className="phase-seg-index">2</span>
                 <span className="phase-seg-label">Workspace</span>
@@ -115,7 +134,7 @@ function OnboardingPage() {
               <span className="phase-seg-track">
                 <span
                   className="phase-seg-fill"
-                  style={{ width: isStep5NameSpace ? "25%" : "0%" }}
+                  style={{ width: workspaceFill }}
                 />
               </span>
             </div>
@@ -151,6 +170,7 @@ function OnboardingPage() {
             <InitializeStep onComplete={handleInitializeComplete} />
           )}
           {isStep5NameSpace && <NameSpaceStep />}
+          {isStep6YourName && <YourNameStep />}
         </div>
       </div>
 
@@ -177,7 +197,12 @@ function OnboardingPage() {
             onContinue={() => setStep(OnboardingStep.Step5NameSpace)}
           />
         )}
-        {isStep5NameSpace && <NameSpaceFooter />}
+        {isStep5NameSpace && (
+          <NameSpaceFooter
+            onContinue={() => setStep(OnboardingStep.Step6YourName)}
+          />
+        )}
+        {isStep6YourName && <YourNameFooter />}
       </footer>
     </div>
   );
