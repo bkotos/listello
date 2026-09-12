@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { createInstance, initializePersistence, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
 import { useDefaultPersistenceLocationQuery } from "../lib/api/instance-queries";
@@ -72,6 +72,15 @@ function OnboardingPage() {
   const handleInitializeComplete = useCallback(() => {
     setInitializeComplete(true);
   }, []);
+
+  useEffect(() => {
+    if (step === OnboardingStep.Step7SystemSetup) {
+      const timer = setTimeout(() => {
+        setSystemSetupComplete(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   function handleInitializeBack() {
     setInitializeComplete(false);

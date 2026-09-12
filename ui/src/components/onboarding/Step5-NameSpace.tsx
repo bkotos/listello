@@ -1,6 +1,11 @@
 import { ArrowLeft, ArrowRight, Layers } from "lucide-react";
 
-export function NameSpaceStep() {
+type NameSpaceStepProps = {
+  value: string;
+  onChange: (value: string) => void;
+};
+
+export function NameSpaceStep({ value, onChange }: NameSpaceStepProps) {
   return (
     <div>
       <p className="step-eyebrow">Workspace · Space</p>
@@ -19,7 +24,8 @@ export function NameSpaceStep() {
               className="input"
               type="text"
               placeholder="Personal"
-              defaultValue="Personal"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
             />
             <span className="icon is-small is-left">
               <Layers size={16} />
