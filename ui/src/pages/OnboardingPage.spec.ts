@@ -21,6 +21,10 @@ vi.mock("../lib/api/instance-client", () => ({
   initializePersistence: vi.fn(),
 }));
 
+vi.mock("../lib/api/user-client", () => ({
+  createUser: vi.fn(),
+}));
+
 import {
   createInstance,
   getDefaultPersistenceLocation,
@@ -28,6 +32,7 @@ import {
   selectHostingMode,
   selectPersistenceLocation,
 } from "../lib/api/instance-client";
+import { createUser } from "../lib/api/user-client";
 
 const createdInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -959,6 +964,52 @@ describe("OnboardingPage", () => {
                     button.querySelector("svg.lucide-arrow-right"),
                   ).toBeInTheDocument();
                   expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+                });
+
+                describe("when a name is entered", () => {
+                  beforeEach(() => {
+                    fireEvent.change(screen.getByLabelText("Your name"), {
+                      target: { value: "Alex" },
+                    });
+                  });
+
+                  it("enables the Continue button", () => {
+                    // Assert
+                    const continueBtn = screen.getByRole("button", { name: "Continue" });
+                    expect(continueBtn).not.toBeDisabled();
+                  });
+
+                  describe("when the name is deleted", () => {
+                    beforeEach(() => {
+                      fireEvent.change(screen.getByLabelText("Your name"), {
+                        target: { value: "" },
+                      });
+                    });
+
+                    it("disables the Continue button again", () => {
+                      // Assert
+                      const continueBtn = screen.getByRole("button", { name: "Continue" });
+                      expect(continueBtn).toBeDisabled();
+                    });
+                  });
+
+                  describe("when the Continue button is clicked", () => {
+                    beforeEach(async () => {
+                      vi.mocked(createUser).mockResolvedValue({
+                        ID: "US_1",
+                        Name: "Alex",
+                      });
+                      
+                      await act(async () => {
+                        fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+                      });
+                    });
+
+                    it("calls createUser with the entered name", () => {
+                      // Assert
+                      expect(createUser).toHaveBeenCalledWith({ name: "Alex" });
+                    });
+                  });
                 });
               });
             });

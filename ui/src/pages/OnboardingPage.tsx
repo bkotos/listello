@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { Check } from "lucide-react";
 import { createInstance, initializePersistence, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
 import { useDefaultPersistenceLocationQuery } from "../lib/api/instance-queries";
+import { createUser } from "../lib/api/user-client";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
   DataDirectoryFooter,
@@ -54,6 +55,7 @@ function OnboardingPage() {
   const [hostingMode, setHostingMode] = useState(HostingMode.Local);
   const [dataDirectoryOverride, setDataDirectoryOverride] = useState<string | null>(null);
   const [initializeComplete, setInitializeComplete] = useState(false);
+  const [userName, setUserName] = useState("");
 
   const dataDirectory =
     dataDirectoryOverride ?? defaultPersistenceLocation?.Location ?? "";
@@ -83,6 +85,10 @@ function OnboardingPage() {
     setStep(OnboardingStep.Step4Initialize);
     await selectPersistenceLocation({ location: dataDirectory });
     await initializePersistence();
+  }
+
+  async function handleCreateUser() {
+    await createUser({ name: userName });
   }
 
   const isStep1Welcome = step === OnboardingStep.Step1Welcome;
@@ -170,7 +176,7 @@ function OnboardingPage() {
             <InitializeStep onComplete={handleInitializeComplete} />
           )}
           {isStep5NameSpace && <NameSpaceStep />}
-          {isStep6YourName && <YourNameStep />}
+          {isStep6YourName && <YourNameStep value={userName} onChange={setUserName} />}
         </div>
       </div>
 
@@ -202,7 +208,7 @@ function OnboardingPage() {
             onContinue={() => setStep(OnboardingStep.Step6YourName)}
           />
         )}
-        {isStep6YourName && <YourNameFooter />}
+        {isStep6YourName && <YourNameFooter continueEnabled={userName.length > 0} onContinue={handleCreateUser} />}
       </footer>
     </div>
   );
