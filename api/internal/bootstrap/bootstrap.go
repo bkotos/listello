@@ -50,3 +50,10 @@ func NewUserService(workspace *sqlite.WorkspaceDB, eventLog *os.File) applicatio
 	events := adapter.NewLoggingEventPublisher(eventLog)
 	return application.NewUserService(userRepo, events)
 }
+
+// NewSpaceService wires space persistence and event publishing into SpaceService.
+func NewSpaceService(workspace *sqlite.WorkspaceDB, eventLog *os.File) application.SpaceService {
+	spaceRepo := adapter.NewSQLiteSpaceRepository(workspace)
+	events := adapter.NewLoggingEventPublisher(eventLog)
+	return application.NewSpaceService(spaceRepo, events)
+}
