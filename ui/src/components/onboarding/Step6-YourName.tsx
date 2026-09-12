@@ -1,6 +1,11 @@
 import { ArrowLeft, ArrowRight, User } from "lucide-react";
 
-export function YourNameStep() {
+type YourNameStepProps = {
+  value: string;
+  onChange: (value: string) => void;
+};
+
+export function YourNameStep({ value, onChange }: YourNameStepProps) {
   return (
     <div>
       <p className="step-eyebrow">Workspace · You</p>
@@ -19,6 +24,8 @@ export function YourNameStep() {
               className="input"
               type="text"
               placeholder="e.g. Alex"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
             />
             <span className="icon is-small is-left">
               <User size={16} />
@@ -30,7 +37,12 @@ export function YourNameStep() {
   );
 }
 
-export function YourNameFooter() {
+type YourNameFooterProps = {
+  continueEnabled: boolean;
+  onContinue: () => void;
+};
+
+export function YourNameFooter({ continueEnabled, onContinue }: YourNameFooterProps) {
   return (
     <>
       <button type="button" className="button is-light">
@@ -39,7 +51,7 @@ export function YourNameFooter() {
         </span>
         <span>Back</span>
       </button>
-      <button type="button" className="button is-primary footer-grow" disabled>
+      <button type="button" className="button is-primary footer-grow" disabled={!continueEnabled} onClick={onContinue}>
         <span>Continue</span>
         <span className="icon">
           <ArrowRight size={18} />
