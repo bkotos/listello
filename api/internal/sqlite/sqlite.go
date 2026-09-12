@@ -51,6 +51,14 @@ CREATE TABLE IF NOT EXISTS items (
 	if _, err := s.db.Exec(itemsQ); err != nil {
 		return fmt.Errorf("migrate items: %w", err)
 	}
+	const usersQ = `
+CREATE TABLE IF NOT EXISTS users (
+	id TEXT PRIMARY KEY NOT NULL,
+	name TEXT NOT NULL
+);`
+	if _, err := s.db.Exec(usersQ); err != nil {
+		return fmt.Errorf("migrate users: %w", err)
+	}
 	return nil
 }
 

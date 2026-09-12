@@ -30,6 +30,7 @@ func main() {
 
 			listService := bootstrap.NewListService(workspace, eventLog)
 			itemService := bootstrap.NewItemService(workspace, eventLog)
+			userService := bootstrap.NewUserService(workspace, eventLog)
 			locatorPath, err := instanceadapter.ListelloInstanceLocatorPath()
 			if err != nil {
 				return err
@@ -57,7 +58,7 @@ func main() {
 			}
 			addr := fmt.Sprintf("%s:%d", host, port)
 			cmd.Printf("listening on http://%s\n", addr)
-			return http.ListenAndServe(addr, newAPIServer(listService, itemService, instanceService))
+			return http.ListenAndServe(addr, newAPIServer(listService, itemService, userService, instanceService))
 		},
 	}
 
