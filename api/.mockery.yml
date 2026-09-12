@@ -13,12 +13,18 @@ packages:
       ListRepository:
       EventPublisher:
       ItemRepository:
+      UserRepository:
       ListService:
         config:
           dir: '{{.InterfaceDir}}/mocks'
           filename: mocks.go
           pkgname: mocks
       ItemService:
+        config:
+          dir: '{{.InterfaceDir}}/mocks'
+          filename: mocks.go
+          pkgname: mocks
+      UserService:
         config:
           dir: '{{.InterfaceDir}}/mocks'
           filename: mocks.go
