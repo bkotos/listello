@@ -1,0 +1,20 @@
+meta {
+  name: Create Space
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{apiBase}}/api/spaces
+  body: json
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "name": "Personal"
+  }
+}
