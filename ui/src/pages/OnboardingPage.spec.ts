@@ -552,8 +552,8 @@ describe("OnboardingPage", () => {
         await waitFor(() => {
           expect(initializePersistence).toHaveBeenCalledOnce();
         });
-        expect(selectPersistenceLocation.mock.invocationCallOrder[0]).toBeLessThan(
-          initializePersistence.mock.invocationCallOrder[0],
+        expect(vi.mocked(selectPersistenceLocation).mock.invocationCallOrder[0]).toBeLessThan(
+          vi.mocked(initializePersistence).mock.invocationCallOrder[0],
         );
       });
 
