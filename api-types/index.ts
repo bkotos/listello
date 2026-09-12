@@ -46,3 +46,20 @@ export interface ListResponse {
   ID: string;
   Name: string;
 }
+
+//////////
+// source: user.go
+
+/**
+ * CreateUserRequest is the HTTP request body for creating a user.
+ */
+export interface CreateUserRequest {
+  name: string;
+}
+/**
+ * UserResponse is the HTTP representation of a user.
+ */
+export interface UserResponse {
+  ID: string;
+  Name: string;
+}

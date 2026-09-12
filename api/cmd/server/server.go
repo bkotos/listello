@@ -10,7 +10,7 @@ import (
 	handlers "github.com/bkotos/listello/internal/personal-productivity-context/handlers"
 )
 
-func newAPIServer(listService application.ListService, itemService application.ItemService, instanceService instanceapp.ListelloInstanceService) http.Handler {
+func newAPIServer(listService application.ListService, itemService application.ItemService, userService application.UserService, instanceService instanceapp.ListelloInstanceService) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", internalhandlers.Health)
 	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))
@@ -23,6 +23,7 @@ func newAPIServer(listService application.ListService, itemService application.I
 	mux.HandleFunc("PATCH /api/items/{id}/title", handlers.ModifyItemTitle(itemService))
 	mux.HandleFunc("POST /api/items/{id}/move", handlers.MoveItem(itemService))
 	mux.HandleFunc("DELETE /api/items/{id}", handlers.DeleteItem(itemService))
+	mux.HandleFunc("POST /api/users", handlers.CreateUser(userService))
 	mux.HandleFunc("GET /api/instance", instancehandlers.GetInstance(instanceService))
 	mux.HandleFunc("GET /api/instance/default-persistence-location", instancehandlers.GetDefaultPersistenceLocation(instanceService))
 	mux.HandleFunc("POST /api/instance", instancehandlers.CreateInstance(instanceService))
