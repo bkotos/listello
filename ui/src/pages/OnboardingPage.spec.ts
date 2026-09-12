@@ -723,6 +723,127 @@ describe("OnboardingPage", () => {
                 itRendersInitializeStepBeforeTimeouts();
               });
             });
+
+            describe("when the Continue button is clicked", () => {
+              beforeEach(() => {
+                fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+              });
+
+              it("renders the Name your space heading", () => {
+                // Assert
+                const heading = screen.getByRole("heading", {
+                  name: "Name your space",
+                });
+                expect(heading).toHaveClass("step-title", "text-balance");
+              });
+
+              it("renders the Workspace · Space eyebrow", () => {
+                // Assert
+                const eyebrow = screen.getByText("Workspace · Space");
+                expect(eyebrow).toHaveClass("step-eyebrow");
+              });
+
+              it("renders the space lead", () => {
+                // Assert
+                const lead = screen.getByText(
+                  /A space groups your lists together/,
+                );
+                expect(lead).toHaveClass("step-lead", "text-pretty");
+                expect(lead).toHaveTextContent(
+                  "A space groups your lists together. Most people start with a single personal space.",
+                );
+              });
+
+              it("renders the Instance phase as done", () => {
+                // Assert
+                const label = [...document.querySelectorAll(".phase-seg-label")].find(
+                  (el) => el.textContent === "Instance",
+                );
+                expect(label).toHaveClass("phase-seg-label");
+                const seg = label?.closest(".phase-seg");
+                expect(seg).toHaveClass("is-done");
+                expect(
+                  seg?.querySelector(".phase-seg-index svg.lucide-check"),
+                ).toBeInTheDocument();
+                expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({
+                  width: "100%",
+                });
+              });
+
+              it("renders the Workspace phase as active", () => {
+                // Assert
+                const label = document.querySelector(
+                  ".phase-seg.is-active .phase-seg-label",
+                );
+                expect(label).toHaveTextContent("Workspace");
+                const seg = label?.closest(".phase-seg");
+                expect(seg).toHaveClass("is-active");
+                expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent(
+                  "2",
+                );
+                expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({
+                  width: "25%",
+                });
+              });
+
+              it("renders the Ready phase as upcoming", () => {
+                // Assert
+                const label = [...document.querySelectorAll(".phase-seg-label")].find(
+                  (el) => el.textContent === "Ready",
+                );
+                expect(label).toHaveClass("phase-seg-label");
+                const seg = label?.closest(".phase-seg");
+                expect(seg).toHaveClass("is-upcoming");
+                expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent(
+                  "3",
+                );
+                expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({
+                  width: "0%",
+                });
+              });
+
+              it("renders a Space name field", () => {
+                // Assert
+                const input = screen.getByLabelText("Space name");
+                expect(input).toHaveClass("input");
+                expect(input).toHaveAttribute("id", "onb-space");
+                expect(input).toHaveAttribute("placeholder", "Personal");
+                expect(input).toHaveValue("Personal");
+                expect(screen.getByText("Space name")).toHaveClass("label");
+              });
+
+              it("renders a layers icon in the Space name field", () => {
+                // Assert
+                const control = screen
+                  .getByLabelText("Space name")
+                  .closest(".control");
+                expect(control).toHaveClass("has-icons-left");
+                expect(
+                  control?.querySelector("svg.lucide-layers"),
+                ).toBeInTheDocument();
+              });
+
+              it("renders a Back button", () => {
+                // Assert
+                const back = screen.getByRole("button", { name: "Back" });
+                expect(back).toHaveClass("button", "is-light");
+                expect(
+                  back.querySelector("svg.lucide-arrow-left"),
+                ).toBeInTheDocument();
+                expect(back.closest(".onboarding-footer")).toBeInTheDocument();
+              });
+
+              it("renders a Continue button", () => {
+                // Assert
+                const button = screen.getByRole("button", { name: "Continue" });
+                expect(button).toHaveClass("button", "is-primary", "footer-grow");
+                expect(button).toBeEnabled();
+                expect(
+                  button.querySelector("svg.lucide-arrow-right"),
+                ).toBeInTheDocument();
+                expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+              });
+            });
           });
         });
       });

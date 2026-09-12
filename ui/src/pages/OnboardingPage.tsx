@@ -8,6 +8,7 @@ import {
   DataDirectoryStep,
 } from "../components/onboarding/Step3-DataDirectory";
 import { InitializeFooter, InitializeStep } from "../components/onboarding/Step4-Initialize";
+import { NameSpaceFooter, NameSpaceStep } from "../components/onboarding/Step5-NameSpace";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 enum OnboardingStep {
@@ -15,10 +16,11 @@ enum OnboardingStep {
   Step2Hosting = "step2-hosting",
   Step3DataDirectory = "step3-data-directory",
   Step4Initialize = "step4-initialize",
+  Step5NameSpace = "step5-name-space",
 }
 
 function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): string {
-  if (step === OnboardingStep.Step4Initialize) {
+  if (step === OnboardingStep.Step4Initialize || step === OnboardingStep.Step5NameSpace) {
     return "100%";
   }
   if (step === OnboardingStep.Step3DataDirectory) {
@@ -71,6 +73,7 @@ function OnboardingPage() {
   const isStep2Hosting = step === OnboardingStep.Step2Hosting;
   const isStep3DataDirectory = step === OnboardingStep.Step3DataDirectory;
   const isStep4Initialize = step === OnboardingStep.Step4Initialize;
+  const isStep5NameSpace = step === OnboardingStep.Step5NameSpace;
   const instanceFill = instancePhaseFill(step, hostingMode);
 
   return (
@@ -88,9 +91,11 @@ function OnboardingPage() {
           </div>
 
           <div className="phase-progress" aria-hidden="true">
-            <div className="phase-seg is-active">
+            <div className={`phase-seg ${isStep5NameSpace ? "is-done" : "is-active"}`}>
               <span className="phase-seg-head">
-                <span className="phase-seg-index">1</span>
+                <span className="phase-seg-index">
+                  {isStep5NameSpace ? <Check size={12} strokeWidth={3} /> : "1"}
+                </span>
                 <span className="phase-seg-label">Instance</span>
               </span>
               <span className="phase-seg-track">
@@ -102,13 +107,16 @@ function OnboardingPage() {
                 />
               </span>
             </div>
-            <div className="phase-seg is-upcoming">
+            <div className={`phase-seg ${isStep5NameSpace ? "is-active" : "is-upcoming"}`}>
               <span className="phase-seg-head">
                 <span className="phase-seg-index">2</span>
                 <span className="phase-seg-label">Workspace</span>
               </span>
               <span className="phase-seg-track">
-                <span className="phase-seg-fill" style={{ width: "0%" }} />
+                <span
+                  className="phase-seg-fill"
+                  style={{ width: isStep5NameSpace ? "25%" : "0%" }}
+                />
               </span>
             </div>
             <div className="phase-seg is-upcoming">
@@ -142,6 +150,7 @@ function OnboardingPage() {
           {isStep4Initialize && (
             <InitializeStep onComplete={handleInitializeComplete} />
           )}
+          {isStep5NameSpace && <NameSpaceStep />}
         </div>
       </div>
 
@@ -165,8 +174,10 @@ function OnboardingPage() {
           <InitializeFooter
             continueEnabled={initializeComplete}
             onBack={handleInitializeBack}
+            onContinue={() => setStep(OnboardingStep.Step5NameSpace)}
           />
         )}
+        {isStep5NameSpace && <NameSpaceFooter />}
       </footer>
     </div>
   );

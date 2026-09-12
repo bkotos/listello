@@ -72,9 +72,10 @@ export function InitializeStep({ onComplete }: InitializeStepProps) {
 type InitializeFooterProps = {
   continueEnabled: boolean;
   onBack: () => void;
+  onContinue: () => void;
 };
 
-export function InitializeFooter({ continueEnabled, onBack }: InitializeFooterProps) {
+export function InitializeFooter({ continueEnabled, onBack, onContinue }: InitializeFooterProps) {
   return (
     <>
       <button type="button" className="button is-light" onClick={onBack}>
@@ -87,6 +88,7 @@ export function InitializeFooter({ continueEnabled, onBack }: InitializeFooterPr
         type="button"
         className="button is-primary footer-grow"
         disabled={!continueEnabled}
+        onClick={onContinue}
       >
         <span>Continue</span>
         <span className="icon">
