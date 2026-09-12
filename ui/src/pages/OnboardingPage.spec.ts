@@ -979,6 +979,20 @@ describe("OnboardingPage", () => {
                     expect(continueBtn).not.toBeDisabled();
                   });
 
+                  describe("when the name is deleted", () => {
+                    beforeEach(() => {
+                      fireEvent.change(screen.getByLabelText("Your name"), {
+                        target: { value: "" },
+                      });
+                    });
+
+                    it("disables the Continue button again", () => {
+                      // Assert
+                      const continueBtn = screen.getByRole("button", { name: "Continue" });
+                      expect(continueBtn).toBeDisabled();
+                    });
+                  });
+
                   describe("when the Continue button is clicked", () => {
                     beforeEach(async () => {
                       vi.mocked(createUser).mockResolvedValue({
