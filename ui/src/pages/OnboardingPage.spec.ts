@@ -25,6 +25,10 @@ vi.mock("../lib/api/user-client", () => ({
   createUser: vi.fn(),
 }));
 
+vi.mock("../lib/api/space-client", () => ({
+  createSpace: vi.fn(),
+}));
+
 import {
   createInstance,
   getDefaultPersistenceLocation,
@@ -33,6 +37,7 @@ import {
   selectPersistenceLocation,
 } from "../lib/api/instance-client";
 import { createUser } from "../lib/api/user-client";
+import { createSpace } from "../lib/api/space-client";
 
 const createdInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -850,8 +855,15 @@ describe("OnboardingPage", () => {
               });
 
               describe("when the Continue button is clicked", () => {
-                beforeEach(() => {
-                  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+                beforeEach(async () => {
+                  vi.mocked(createSpace).mockResolvedValue({
+                    ID: "SP_1",
+                    Name: "Personal",
+                  });
+                  
+                  await act(async () => {
+                    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+                  });
                 });
 
                 it("renders the What should we call you heading", () => {
@@ -1008,6 +1020,65 @@ describe("OnboardingPage", () => {
                     it("calls createUser with the entered name", () => {
                       // Assert
                       expect(createUser).toHaveBeenCalledWith({ name: "Alex" });
+                    });
+
+                    describe("when the Continue button is clicked", () => {
+                      beforeEach(() => {
+                        fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+                      });
+
+                      it("renders the Getting things ready heading", () => {
+                        // Assert
+                        const heading = screen.getByRole("heading", {
+                          name: "Getting things ready",
+                        });
+                        expect(heading).toHaveClass("step-title", "text-balance");
+                      });
+
+                      it("renders the Workspace · Automatic eyebrow", () => {
+                        // Assert
+                        const eyebrow = screen.getByText("Workspace · Automatic");
+                        expect(eyebrow).toHaveClass("step-eyebrow");
+                      });
+
+                      it("renders the setup lead with the space name", () => {
+                        // Assert
+                        const lead = screen.getByText(/Listello is wiring up the essentials for/);
+                        expect(lead).toHaveClass("step-lead", "text-pretty");
+                        expect(lead).toHaveTextContent("Listello is wiring up the essentials for Personal.");
+                      });
+
+                      it("renders the Workspace phase fill at 75%", () => {
+                        // Assert
+                        const label = document.querySelector(
+                          ".phase-seg.is-active .phase-seg-label",
+                        );
+                        expect(label).toHaveTextContent("Workspace");
+                        expect(
+                          label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
+                        ).toHaveStyle({
+                          width: "75%",
+                        });
+                      });
+
+                      it("renders the Create Inbox setup check", () => {
+                        // Assert
+                        const check = screen.getByText("Create Inbox");
+                        expect(check).toHaveClass("setup-check-label");
+                      });
+
+                      it("renders the Assign space to user setup check", () => {
+                        // Assert
+                        const check = screen.getByText("Assign Personal to Alex");
+                        expect(check).toHaveClass("setup-check-label");
+                      });
+
+                      it("renders a disabled Continue button", () => {
+                        // Assert
+                        const button = screen.getByRole("button", { name: "Continue" });
+                        expect(button).toHaveClass("button", "is-primary", "footer-grow");
+                        expect(button).toBeDisabled();
+                      });
                     });
                   });
                 });

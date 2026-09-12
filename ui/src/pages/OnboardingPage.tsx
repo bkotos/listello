@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { createInstance, initializePersistence, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
 import { useDefaultPersistenceLocationQuery } from "../lib/api/instance-queries";
 import { createUser } from "../lib/api/user-client";
+import { createSpace } from "../lib/api/space-client";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
   DataDirectoryFooter,
@@ -11,6 +12,7 @@ import {
 import { InitializeFooter, InitializeStep } from "../components/onboarding/Step4-Initialize";
 import { NameSpaceFooter, NameSpaceStep } from "../components/onboarding/Step5-NameSpace";
 import { YourNameFooter, YourNameStep } from "../components/onboarding/Step6-YourName";
+import { SystemSetupFooter, SystemSetupStep } from "../components/onboarding/Step7-SystemSetup";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 enum OnboardingStep {
@@ -20,13 +22,15 @@ enum OnboardingStep {
   Step4Initialize = "step4-initialize",
   Step5NameSpace = "step5-name-space",
   Step6YourName = "step6-your-name",
+  Step7SystemSetup = "step7-system-setup",
 }
 
 function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): string {
   if (
     step === OnboardingStep.Step4Initialize ||
     step === OnboardingStep.Step5NameSpace ||
-    step === OnboardingStep.Step6YourName
+    step === OnboardingStep.Step6YourName ||
+    step === OnboardingStep.Step7SystemSetup
   ) {
     return "100%";
   }
@@ -40,6 +44,9 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
 }
 
 function workspacePhaseFill(step: OnboardingStep): string {
+  if (step === OnboardingStep.Step7SystemSetup) {
+    return "75%";
+  }
   if (step === OnboardingStep.Step6YourName) {
     return "50%";
   }
@@ -55,7 +62,9 @@ function OnboardingPage() {
   const [hostingMode, setHostingMode] = useState(HostingMode.Local);
   const [dataDirectoryOverride, setDataDirectoryOverride] = useState<string | null>(null);
   const [initializeComplete, setInitializeComplete] = useState(false);
+  const [spaceName, setSpaceName] = useState("Personal");
   const [userName, setUserName] = useState("");
+  const [systemSetupComplete, setSystemSetupComplete] = useState(false);
 
   const dataDirectory =
     dataDirectoryOverride ?? defaultPersistenceLocation?.Location ?? "";
@@ -89,6 +98,12 @@ function OnboardingPage() {
 
   async function handleCreateUser() {
     await createUser({ name: userName });
+    setStep(OnboardingStep.Step7SystemSetup);
+  }
+
+  async function handleCreateSpace() {
+    await createSpace({ name: spaceName });
+    setStep(OnboardingStep.Step6YourName);
   }
 
   const isStep1Welcome = step === OnboardingStep.Step1Welcome;
@@ -97,7 +112,8 @@ function OnboardingPage() {
   const isStep4Initialize = step === OnboardingStep.Step4Initialize;
   const isStep5NameSpace = step === OnboardingStep.Step5NameSpace;
   const isStep6YourName = step === OnboardingStep.Step6YourName;
-  const isWorkspacePhase = isStep5NameSpace || isStep6YourName;
+  const isStep7SystemSetup = step === OnboardingStep.Step7SystemSetup;
+  const isWorkspacePhase = isStep5NameSpace || isStep6YourName || isStep7SystemSetup;
   const instanceFill = instancePhaseFill(step, hostingMode);
   const workspaceFill = workspacePhaseFill(step);
 
@@ -175,8 +191,9 @@ function OnboardingPage() {
           {isStep4Initialize && (
             <InitializeStep onComplete={handleInitializeComplete} />
           )}
-          {isStep5NameSpace && <NameSpaceStep />}
+          {isStep5NameSpace && <NameSpaceStep value={spaceName} onChange={setSpaceName} />}
           {isStep6YourName && <YourNameStep value={userName} onChange={setUserName} />}
+          {isStep7SystemSetup && <SystemSetupStep spaceName={spaceName} userName={userName} />}
         </div>
       </div>
 
@@ -205,10 +222,16 @@ function OnboardingPage() {
         )}
         {isStep5NameSpace && (
           <NameSpaceFooter
-            onContinue={() => setStep(OnboardingStep.Step6YourName)}
+            onContinue={handleCreateSpace}
           />
         )}
         {isStep6YourName && <YourNameFooter continueEnabled={userName.length > 0} onContinue={handleCreateUser} />}
+        {isStep7SystemSetup && (
+          <SystemSetupFooter
+            continueEnabled={systemSetupComplete}
+            onContinue={() => {}}
+          />
+        )}
       </footer>
     </div>
   );
