@@ -853,6 +853,14 @@ describe("OnboardingPage", () => {
               itRendersBackButton();
               itRendersEnabledContinueButton();
 
+              describe("when the Back button is clicked", () => {
+                beforeEach(() => {
+                  fireEvent.click(screen.getByRole("button", { name: "Back" }));
+                });
+
+                itRendersStepHeading("Setting up persistence");
+              });
+
               describe("when the Continue button is clicked", () => {
                 beforeEach(async () => {
                   vi.mocked(createSpace).mockResolvedValue({
