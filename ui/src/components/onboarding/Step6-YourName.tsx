@@ -39,13 +39,14 @@ export function YourNameStep({ value, onChange }: YourNameStepProps) {
 
 type YourNameFooterProps = {
   continueEnabled: boolean;
+  onBack: () => void;
   onContinue: () => void;
 };
 
-export function YourNameFooter({ continueEnabled, onContinue }: YourNameFooterProps) {
+export function YourNameFooter({ continueEnabled, onBack, onContinue }: YourNameFooterProps) {
   return (
     <>
-      <button type="button" className="button is-light">
+      <button type="button" className="button is-light" onClick={onBack}>
         <span className="icon">
           <ArrowLeft size={18} />
         </span>

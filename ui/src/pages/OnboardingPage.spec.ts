@@ -32,6 +32,7 @@ vi.mock("../lib/api/space-client", () => ({
 import {
   createInstance,
   getDefaultPersistenceLocation,
+  getInstance,
   initializePersistence,
   selectHostingMode,
   selectPersistenceLocation,
@@ -853,6 +854,14 @@ describe("OnboardingPage", () => {
               itRendersBackButton();
               itRendersEnabledContinueButton();
 
+              describe("when the Back button is clicked", () => {
+                beforeEach(() => {
+                  fireEvent.click(screen.getByRole("button", { name: "Back" }));
+                });
+
+                itRendersStepHeading("Setting up persistence");
+              });
+
               describe("when the Continue button is clicked", () => {
                 beforeEach(async () => {
                   vi.mocked(createSpace).mockResolvedValue({
@@ -883,6 +892,14 @@ describe("OnboardingPage", () => {
                 itRendersFieldIcon("Your name", "user");
                 itRendersBackButton();
                 itRendersDisabledContinueButton();
+
+                describe("when the Back button is clicked", () => {
+                  beforeEach(() => {
+                    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+                  });
+
+                  itRendersStepHeading("Name your space");
+                });
 
                 describe("when a name is entered", () => {
                   beforeEach(() => {
@@ -959,6 +976,14 @@ describe("OnboardingPage", () => {
                       );
                       itRendersBackButton();
                       itRendersDisabledContinueButtonWithoutChrome();
+
+                      describe("when the Back button is clicked", () => {
+                        beforeEach(() => {
+                          fireEvent.click(screen.getByRole("button", { name: "Back" }));
+                        });
+
+                        itRendersStepHeading("What should we call you?");
+                      });
 
                       describe("after 500ms", () => {
                         beforeEach(() => {
@@ -1153,5 +1178,25 @@ describe("OnboardingPage", () => {
         });
       });
     });
+  });
+
+  describe("when the instance has a HostingMode set", () => {
+    beforeEach(async () => {
+      cleanup();
+      vi.mocked(getInstance).mockResolvedValue({
+        ...createdInstance,
+        HostingMode: "local",
+      });
+      renderOnboardingPage();
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", {
+            name: "How should Listello be hosted?",
+          }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    itRendersStepHeading("How should Listello be hosted?");
   });
 });

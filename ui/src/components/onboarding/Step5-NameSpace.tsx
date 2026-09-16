@@ -38,13 +38,14 @@ export function NameSpaceStep({ value, onChange }: NameSpaceStepProps) {
 }
 
 type NameSpaceFooterProps = {
+  onBack: () => void;
   onContinue: () => void;
 };
 
-export function NameSpaceFooter({ onContinue }: NameSpaceFooterProps) {
+export function NameSpaceFooter({ onBack, onContinue }: NameSpaceFooterProps) {
   return (
     <>
-      <button type="button" className="button is-light">
+      <button type="button" className="button is-light" onClick={onBack}>
         <span className="icon">
           <ArrowLeft size={18} />
         </span>
