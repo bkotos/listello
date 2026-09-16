@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { useInstanceQuery } from "./lib/api/instance-queries";
+import { needsOnboarding } from "./lib/utils/instance-utils";
 import InboxPage from "./pages/InboxPage";
 import ListPage from "./pages/ListPage";
 import OnboardingPage from "./pages/OnboardingPage";
@@ -23,10 +24,7 @@ function App() {
 function RequireInstance() {
   const { data: instance } = useInstanceQuery();
 
-  if (
-    instance === null ||
-    (instance !== undefined && instance.SetupState !== "completed")
-  ) {
+  if (needsOnboarding(instance)) {
     return <Navigate to="/onboarding" replace />;
   }
 
