@@ -25,7 +25,7 @@ const existingInstance: ListelloInstanceResponse = {
   HostingMode: "",
   PersistenceLocation: "",
   PersistenceState: "",
-  SetupState: "",
+  SetupState: "completed",
 };
 
 afterEach(() => {
@@ -73,4 +73,22 @@ describe("App", () => {
       expect(screen.getByRole("heading", { name: "Inbox" })).toBeInTheDocument();
     });
   });
+
+  it.each(["incomplete", ""])(
+    'shows the onboarding page when the instance setup is "%s"',
+    async (setupState) => {
+      // Arrange
+      vi.mocked(getInstance).mockResolvedValue({
+        ...existingInstance,
+        SetupState: setupState,
+      });
+      vi.mocked(getAllLists).mockResolvedValue([]);
+      renderApp();
+
+      // Assert
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { name: "Welcome to Listello" })).toBeInTheDocument();
+      });
+    },
+  );
 });

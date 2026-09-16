@@ -23,7 +23,10 @@ function App() {
 function RequireInstance() {
   const { data: instance } = useInstanceQuery();
 
-  if (instance === null) {
+  if (
+    instance === null ||
+    (instance !== undefined && instance.SetupState !== "completed")
+  ) {
     return <Navigate to="/onboarding" replace />;
   }
 
