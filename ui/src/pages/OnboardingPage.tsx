@@ -253,6 +253,7 @@ function OnboardingPage() {
         {isStep7SystemSetup && (
           <SystemSetupFooter
             continueEnabled={systemSetupComplete}
+            onBack={() => setStep(OnboardingStep.Step6YourName)}
             onContinue={() => {}}
           />
         )}

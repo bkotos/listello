@@ -122,6 +122,7 @@ describe("SystemSetupFooter", () => {
     render(
       createElement(SystemSetupFooter, {
         continueEnabled: false,
+        onBack: () => {},
         onContinue: () => {},
       })
     );
@@ -148,6 +149,7 @@ describe("SystemSetupFooter", () => {
       render(
         createElement(SystemSetupFooter, {
           continueEnabled: true,
+          onBack: () => {},
           onContinue: () => {},
         })
       );
