@@ -47,6 +47,10 @@ func (s *workspaceOpeningInstanceService) InitializePersistence() (domain.Listel
 	return instance, nil
 }
 
+func (s *workspaceOpeningInstanceService) CompleteSetup() (domain.ListelloInstance, error) {
+	return s.inner.CompleteSetup()
+}
+
 func (s *workspaceOpeningInstanceService) GetDefaultPersistenceLocation() (string, error) {
 	return s.inner.GetDefaultPersistenceLocation()
 }

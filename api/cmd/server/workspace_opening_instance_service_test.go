@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	instanceapp "github.com/bkotos/listello/internal/listello-instance-context/application"
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 	"github.com/bkotos/listello/internal/sqlite"
 )
@@ -15,6 +16,8 @@ type stubInstanceService struct {
 	instance domain.ListelloInstance
 	err      error
 }
+
+var _ instanceapp.ListelloInstanceService = (*stubInstanceService)(nil)
 
 func (s *stubInstanceService) CreateInstance() (domain.ListelloInstance, error) {
 	return domain.ListelloInstance{}, nil
@@ -34,6 +37,10 @@ func (s *stubInstanceService) SelectPersistenceLocation(string) (domain.Listello
 
 func (s *stubInstanceService) InitializePersistence() (domain.ListelloInstance, error) {
 	return s.instance, s.err
+}
+
+func (s *stubInstanceService) CompleteSetup() (domain.ListelloInstance, error) {
+	return domain.ListelloInstance{}, nil
 }
 
 func (s *stubInstanceService) GetDefaultPersistenceLocation() (string, error) {
