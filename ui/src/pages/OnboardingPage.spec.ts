@@ -957,6 +957,7 @@ describe("OnboardingPage", () => {
                         "renders an Assign space to user setup check as pending",
                         "Assign Personal to Alex",
                       );
+                      itRendersBackButton();
                       itRendersDisabledContinueButtonWithoutChrome();
 
                       describe("after 500ms", () => {

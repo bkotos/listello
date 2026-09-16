@@ -127,6 +127,13 @@ describe("SystemSetupFooter", () => {
     );
   });
 
+  it("renders a Back button", () => {
+    // Assert
+    const back = screen.getByRole("button", { name: "Back" });
+    expect(back).toHaveClass("button", "is-light");
+    expect(back.querySelector("svg.lucide-arrow-left")).toBeInTheDocument();
+  });
+
   it("renders a disabled Continue button", () => {
     // Assert
     const button = screen.getByRole("button", { name: "Continue" });

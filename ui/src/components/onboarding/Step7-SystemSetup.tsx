@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, CircleCheck, LoaderCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CircleCheck, LoaderCircle } from "lucide-react";
 
 type SystemSetupStepProps = {
   spaceName: string;
@@ -71,11 +71,19 @@ type SystemSetupFooterProps = {
 
 export function SystemSetupFooter({ continueEnabled, onContinue }: SystemSetupFooterProps) {
   return (
-    <button type="button" className="button is-primary footer-grow" disabled={!continueEnabled} onClick={onContinue}>
-      <span>Continue</span>
-      <span className="icon">
-        <ArrowRight size={18} />
-      </span>
-    </button>
+    <>
+      <button type="button" className="button is-light">
+        <span className="icon">
+          <ArrowLeft size={18} />
+        </span>
+        <span>Back</span>
+      </button>
+      <button type="button" className="button is-primary footer-grow" disabled={!continueEnabled} onClick={onContinue}>
+        <span>Continue</span>
+        <span className="icon">
+          <ArrowRight size={18} />
+        </span>
+      </button>
+    </>
   );
 }
