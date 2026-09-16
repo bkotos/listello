@@ -960,6 +960,14 @@ describe("OnboardingPage", () => {
                       itRendersBackButton();
                       itRendersDisabledContinueButtonWithoutChrome();
 
+                      describe("when the Back button is clicked", () => {
+                        beforeEach(() => {
+                          fireEvent.click(screen.getByRole("button", { name: "Back" }));
+                        });
+
+                        itRendersStepHeading("What should we call you?");
+                      });
+
                       describe("after 500ms", () => {
                         beforeEach(() => {
                           advanceBy500ms();
