@@ -66,13 +66,14 @@ export function SystemSetupStep({ spaceName, userName, onComplete }: SystemSetup
 
 type SystemSetupFooterProps = {
   continueEnabled: boolean;
+  onBack: () => void;
   onContinue: () => void;
 };
 
-export function SystemSetupFooter({ continueEnabled, onContinue }: SystemSetupFooterProps) {
+export function SystemSetupFooter({ continueEnabled, onBack, onContinue }: SystemSetupFooterProps) {
   return (
     <>
-      <button type="button" className="button is-light">
+      <button type="button" className="button is-light" onClick={onBack}>
         <span className="icon">
           <ArrowLeft size={18} />
         </span>
