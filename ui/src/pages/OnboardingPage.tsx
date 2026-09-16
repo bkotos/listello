@@ -13,6 +13,7 @@ import { InitializeFooter, InitializeStep } from "../components/onboarding/Step4
 import { NameSpaceFooter, NameSpaceStep } from "../components/onboarding/Step5-NameSpace";
 import { YourNameFooter, YourNameStep } from "../components/onboarding/Step6-YourName";
 import { SystemSetupFooter, SystemSetupStep } from "../components/onboarding/Step7-SystemSetup";
+import { FirstListFooter, FirstListStep } from "../components/onboarding/Step8-FirstList";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 enum OnboardingStep {
@@ -23,6 +24,7 @@ enum OnboardingStep {
   Step5NameSpace = "step5-name-space",
   Step6YourName = "step6-your-name",
   Step7SystemSetup = "step7-system-setup",
+  Step8FirstList = "step8-first-list",
 }
 
 function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): string {
@@ -30,7 +32,8 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
     step === OnboardingStep.Step4Initialize ||
     step === OnboardingStep.Step5NameSpace ||
     step === OnboardingStep.Step6YourName ||
-    step === OnboardingStep.Step7SystemSetup
+    step === OnboardingStep.Step7SystemSetup ||
+    step === OnboardingStep.Step8FirstList
   ) {
     return "100%";
   }
@@ -44,6 +47,9 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
 }
 
 function workspacePhaseFill(step: OnboardingStep): string {
+  if (step === OnboardingStep.Step8FirstList) {
+    return "100%";
+  }
   if (step === OnboardingStep.Step7SystemSetup) {
     return "75%";
   }
@@ -124,7 +130,9 @@ function OnboardingPage() {
   const isStep5NameSpace = step === OnboardingStep.Step5NameSpace;
   const isStep6YourName = step === OnboardingStep.Step6YourName;
   const isStep7SystemSetup = step === OnboardingStep.Step7SystemSetup;
-  const isWorkspacePhase = isStep5NameSpace || isStep6YourName || isStep7SystemSetup;
+  const isStep8FirstList = step === OnboardingStep.Step8FirstList;
+  const isWorkspacePhase =
+    isStep5NameSpace || isStep6YourName || isStep7SystemSetup || isStep8FirstList;
   const instanceFill = instancePhaseFill(step, hostingMode);
   const workspaceFill = workspacePhaseFill(step);
 
@@ -211,6 +219,7 @@ function OnboardingPage() {
               onComplete={handleSystemSetupComplete}
             />
           )}
+          {isStep8FirstList && <FirstListStep />}
         </div>
       </div>
 
@@ -254,9 +263,10 @@ function OnboardingPage() {
           <SystemSetupFooter
             continueEnabled={systemSetupComplete}
             onBack={() => setStep(OnboardingStep.Step6YourName)}
-            onContinue={() => {}}
+            onContinue={() => setStep(OnboardingStep.Step8FirstList)}
           />
         )}
+        {isStep8FirstList && <FirstListFooter />}
       </footer>
     </div>
   );
