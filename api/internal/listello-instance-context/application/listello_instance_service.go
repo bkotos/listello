@@ -24,6 +24,7 @@ type ListelloInstanceService interface {
 	SelectHostingMode(mode domain.HostingMode) (domain.ListelloInstance, error)
 	SelectPersistenceLocation(location string) (domain.ListelloInstance, error)
 	InitializePersistence() (domain.ListelloInstance, error)
+	CompleteSetup() (domain.ListelloInstance, error)
 	GetDefaultPersistenceLocation() (string, error)
 }
 
@@ -116,6 +117,25 @@ func (s *listelloInstanceService) InitializePersistence() (domain.ListelloInstan
 		return domain.ListelloInstance{}, err
 	}
 	event, err := instance.InitializePersistence()
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.listelloInstanceRepository.Save(*instance); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	return *instance, nil
+}
+
+// CompleteSetup completes instance setup via the domain and persists it.
+func (s *listelloInstanceService) CompleteSetup() (domain.ListelloInstance, error) {
+	instance, err := s.listelloInstanceRepository.Get()
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	event, err := instance.CompleteSetup()
 	if err != nil {
 		return domain.ListelloInstance{}, err
 	}
