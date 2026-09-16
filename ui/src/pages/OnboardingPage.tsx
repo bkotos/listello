@@ -1,7 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { createInstance, initializePersistence, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
-import { useDefaultPersistenceLocationQuery } from "../lib/api/instance-queries";
+import { useDefaultPersistenceLocationQuery, useInstanceQuery } from "../lib/api/instance-queries";
 import { createUser } from "../lib/api/user-client";
 import { createSpace } from "../lib/api/space-client";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
@@ -57,6 +57,7 @@ function workspacePhaseFill(step: OnboardingStep): string {
 }
 
 function OnboardingPage() {
+  const { data: instance } = useInstanceQuery();
   const { data: defaultPersistenceLocation } = useDefaultPersistenceLocationQuery();
   const [step, setStep] = useState(OnboardingStep.Step1Welcome);
   const [hostingMode, setHostingMode] = useState(HostingMode.Local);
@@ -65,6 +66,12 @@ function OnboardingPage() {
   const [spaceName, setSpaceName] = useState("Personal");
   const [userName, setUserName] = useState("");
   const [systemSetupComplete, setSystemSetupComplete] = useState(false);
+
+  useEffect(() => {
+    if (instance?.HostingMode) {
+      setStep(OnboardingStep.Step2Hosting);
+    }
+  }, [instance]);
 
   const dataDirectory =
     dataDirectoryOverride ?? defaultPersistenceLocation?.Location ?? "";

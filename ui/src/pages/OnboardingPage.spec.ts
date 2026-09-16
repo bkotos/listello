@@ -32,6 +32,7 @@ vi.mock("../lib/api/space-client", () => ({
 import {
   createInstance,
   getDefaultPersistenceLocation,
+  getInstance,
   initializePersistence,
   selectHostingMode,
   selectPersistenceLocation,
@@ -1047,5 +1048,25 @@ describe("OnboardingPage", () => {
         });
       });
     });
+  });
+
+  describe("when the instance has a HostingMode set", () => {
+    beforeEach(async () => {
+      cleanup();
+      vi.mocked(getInstance).mockResolvedValue({
+        ...createdInstance,
+        HostingMode: "local",
+      });
+      renderOnboardingPage();
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", {
+            name: "How should Listello be hosted?",
+          }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    itRendersStepHeading("How should Listello be hosted?");
   });
 });
