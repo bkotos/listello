@@ -232,6 +232,7 @@ function OnboardingPage() {
         )}
         {isStep5NameSpace && (
           <NameSpaceFooter
+            onBack={() => setStep(OnboardingStep.Step4Initialize)}
             onContinue={handleCreateSpace}
           />
         )}
