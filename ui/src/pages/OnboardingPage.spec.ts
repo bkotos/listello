@@ -992,6 +992,120 @@ describe("OnboardingPage", () => {
                             "Assign Personal to Alex",
                           );
                           itEnablesContinueButton();
+
+                          describe("when the Continue button is clicked", () => {
+                            beforeEach(() => {
+                              fireEvent.click(
+                                screen.getByRole("button", { name: "Continue" }),
+                              );
+                            });
+
+                            itRendersStepHeading("Create your first list");
+                            itRendersStepEyebrow("Workspace · First list");
+                            itRendersStepLead(
+                              "renders the first list lead",
+                              /Lists hold the tasks you want to act on/,
+                              "Lists hold the tasks you want to act on. Give your first one a name, or skip and create one later.",
+                            );
+                            itRendersDonePhase("Instance", "100%");
+                            itRendersActivePhase("Workspace", "100%", "2");
+                            itRendersUpcomingPhase("Ready", "0%", "3");
+                            itRendersField("List name", {
+                              id: "onb-list",
+                              placeholder: "Errands",
+                              value: "Errands",
+                            });
+                            itRendersFieldIcon("List name", "list-checks");
+
+                            it("renders a suggestion hint", () => {
+                              // Assert
+                              const hint = screen.getByText(
+                                "Or start with one of these",
+                              );
+                              expect(hint).toHaveClass("suggest-hint");
+                            });
+
+                            it("renders an Errands suggestion tag as selected", () => {
+                              // Assert
+                              const tag = screen.getByRole("button", {
+                                name: "Errands",
+                              });
+                              expect(tag).toHaveClass(
+                                "tag",
+                                "is-medium",
+                                "is-primary",
+                              );
+                              expect(tag.closest(".tags")).toHaveClass(
+                                "tags",
+                                "mt-2",
+                              );
+                            });
+
+                            it("renders a Shopping suggestion tag", () => {
+                              // Assert
+                              const tag = screen.getByRole("button", {
+                                name: "Shopping",
+                              });
+                              expect(tag).toHaveClass("tag", "is-medium");
+                              expect(tag).not.toHaveClass("is-primary");
+                            });
+
+                            it("renders an Ideas suggestion tag", () => {
+                              // Assert
+                              const tag = screen.getByRole("button", {
+                                name: "Ideas",
+                              });
+                              expect(tag).toHaveClass("tag", "is-medium");
+                              expect(tag).not.toHaveClass("is-primary");
+                            });
+
+                            it("renders a Reading suggestion tag", () => {
+                              // Assert
+                              const tag = screen.getByRole("button", {
+                                name: "Reading",
+                              });
+                              expect(tag).toHaveClass("tag", "is-medium");
+                              expect(tag).not.toHaveClass("is-primary");
+                            });
+
+                            it("renders a Goals suggestion tag", () => {
+                              // Assert
+                              const tag = screen.getByRole("button", {
+                                name: "Goals",
+                              });
+                              expect(tag).toHaveClass("tag", "is-medium");
+                              expect(tag).not.toHaveClass("is-primary");
+                            });
+
+                            it("renders a Skip for now button", () => {
+                              // Assert
+                              const skip = screen.getByRole("button", {
+                                name: "Skip for now",
+                              });
+                              expect(skip).toHaveClass("skip-link");
+                            });
+
+                            itRendersBackButton();
+
+                            it("renders a Create list button", () => {
+                              // Assert
+                              const button = screen.getByRole("button", {
+                                name: "Create list",
+                              });
+                              expect(button).toHaveClass(
+                                "button",
+                                "is-primary",
+                                "footer-grow",
+                              );
+                              expect(button).toBeEnabled();
+                              expect(
+                                button.querySelector("svg.lucide-arrow-right"),
+                              ).toBeInTheDocument();
+                              expect(
+                                button.closest(".onboarding-footer"),
+                              ).toBeInTheDocument();
+                            });
+                          });
                         });
                       });
                     });
