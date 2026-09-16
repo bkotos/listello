@@ -1061,16 +1061,25 @@ describe("OnboardingPage", () => {
                         });
                       });
 
-                      it("renders the Create Inbox setup check", () => {
+                      it("renders a Create Inbox setup check in progress", () => {
                         // Assert
-                        const check = screen.getByText("Create Inbox");
-                        expect(check).toHaveClass("setup-check-label");
+                        const label = screen.getByText("Create Inbox");
+                        expect(label).toHaveClass("setup-check-label");
+                        const row = label.closest(".setup-check");
+                        expect(row).not.toHaveClass("is-pending");
+                        expect(row).not.toHaveClass("is-done");
+                        const loader = row?.querySelector("svg.lucide-loader-circle");
+                        expect(loader).toBeInTheDocument();
+                        expect(loader).toHaveClass("spin");
                       });
 
-                      it("renders the Assign space to user setup check", () => {
+                      it("renders an Assign space to user setup check as pending", () => {
                         // Assert
-                        const check = screen.getByText("Assign Personal to Alex");
-                        expect(check).toHaveClass("setup-check-label");
+                        const label = screen.getByText("Assign Personal to Alex");
+                        expect(label).toHaveClass("setup-check-label");
+                        const row = label.closest(".setup-check");
+                        expect(row).toHaveClass("is-pending");
+                        expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
                       });
 
                       it("renders a disabled Continue button", () => {
@@ -1078,6 +1087,67 @@ describe("OnboardingPage", () => {
                         const button = screen.getByRole("button", { name: "Continue" });
                         expect(button).toHaveClass("button", "is-primary", "footer-grow");
                         expect(button).toBeDisabled();
+                      });
+
+                      describe("after 500ms", () => {
+                        beforeEach(() => {
+                          act(() => {
+                            vi.advanceTimersByTime(500);
+                          });
+                        });
+
+                        it("renders a Create Inbox setup check as done", () => {
+                          // Assert
+                          const label = screen.getByText("Create Inbox");
+                          expect(label).toHaveClass("setup-check-label");
+                          const row = label.closest(".setup-check");
+                          expect(row).toHaveClass("is-done");
+                          expect(row?.querySelector("svg.lucide-circle-check")).toBeInTheDocument();
+                        });
+
+                        it("renders an Assign space to user setup check in progress", () => {
+                          // Assert
+                          const label = screen.getByText("Assign Personal to Alex");
+                          expect(label).toHaveClass("setup-check-label");
+                          const row = label.closest(".setup-check");
+                          expect(row).not.toHaveClass("is-pending");
+                          expect(row).not.toHaveClass("is-done");
+                          const loader = row?.querySelector("svg.lucide-loader-circle");
+                          expect(loader).toBeInTheDocument();
+                          expect(loader).toHaveClass("spin");
+                        });
+
+                        it("keeps the Continue button disabled", () => {
+                          // Assert
+                          const button = screen.getByRole("button", { name: "Continue" });
+                          expect(button).toBeDisabled();
+                        });
+
+                        describe("after another 500ms", () => {
+                          beforeEach(() => {
+                            act(() => {
+                              vi.advanceTimersByTime(500);
+                            });
+                          });
+
+                          it("renders an Assign space to user setup check as done", () => {
+                            // Assert
+                            const label = screen.getByText("Assign Personal to Alex");
+                            expect(label).toHaveClass("setup-check-label");
+                            const row = label.closest(".setup-check");
+                            expect(row).toHaveClass("is-done");
+                            expect(row?.querySelector("svg.lucide-circle-check")).toBeInTheDocument();
+                          });
+
+                          it("enables the Continue button", () => {
+                            // Assert
+                            const button = screen.getByRole("button", { name: "Continue" });
+                            expect(button).toHaveClass("button", "is-primary", "footer-grow");
+                            expect(button).toBeEnabled();
+                            expect(button.querySelector("svg.lucide-arrow-right")).toBeInTheDocument();
+                            expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+                          });
+                        });
                       });
                     });
                   });

@@ -1,17 +1,25 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { act, render, screen, cleanup } from "@testing-library/react";
 import { createElement } from "react";
 import { SystemSetupStep, SystemSetupFooter } from "./Step7-SystemSetup";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe("SystemSetupStep", () => {
+  const onComplete = vi.fn();
+
   beforeEach(() => {
+    vi.useFakeTimers();
+    onComplete.mockReset();
     render(
       createElement(SystemSetupStep, {
         spaceName: "Personal",
         userName: "Alex",
-      })
+        onComplete,
+      }),
     );
   });
 
@@ -36,20 +44,76 @@ describe("SystemSetupStep", () => {
     expect(strong).toHaveTextContent("Personal");
   });
 
-  it("renders Create Inbox setup check", () => {
+  it("renders a Create Inbox setup check in progress", () => {
     // Assert
-    const check = screen.getByText("Create Inbox");
-    expect(check).toHaveClass("setup-check-label");
-    const row = check.closest(".setup-check");
-    expect(row).toBeInTheDocument();
+    const label = screen.getByText("Create Inbox");
+    expect(label).toHaveClass("setup-check-label");
+    const row = label.closest(".setup-check");
+    expect(row).not.toHaveClass("is-pending");
+    expect(row).not.toHaveClass("is-done");
+    const loader = row?.querySelector("svg.lucide-loader-circle");
+    expect(loader).toBeInTheDocument();
+    expect(loader).toHaveClass("spin");
   });
 
-  it("renders Assign space to user setup check", () => {
+  it("renders an Assign space to user setup check as pending", () => {
     // Assert
-    const check = screen.getByText("Assign Personal to Alex");
-    expect(check).toHaveClass("setup-check-label");
-    const row = check.closest(".setup-check");
-    expect(row).toBeInTheDocument();
+    const label = screen.getByText("Assign Personal to Alex");
+    expect(label).toHaveClass("setup-check-label");
+    const row = label.closest(".setup-check");
+    expect(row).toHaveClass("is-pending");
+    expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
+  });
+
+  describe("after 500ms", () => {
+    beforeEach(() => {
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+    });
+
+    it("renders a Create Inbox setup check as done", () => {
+      // Assert
+      const label = screen.getByText("Create Inbox");
+      expect(label).toHaveClass("setup-check-label");
+      const row = label.closest(".setup-check");
+      expect(row).toHaveClass("is-done");
+      expect(row?.querySelector("svg.lucide-circle-check")).toBeInTheDocument();
+    });
+
+    it("renders an Assign space to user setup check in progress", () => {
+      // Assert
+      const label = screen.getByText("Assign Personal to Alex");
+      expect(label).toHaveClass("setup-check-label");
+      const row = label.closest(".setup-check");
+      expect(row).not.toHaveClass("is-pending");
+      expect(row).not.toHaveClass("is-done");
+      const loader = row?.querySelector("svg.lucide-loader-circle");
+      expect(loader).toBeInTheDocument();
+      expect(loader).toHaveClass("spin");
+    });
+
+    describe("after another 500ms", () => {
+      beforeEach(() => {
+        act(() => {
+          vi.advanceTimersByTime(500);
+        });
+      });
+
+      it("renders an Assign space to user setup check as done", () => {
+        // Assert
+        const label = screen.getByText("Assign Personal to Alex");
+        expect(label).toHaveClass("setup-check-label");
+        const row = label.closest(".setup-check");
+        expect(row).toHaveClass("is-done");
+        expect(row?.querySelector("svg.lucide-circle-check")).toBeInTheDocument();
+      });
+
+      it("calls onComplete", () => {
+        // Assert
+        expect(onComplete).toHaveBeenCalledOnce();
+      });
+    });
   });
 });
 

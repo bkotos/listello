@@ -1,11 +1,33 @@
-import { ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, CircleCheck, LoaderCircle } from "lucide-react";
 
 type SystemSetupStepProps = {
   spaceName: string;
   userName: string;
+  onComplete: () => void;
 };
 
-export function SystemSetupStep({ spaceName, userName }: SystemSetupStepProps) {
+export function SystemSetupStep({ spaceName, userName, onComplete }: SystemSetupStepProps) {
+  const [doneCount, setDoneCount] = useState(0);
+  const checks = [
+    "Create Inbox",
+    `Assign ${spaceName} to ${userName}`,
+  ];
+
+  useEffect(() => {
+    const first = setTimeout(() => {
+      setDoneCount(1);
+    }, 500);
+    const second = setTimeout(() => {
+      setDoneCount(2);
+      onComplete();
+    }, 1000);
+    return () => {
+      clearTimeout(first);
+      clearTimeout(second);
+    };
+  }, [onComplete]);
+
   return (
     <div>
       <p className="step-eyebrow">Workspace · Automatic</p>
@@ -14,17 +36,28 @@ export function SystemSetupStep({ spaceName, userName }: SystemSetupStepProps) {
         Listello is wiring up the essentials for <strong>{spaceName}</strong>.
       </p>
       <div className="step-content">
-        <div className="setup-check">
-          <span className="setup-check-status">
-            <span className="check-toggle" style={{ width: 16, height: 16 }} />
-          </span>
-          <span className="setup-check-label">Create Inbox</span>
-        </div>
-        <div className="setup-check">
-          <span className="setup-check-status">
-            <span className="check-toggle" style={{ width: 16, height: 16 }} />
-          </span>
-          <span className="setup-check-label">Assign {spaceName} to {userName}</span>
+        <div>
+          {checks.map((label, i) => {
+            const done = i < doneCount;
+            const active = i === doneCount;
+            return (
+              <div
+                key={label}
+                className={`setup-check${done ? " is-done" : active ? "" : " is-pending"}`}
+              >
+                <span className="setup-check-status">
+                  {done ? (
+                    <CircleCheck size={18} />
+                  ) : active ? (
+                    <LoaderCircle size={18} className="spin" />
+                  ) : (
+                    <span className="check-toggle" style={{ width: 16, height: 16 }} />
+                  )}
+                </span>
+                <span className="setup-check-label">{label}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
