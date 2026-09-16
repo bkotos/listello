@@ -235,7 +235,13 @@ function OnboardingPage() {
             onContinue={handleCreateSpace}
           />
         )}
-        {isStep6YourName && <YourNameFooter continueEnabled={userName.length > 0} onContinue={handleCreateUser} />}
+        {isStep6YourName && (
+          <YourNameFooter
+            continueEnabled={userName.length > 0}
+            onBack={() => setStep(OnboardingStep.Step5NameSpace)}
+            onContinue={handleCreateUser}
+          />
+        )}
         {isStep7SystemSetup && (
           <SystemSetupFooter
             continueEnabled={systemSetupComplete}

@@ -884,6 +884,14 @@ describe("OnboardingPage", () => {
                 itRendersBackButton();
                 itRendersDisabledContinueButton();
 
+                describe("when the Back button is clicked", () => {
+                  beforeEach(() => {
+                    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+                  });
+
+                  itRendersStepHeading("Name your space");
+                });
+
                 describe("when a name is entered", () => {
                   beforeEach(() => {
                     fireEvent.change(screen.getByLabelText("Your name"), {
