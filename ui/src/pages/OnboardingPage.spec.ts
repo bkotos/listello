@@ -54,91 +54,458 @@ function renderOnboardingPage() {
   return render(createElement(QueryWrapper, null, createElement(OnboardingPage)));
 }
 
-function itRendersInitializeStepBeforeTimeouts() {
-  it("renders the Setting up persistence heading", () => {
+function expectStepHeading(name: string) {
+  const heading = screen.getByRole("heading", { name });
+  expect(heading).toHaveClass("step-title", "text-balance");
+}
+
+function itRendersStepHeading(name: string) {
+  it(`renders the ${name} heading`, () => {
     // Assert
-    const heading = screen.getByRole("heading", {
-      name: "Setting up persistence",
-    });
+    expectStepHeading(name);
+  });
+}
+
+function itRendersStepHeadingOnPage(name: string) {
+  it(`renders the ${name} heading`, () => {
+    // Assert
+    const heading = screen.getByRole("heading", { name });
     expect(heading).toHaveClass("step-title", "text-balance");
+    expect(heading.closest(".onboarding-page")).toBeInTheDocument();
   });
+}
 
-  it("renders the Instance · Initialize eyebrow", () => {
+function expectStepEyebrow(text: string) {
+  const eyebrow = screen.getByText(text);
+  expect(eyebrow).toHaveClass("step-eyebrow");
+}
+
+function itRendersStepEyebrow(text: string) {
+  it(`renders the ${text} eyebrow`, () => {
     // Assert
-    const eyebrow = screen.getByText("Instance · Initialize");
-    expect(eyebrow).toHaveClass("step-eyebrow");
+    expectStepEyebrow(text);
   });
+}
 
-  it("renders the initialize lead", () => {
+function expectStepLead(matcher: string | RegExp, fullText: string) {
+  const lead = screen.getByText(matcher);
+  expect(lead).toHaveClass("step-lead", "text-pretty");
+  expect(lead).toHaveTextContent(fullText);
+}
+
+function itRendersStepLead(
+  title: string,
+  matcher: string | RegExp,
+  fullText: string,
+) {
+  it(title, () => {
     // Assert
-    const lead = screen.getByText(/We're initializing the/);
+    expectStepLead(matcher, fullText);
+  });
+}
+
+function itRendersStepLeadWithStrongs(
+  title: string,
+  matcher: string | RegExp,
+  fullText: string,
+  firstStrong: string,
+  secondStrong: string,
+) {
+  it(title, () => {
+    // Assert
+    const lead = screen.getByText(matcher);
     expect(lead).toHaveClass("step-lead", "text-pretty");
-    expect(lead).toHaveTextContent(
-      "We're initializing the SQLite store for your local instance.",
-    );
-    expect(lead.querySelector("strong")).toHaveTextContent("SQLite");
-    expect(lead.querySelectorAll("strong")[1]).toHaveTextContent("local");
+    expect(lead).toHaveTextContent(fullText);
+    expect(lead.querySelector("strong")).toHaveTextContent(firstStrong);
+    expect(lead.querySelectorAll("strong")[1]).toHaveTextContent(secondStrong);
   });
+}
 
-  it("renders the Instance phase fill at 100%", () => {
+function phaseSeg(name: string) {
+  const label = [...document.querySelectorAll(".phase-seg-label")].find(
+    (el) => el.textContent === name,
+  );
+  return { label, seg: label?.closest(".phase-seg") };
+}
+
+function expectActivePhase(name: string, fill: string, index: string) {
+  const label = document.querySelector(
+    ".phase-seg.is-active .phase-seg-label",
+  );
+  expect(label).toHaveClass("phase-seg-label");
+  expect(label).toHaveTextContent(name);
+  const seg = label?.closest(".phase-seg");
+  expect(seg).toHaveClass("is-active");
+  expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent(index);
+  expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({ width: fill });
+}
+
+function itRendersActivePhase(name: string, fill: string, index: string) {
+  it(`renders the ${name} phase as active`, () => {
     // Assert
-    const label = document.querySelector(
-      ".phase-seg.is-active .phase-seg-label",
-    );
-    expect(label).toHaveTextContent("Instance");
-    expect(
-      label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
-    ).toHaveStyle({
-      width: "100%",
-    });
+    expectActivePhase(name, fill, index);
   });
+}
 
-  it("renders a Create instance setup check in progress", () => {
+function expectUpcomingPhase(name: string, fill: string, index: string) {
+  const { label, seg } = phaseSeg(name);
+  expect(label).toHaveClass("phase-seg-label");
+  expect(seg).toHaveClass("is-upcoming");
+  expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent(index);
+  expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({ width: fill });
+}
+
+function itRendersUpcomingPhase(name: string, fill: string, index: string) {
+  it(`renders the ${name} phase as upcoming`, () => {
     // Assert
-    const label = screen.getByText("Create instance");
-    expect(label).toHaveClass("setup-check-label");
-    const row = label.closest(".setup-check");
-    expect(row).not.toHaveClass("is-pending");
-    expect(row).not.toHaveClass("is-done");
-    const loader = row?.querySelector("svg.lucide-loader-circle");
-    expect(loader).toBeInTheDocument();
-    expect(loader).toHaveClass("spin");
+    expectUpcomingPhase(name, fill, index);
   });
+}
 
-  it("renders a Prepare SQLite store setup check as pending", () => {
+function expectDonePhase(name: string, fill: string) {
+  const { label, seg } = phaseSeg(name);
+  expect(label).toHaveClass("phase-seg-label");
+  expect(seg).toHaveClass("is-done");
+  expect(
+    seg?.querySelector(".phase-seg-index svg.lucide-check"),
+  ).toBeInTheDocument();
+  expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({ width: fill });
+}
+
+function itRendersDonePhase(name: string, fill: string) {
+  it(`renders the ${name} phase as done`, () => {
     // Assert
-    const label = screen.getByText("Prepare SQLite store");
-    expect(label).toHaveClass("setup-check-label");
-    const row = label.closest(".setup-check");
-    expect(row).toHaveClass("is-pending");
-    expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
+    expectDonePhase(name, fill);
   });
+}
 
-  it("renders an Initialize persistence setup check as pending", () => {
+function expectPhaseFill(name: string, fill: string) {
+  const label = document.querySelector(
+    ".phase-seg.is-active .phase-seg-label",
+  );
+  expect(label).toHaveTextContent(name);
+  expect(
+    label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
+  ).toHaveStyle({
+    width: fill,
+  });
+}
+
+function itRendersPhaseFill(name: string, fill: string) {
+  it(`renders the ${name} phase fill at ${fill}`, () => {
     // Assert
-    const label = screen.getByText("Initialize persistence");
-    expect(label).toHaveClass("setup-check-label");
-    const row = label.closest(".setup-check");
-    expect(row).toHaveClass("is-pending");
-    expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
+    expectPhaseFill(name, fill);
   });
+}
 
+function setupCheckRow(label: string) {
+  const labelEl = screen.getByText(label);
+  expect(labelEl).toHaveClass("setup-check-label");
+  return labelEl.closest(".setup-check");
+}
+
+function expectPendingSetupCheck(label: string) {
+  const row = setupCheckRow(label);
+  expect(row).toHaveClass("is-pending");
+  expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
+}
+
+function expectInProgressSetupCheck(label: string) {
+  const row = setupCheckRow(label);
+  expect(row).not.toHaveClass("is-pending");
+  expect(row).not.toHaveClass("is-done");
+  const loader = row?.querySelector("svg.lucide-loader-circle");
+  expect(loader).toBeInTheDocument();
+  expect(loader).toHaveClass("spin");
+}
+
+function expectDoneSetupCheck(label: string) {
+  const row = setupCheckRow(label);
+  expect(row).toHaveClass("is-done");
+  expect(row?.querySelector("svg.lucide-circle-check")).toBeInTheDocument();
+}
+
+function expectDoneSetupCheckWithIcon(label: string, icon: string) {
+  const row = setupCheckRow(label);
+  expect(row).toHaveClass("is-done");
+  expect(row?.querySelector(`svg.${icon}`)).toBeInTheDocument();
+}
+
+function itRendersPendingSetupCheck(title: string, label: string) {
+  it(title, () => {
+    // Assert
+    expectPendingSetupCheck(label);
+  });
+}
+
+function itRendersInProgressSetupCheck(title: string, label: string) {
+  it(title, () => {
+    // Assert
+    expectInProgressSetupCheck(label);
+  });
+}
+
+function itRendersDoneSetupCheck(title: string, label: string) {
+  it(title, () => {
+    // Assert
+    expectDoneSetupCheck(label);
+  });
+}
+
+function itRendersDoneSetupCheckWithIcon(label: string, icon: string) {
+  it(`renders a ${label} setup check`, () => {
+    // Assert
+    expectDoneSetupCheckWithIcon(label, icon);
+  });
+}
+
+function expectBackButton() {
+  const back = screen.getByRole("button", { name: "Back" });
+  expect(back).toHaveClass("button", "is-light");
+  expect(back.querySelector("svg.lucide-arrow-left")).toBeInTheDocument();
+  expect(back.closest(".onboarding-footer")).toBeInTheDocument();
+}
+
+function itRendersBackButton() {
   it("renders a Back button", () => {
     // Assert
-    const back = screen.getByRole("button", { name: "Back" });
-    expect(back).toHaveClass("button", "is-light");
-    expect(back.querySelector("svg.lucide-arrow-left")).toBeInTheDocument();
-    expect(back.closest(".onboarding-footer")).toBeInTheDocument();
+    expectBackButton();
   });
+}
 
+function continueButton() {
+  return screen.getByRole("button", { name: "Continue" });
+}
+
+function expectContinueButton() {
+  const button = continueButton();
+  expect(button).toHaveClass("button", "is-primary", "footer-grow");
+  expect(button.querySelector("svg.lucide-arrow-right")).toBeInTheDocument();
+  expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+}
+
+function expectEnabledContinueButton() {
+  const button = continueButton();
+  expect(button).toHaveClass("button", "is-primary", "footer-grow");
+  expect(button).toBeEnabled();
+  expect(button.querySelector("svg.lucide-arrow-right")).toBeInTheDocument();
+  expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+}
+
+function expectDisabledContinueButton() {
+  const button = continueButton();
+  expect(button).toHaveClass("button", "is-primary", "footer-grow");
+  expect(button).toBeDisabled();
+  expect(button.querySelector("svg.lucide-arrow-right")).toBeInTheDocument();
+  expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+}
+
+function expectDisabledContinueButtonWithoutChrome() {
+  const button = continueButton();
+  expect(button).toHaveClass("button", "is-primary", "footer-grow");
+  expect(button).toBeDisabled();
+}
+
+function itRendersContinueButton() {
+  it("renders a Continue button", () => {
+    // Assert
+    expectContinueButton();
+  });
+}
+
+function itRendersEnabledContinueButton() {
+  it("renders a Continue button", () => {
+    // Assert
+    expectEnabledContinueButton();
+  });
+}
+
+function itRendersDisabledContinueButton() {
   it("renders a disabled Continue button", () => {
     // Assert
-    const button = screen.getByRole("button", { name: "Continue" });
-    expect(button).toHaveClass("button", "is-primary", "footer-grow");
-    expect(button).toBeDisabled();
-    expect(button.querySelector("svg.lucide-arrow-right")).toBeInTheDocument();
-    expect(button.closest(".onboarding-footer")).toBeInTheDocument();
+    expectDisabledContinueButton();
   });
+}
+
+function itRendersDisabledContinueButtonWithoutChrome() {
+  it("renders a disabled Continue button", () => {
+    // Assert
+    expectDisabledContinueButtonWithoutChrome();
+  });
+}
+
+function itEnablesContinueButton() {
+  it("enables the Continue button", () => {
+    // Assert
+    expectEnabledContinueButton();
+  });
+}
+
+function expectField(
+  label: string,
+  options: { id: string; placeholder: string; value: string },
+) {
+  const input = screen.getByLabelText(label);
+  expect(input).toHaveClass("input");
+  expect(input).toHaveAttribute("id", options.id);
+  expect(input).toHaveAttribute("placeholder", options.placeholder);
+  expect(input).toHaveValue(options.value);
+  expect(screen.getByText(label)).toHaveClass("label");
+}
+
+function itRendersField(
+  label: string,
+  options: { id: string; placeholder: string; value: string },
+) {
+  it(`renders a ${label} field`, () => {
+    // Assert
+    expectField(label, options);
+  });
+}
+
+function expectFieldIcon(label: string, iconName: string) {
+  const control = screen.getByLabelText(label).closest(".control");
+  expect(control).toHaveClass("has-icons-left");
+  expect(control?.querySelector(`svg.lucide-${iconName}`)).toBeInTheDocument();
+}
+
+function itRendersFieldIcon(label: string, iconName: string) {
+  it(`renders a ${iconName} icon in the ${label} field`, () => {
+    // Assert
+    expectFieldIcon(label, iconName);
+  });
+}
+
+type ChoiceCardDetails = {
+  name: string | RegExp;
+  title: string;
+  desc: string;
+  meta: string;
+  icon: string;
+};
+
+function choiceCard(name: string | RegExp) {
+  return screen.getByRole("button", { name });
+}
+
+function expectSelectedChoiceCardChrome(card: HTMLElement) {
+  expect(card).toHaveClass("choice-card", "is-selected");
+  expect(card).toHaveAttribute("aria-pressed", "true");
+  expect(
+    card.querySelector(".choice-check svg.lucide-circle-check"),
+  ).toBeInTheDocument();
+}
+
+function expectUnselectedChoiceCardChrome(card: HTMLElement) {
+  expect(card).toHaveClass("choice-card");
+  expect(card).not.toHaveClass("is-selected");
+  expect(card).toHaveAttribute("aria-pressed", "false");
+  expect(card.querySelector(".choice-check")).not.toBeInTheDocument();
+}
+
+function expectChoiceCardDetails(card: HTMLElement, options: ChoiceCardDetails) {
+  expect(card.querySelector(`svg.lucide-${options.icon}`)).toBeInTheDocument();
+  expect(card.querySelector(".choice-title")).toHaveTextContent(options.title);
+  expect(card.querySelector(".choice-desc")).toHaveTextContent(options.desc);
+  expect(card.querySelector(".choice-meta")).toHaveTextContent(options.meta);
+  expect(card.querySelector("svg.lucide-database")).toBeInTheDocument();
+}
+
+function itRendersSelectedChoiceCard(
+  title: string,
+  options: ChoiceCardDetails,
+) {
+  it(title, () => {
+    // Assert
+    const card = choiceCard(options.name);
+    expectSelectedChoiceCardChrome(card);
+    expectChoiceCardDetails(card, options);
+  });
+}
+
+function itRendersUnselectedChoiceCard(
+  title: string,
+  options: ChoiceCardDetails,
+) {
+  it(title, () => {
+    // Assert
+    const card = choiceCard(options.name);
+    expectUnselectedChoiceCardChrome(card);
+    expectChoiceCardDetails(card, options);
+  });
+}
+
+function itSelectsChoiceCard(name: string) {
+  it(`selects the ${name} choice card`, () => {
+    // Assert
+    expectSelectedChoiceCardChrome(choiceCard(new RegExp(name)));
+  });
+}
+
+function itDeselectsChoiceCard(name: string) {
+  it(`deselects the ${name} choice card`, () => {
+    // Assert
+    expectUnselectedChoiceCardChrome(choiceCard(new RegExp(name)));
+  });
+}
+
+async function clickAndWaitForHeading(
+  buttonName: string,
+  heading: string,
+) {
+  fireEvent.click(screen.getByRole("button", { name: buttonName }));
+  await waitFor(() => {
+    expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument();
+  });
+}
+
+async function clickContinueAndWaitForHeading(heading: string) {
+  await clickAndWaitForHeading("Continue", heading);
+}
+
+async function clickBackAndWaitForHeading(heading: string) {
+  await clickAndWaitForHeading("Back", heading);
+}
+
+function advanceBy500ms() {
+  act(() => {
+    vi.advanceTimersByTime(500);
+  });
+}
+
+async function waitForDataDirectoryValue() {
+  await waitFor(() => {
+    expect(screen.getByLabelText("Data directory")).toHaveValue(
+      apiDefaultPersistenceLocation,
+    );
+  });
+}
+
+function itRendersInitializeStepBeforeTimeouts() {
+  itRendersStepHeading("Setting up persistence");
+  itRendersStepEyebrow("Instance · Initialize");
+  itRendersStepLeadWithStrongs(
+    "renders the initialize lead",
+    /We're initializing the/,
+    "We're initializing the SQLite store for your local instance.",
+    "SQLite",
+    "local",
+  );
+  itRendersPhaseFill("Instance", "100%");
+  itRendersInProgressSetupCheck(
+    "renders a Create instance setup check in progress",
+    "Create instance",
+  );
+  itRendersPendingSetupCheck(
+    "renders a Prepare SQLite store setup check as pending",
+    "Prepare SQLite store",
+  );
+  itRendersPendingSetupCheck(
+    "renders an Initialize persistence setup check as pending",
+    "Initialize persistence",
+  );
+  itRendersBackButton();
+  itRendersDisabledContinueButton();
 }
 
 afterEach(() => {
@@ -155,14 +522,7 @@ describe("OnboardingPage", () => {
     renderOnboardingPage();
   });
 
-  it("renders the Welcome to Listello heading", () => {
-    // Assert
-    const heading = screen.getByRole("heading", {
-      name: "Welcome to Listello",
-    });
-    expect(heading).toHaveClass("step-title", "text-balance");
-    expect(heading.closest(".onboarding-page")).toBeInTheDocument();
-  });
+  itRendersStepHeadingOnPage("Welcome to Listello");
 
   it("renders the Listello brand mark with a check icon", () => {
     // Assert
@@ -185,42 +545,9 @@ describe("OnboardingPage", () => {
     expect(progress).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("renders the Instance phase as active", () => {
-    // Assert
-    const label = document.querySelector(
-      ".phase-seg.is-active .phase-seg-label",
-    );
-    expect(label).toHaveClass("phase-seg-label");
-    expect(label).toHaveTextContent("Instance");
-    const seg = label?.closest(".phase-seg");
-    expect(seg).toHaveClass("is-active");
-    expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent("1");
-    expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({ width: "25%" });
-  });
-
-  it("renders the Workspace phase as upcoming", () => {
-    // Assert
-    const label = [...document.querySelectorAll(".phase-seg-label")].find(
-      (el) => el.textContent === "Workspace",
-    );
-    expect(label).toHaveClass("phase-seg-label");
-    const seg = label?.closest(".phase-seg");
-    expect(seg).toHaveClass("is-upcoming");
-    expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent("2");
-    expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({ width: "0%" });
-  });
-
-  it("renders the Ready phase as upcoming", () => {
-    // Assert
-    const label = [...document.querySelectorAll(".phase-seg-label")].find(
-      (el) => el.textContent === "Ready",
-    );
-    expect(label).toHaveClass("phase-seg-label");
-    const seg = label?.closest(".phase-seg");
-    expect(seg).toHaveClass("is-upcoming");
-    expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent("3");
-    expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({ width: "0%" });
-  });
+  itRendersActivePhase("Instance", "25%", "1");
+  itRendersUpcomingPhase("Workspace", "0%", "2");
+  itRendersUpcomingPhase("Ready", "0%", "3");
 
   it("renders a sparkles icon", () => {
     // Assert
@@ -232,43 +559,20 @@ describe("OnboardingPage", () => {
     expect(icon?.querySelector("svg.lucide-sparkles")).toBeInTheDocument();
   });
 
-  it("renders the welcome lead", () => {
-    // Assert
-    const lead = screen.getByText(
-      /Let's create your instance and set up a calm, GTD-style workspace/,
-    );
-    expect(lead).toHaveClass("step-lead", "text-pretty");
-    expect(lead).toHaveTextContent(
-      "Let's create your instance and set up a calm, GTD-style workspace. It only takes a minute, and you can change everything later.",
-    );
-  });
-
-  it("renders a Choose how Listello is hosted setup check", () => {
-    // Assert
-    const label = screen.getByText("Choose how Listello is hosted");
-    expect(label).toHaveClass("setup-check-label");
-    const row = label.closest(".setup-check");
-    expect(row).toHaveClass("is-done");
-    expect(row?.querySelector("svg.lucide-server")).toBeInTheDocument();
-  });
-
-  it("renders a Create your space and profile setup check", () => {
-    // Assert
-    const label = screen.getByText("Create your space and profile");
-    expect(label).toHaveClass("setup-check-label");
-    const row = label.closest(".setup-check");
-    expect(row).toHaveClass("is-done");
-    expect(row?.querySelector("svg.lucide-layers")).toBeInTheDocument();
-  });
-
-  it("renders a Start your first list setup check", () => {
-    // Assert
-    const label = screen.getByText("Start your first list");
-    expect(label).toHaveClass("setup-check-label");
-    const row = label.closest(".setup-check");
-    expect(row).toHaveClass("is-done");
-    expect(row?.querySelector("svg.lucide-list-checks")).toBeInTheDocument();
-  });
+  itRendersStepLead(
+    "renders the welcome lead",
+    /Let's create your instance and set up a calm, GTD-style workspace/,
+    "Let's create your instance and set up a calm, GTD-style workspace. It only takes a minute, and you can change everything later.",
+  );
+  itRendersDoneSetupCheckWithIcon(
+    "Choose how Listello is hosted",
+    "lucide-server",
+  );
+  itRendersDoneSetupCheckWithIcon(
+    "Create your space and profile",
+    "lucide-layers",
+  );
+  itRendersDoneSetupCheckWithIcon("Start your first list", "lucide-list-checks");
 
   it("renders a Create instance button", () => {
     // Assert
@@ -292,110 +596,36 @@ describe("OnboardingPage", () => {
   describe("when the instance is created", () => {
     beforeEach(async () => {
       vi.mocked(createInstance).mockResolvedValue(createdInstance);
-      fireEvent.click(screen.getByRole("button", { name: "Create instance" }));
-      await waitFor(() => {
-        expect(
-          screen.getByRole("heading", {
-            name: "How should Listello be hosted?",
-          }),
-        ).toBeInTheDocument();
-      });
-    });
-
-    it("renders the How should Listello be hosted heading", () => {
-      // Assert
-      const heading = screen.getByRole("heading", {
-        name: "How should Listello be hosted?",
-      });
-      expect(heading).toHaveClass("step-title", "text-balance");
-    });
-
-    it("renders the Instance · Hosting eyebrow", () => {
-      // Assert
-      const eyebrow = screen.getByText("Instance · Hosting");
-      expect(eyebrow).toHaveClass("step-eyebrow");
-    });
-
-    it("renders the hosting lead", () => {
-      // Assert
-      const lead = screen.getByText(
-        /Your hosting mode decides where this instance runs/,
-      );
-      expect(lead).toHaveClass("step-lead", "text-pretty");
-      expect(lead).toHaveTextContent(
-        "Your hosting mode decides where this instance runs and how your data is stored. You can migrate later.",
+      await clickAndWaitForHeading(
+        "Create instance",
+        "How should Listello be hosted?",
       );
     });
 
-    it("renders the Instance phase fill at 50%", () => {
-      // Assert
-      const label = document.querySelector(
-        ".phase-seg.is-active .phase-seg-label",
-      );
-      expect(label).toHaveTextContent("Instance");
-      expect(
-        label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
-      ).toHaveStyle({
-        width: "50%",
-      });
+    itRendersStepHeading("How should Listello be hosted?");
+    itRendersStepEyebrow("Instance · Hosting");
+    itRendersStepLead(
+      "renders the hosting lead",
+      /Your hosting mode decides where this instance runs/,
+      "Your hosting mode decides where this instance runs and how your data is stored. You can migrate later.",
+    );
+    itRendersPhaseFill("Instance", "50%");
+    itRendersSelectedChoiceCard("renders a selected Local choice card", {
+      name: /Local/,
+      title: "Local",
+      desc: "Runs directly on this machine, with local filesystem-backed persistence.",
+      meta: "Uses SQLite",
+      icon: "hard-drive",
     });
-
-    it("renders a selected Local choice card", () => {
-      // Assert
-      const card = screen.getByRole("button", { name: /Local/ });
-      expect(card).toHaveClass("choice-card", "is-selected");
-      expect(card).toHaveAttribute("aria-pressed", "true");
-      expect(card.querySelector("svg.lucide-hard-drive")).toBeInTheDocument();
-      expect(card.querySelector(".choice-title")).toHaveTextContent("Local");
-      expect(card.querySelector(".choice-desc")).toHaveTextContent(
-        "Runs directly on this machine, with local filesystem-backed persistence.",
-      );
-      expect(card.querySelector(".choice-meta")).toHaveTextContent(
-        "Uses SQLite",
-      );
-      expect(card.querySelector("svg.lucide-database")).toBeInTheDocument();
-      expect(
-        card.querySelector(".choice-check svg.lucide-circle-check"),
-      ).toBeInTheDocument();
+    itRendersUnselectedChoiceCard("renders a Standalone Web choice card", {
+      name: /Standalone Web/,
+      title: "Standalone Web",
+      desc: "Runs independently in the browser as a PWA or standalone app.",
+      meta: "Uses IndexedDB / OPFS",
+      icon: "globe",
     });
-
-    it("renders a Standalone Web choice card", () => {
-      // Assert
-      const card = screen.getByRole("button", { name: /Standalone Web/ });
-      expect(card).toHaveClass("choice-card");
-      expect(card).not.toHaveClass("is-selected");
-      expect(card).toHaveAttribute("aria-pressed", "false");
-      expect(card.querySelector("svg.lucide-globe")).toBeInTheDocument();
-      expect(card.querySelector(".choice-title")).toHaveTextContent(
-        "Standalone Web",
-      );
-      expect(card.querySelector(".choice-desc")).toHaveTextContent(
-        "Runs independently in the browser as a PWA or standalone app.",
-      );
-      expect(card.querySelector(".choice-meta")).toHaveTextContent(
-        "Uses IndexedDB / OPFS",
-      );
-      expect(card.querySelector("svg.lucide-database")).toBeInTheDocument();
-      expect(card.querySelector(".choice-check")).not.toBeInTheDocument();
-    });
-
-    it("renders a Back button", () => {
-      // Assert
-      const back = screen.getByRole("button", { name: "Back" });
-      expect(back).toHaveClass("button", "is-light");
-      expect(back.querySelector("svg.lucide-arrow-left")).toBeInTheDocument();
-      expect(back.closest(".onboarding-footer")).toBeInTheDocument();
-    });
-
-    it("renders a Continue button", () => {
-      // Assert
-      const button = screen.getByRole("button", { name: "Continue" });
-      expect(button).toHaveClass("button", "is-primary", "footer-grow");
-      expect(
-        button.querySelector("svg.lucide-arrow-right"),
-      ).toBeInTheDocument();
-      expect(button.closest(".onboarding-footer")).toBeInTheDocument();
-    });
+    itRendersBackButton();
+    itRendersContinueButton();
 
     it("calls selectHostingMode with local when Continue is clicked", () => {
       // Arrange
@@ -412,70 +642,25 @@ describe("OnboardingPage", () => {
 
     describe("when the Back button is clicked", () => {
       beforeEach(async () => {
-        fireEvent.click(screen.getByRole("button", { name: "Back" }));
-        await waitFor(() => {
-          expect(
-            screen.getByRole("heading", { name: "Welcome to Listello" }),
-          ).toBeInTheDocument();
-        });
+        await clickBackAndWaitForHeading("Welcome to Listello");
       });
 
-      it("renders the Welcome to Listello heading", () => {
-        // Assert
-        const heading = screen.getByRole("heading", {
-          name: "Welcome to Listello",
-        });
-        expect(heading).toHaveClass("step-title", "text-balance");
-      });
+      itRendersStepHeading("Welcome to Listello");
     });
 
     describe("when the Continue button is clicked", () => {
       beforeEach(async () => {
-        fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-        await waitFor(() => {
-          expect(
-            screen.getByRole("heading", { name: "Choose a data directory" }),
-          ).toBeInTheDocument();
-        });
+        await clickContinueAndWaitForHeading("Choose a data directory");
       });
 
-      it("renders the Choose a data directory heading", () => {
-        // Assert
-        const heading = screen.getByRole("heading", {
-          name: "Choose a data directory",
-        });
-        expect(heading).toHaveClass("step-title", "text-balance");
-      });
-
-      it("renders the Instance · Local eyebrow", () => {
-        // Assert
-        const eyebrow = screen.getByText("Instance · Local");
-        expect(eyebrow).toHaveClass("step-eyebrow");
-      });
-
-      it("renders the data directory lead", () => {
-        // Assert
-        const lead = screen.getByText(
-          /This is where Listello keeps its data for this instance/,
-        );
-        expect(lead).toHaveClass("step-lead", "text-pretty");
-        expect(lead).toHaveTextContent(
-          "This is where Listello keeps its data for this instance. You can move it later.",
-        );
-      });
-
-      it("renders the Instance phase fill at 75%", () => {
-        // Assert
-        const label = document.querySelector(
-          ".phase-seg.is-active .phase-seg-label",
-        );
-        expect(label).toHaveTextContent("Instance");
-        expect(
-          label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
-        ).toHaveStyle({
-          width: "75%",
-        });
-      });
+      itRendersStepHeading("Choose a data directory");
+      itRendersStepEyebrow("Instance · Local");
+      itRendersStepLead(
+        "renders the data directory lead",
+        /This is where Listello keeps its data for this instance/,
+        "This is where Listello keeps its data for this instance. You can move it later.",
+      );
+      itRendersPhaseFill("Instance", "75%");
 
       it("renders a Data directory field", async () => {
         // Assert
@@ -483,21 +668,14 @@ describe("OnboardingPage", () => {
         expect(input).toHaveClass("input");
         expect(input).toHaveAttribute("id", "onb-location");
         expect(input).toHaveAttribute("placeholder", "~/listello");
-        await waitFor(() => {
-          expect(input).toHaveValue(apiDefaultPersistenceLocation);
-        });
+        await waitForDataDirectoryValue();
         expect(getDefaultPersistenceLocation).toHaveBeenCalledWith(
           expect.objectContaining({ signal: expect.any(AbortSignal) }),
         );
         expect(screen.getByText("Data directory")).toHaveClass("label");
       });
 
-      it("renders a folder icon in the Data directory field", () => {
-        // Assert
-        const control = screen.getByLabelText("Data directory").closest(".control");
-        expect(control).toHaveClass("has-icons-left");
-        expect(control?.querySelector("svg.lucide-folder")).toBeInTheDocument();
-      });
+      itRendersFieldIcon("Data directory", "folder");
 
       it("renders the data directory help", () => {
         // Assert
@@ -510,11 +688,7 @@ describe("OnboardingPage", () => {
       it("calls selectPersistenceLocation when Continue is clicked", async () => {
         // Arrange
         vi.mocked(selectPersistenceLocation).mockResolvedValue(createdInstance);
-        await waitFor(() => {
-          expect(screen.getByLabelText("Data directory")).toHaveValue(
-            apiDefaultPersistenceLocation,
-          );
-        });
+        await waitForDataDirectoryValue();
 
         // Act
         fireEvent.click(screen.getByRole("button", { name: "Continue" }));
@@ -529,11 +703,7 @@ describe("OnboardingPage", () => {
         // Arrange
         vi.mocked(selectPersistenceLocation).mockResolvedValue(createdInstance);
         vi.mocked(initializePersistence).mockResolvedValue(createdInstance);
-        await waitFor(() => {
-          expect(screen.getByLabelText("Data directory")).toHaveValue(
-            apiDefaultPersistenceLocation,
-          );
-        });
+        await waitForDataDirectoryValue();
 
         // Act
         fireEvent.click(screen.getByRole("button", { name: "Continue" }));
@@ -549,11 +719,7 @@ describe("OnboardingPage", () => {
         // Arrange
         vi.mocked(selectPersistenceLocation).mockResolvedValue(createdInstance);
         vi.mocked(initializePersistence).mockResolvedValue(createdInstance);
-        await waitFor(() => {
-          expect(screen.getByLabelText("Data directory")).toHaveValue(
-            apiDefaultPersistenceLocation,
-          );
-        });
+        await waitForDataDirectoryValue();
 
         // Act
         fireEvent.click(screen.getByRole("button", { name: "Continue" }));
@@ -590,33 +756,15 @@ describe("OnboardingPage", () => {
 
       describe("when the Back button is clicked", () => {
         beforeEach(async () => {
-          fireEvent.click(screen.getByRole("button", { name: "Back" }));
-          await waitFor(() => {
-            expect(
-              screen.getByRole("heading", {
-                name: "How should Listello be hosted?",
-              }),
-            ).toBeInTheDocument();
-          });
+          await clickBackAndWaitForHeading("How should Listello be hosted?");
         });
 
-        it("renders the How should Listello be hosted heading", () => {
-          // Assert
-          const heading = screen.getByRole("heading", {
-            name: "How should Listello be hosted?",
-          });
-          expect(heading).toHaveClass("step-title", "text-balance");
-        });
+        itRendersStepHeading("How should Listello be hosted?");
       });
 
       describe("when the Continue button is clicked", () => {
         beforeEach(async () => {
-          fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-          await waitFor(() => {
-            expect(
-              screen.getByRole("heading", { name: "Setting up persistence" }),
-            ).toBeInTheDocument();
-          });
+          await clickContinueAndWaitForHeading("Setting up persistence");
         });
 
         itRendersInitializeStepBeforeTimeouts();
@@ -626,99 +774,46 @@ describe("OnboardingPage", () => {
         beforeEach(() => {
           vi.useFakeTimers();
           fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-          act(() => {
-            vi.advanceTimersByTime(500);
-          });
+          advanceBy500ms();
         });
 
-        it("renders a Create instance setup check as done", () => {
-          // Assert
-          const label = screen.getByText("Create instance");
-          expect(label).toHaveClass("setup-check-label");
-          const row = label.closest(".setup-check");
-          expect(row).toHaveClass("is-done");
-          expect(row?.querySelector("svg.lucide-circle-check")).toBeInTheDocument();
-        });
-
-        it("renders a Prepare SQLite store setup check in progress", () => {
-          // Assert
-          const label = screen.getByText("Prepare SQLite store");
-          expect(label).toHaveClass("setup-check-label");
-          const row = label.closest(".setup-check");
-          expect(row).not.toHaveClass("is-pending");
-          expect(row).not.toHaveClass("is-done");
-          const loader = row?.querySelector("svg.lucide-loader-circle");
-          expect(loader).toBeInTheDocument();
-          expect(loader).toHaveClass("spin");
-        });
-
-        it("renders an Initialize persistence setup check as pending", () => {
-          // Assert
-          const label = screen.getByText("Initialize persistence");
-          expect(label).toHaveClass("setup-check-label");
-          const row = label.closest(".setup-check");
-          expect(row).toHaveClass("is-pending");
-          expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
-        });
+        itRendersDoneSetupCheck(
+          "renders a Create instance setup check as done",
+          "Create instance",
+        );
+        itRendersInProgressSetupCheck(
+          "renders a Prepare SQLite store setup check in progress",
+          "Prepare SQLite store",
+        );
+        itRendersPendingSetupCheck(
+          "renders an Initialize persistence setup check as pending",
+          "Initialize persistence",
+        );
 
         describe("after another 500ms", () => {
           beforeEach(() => {
-            act(() => {
-              vi.advanceTimersByTime(500);
-            });
+            advanceBy500ms();
           });
 
-          it("renders a Prepare SQLite store setup check as done", () => {
-            // Assert
-            const label = screen.getByText("Prepare SQLite store");
-            expect(label).toHaveClass("setup-check-label");
-            const row = label.closest(".setup-check");
-            expect(row).toHaveClass("is-done");
-            expect(
-              row?.querySelector("svg.lucide-circle-check"),
-            ).toBeInTheDocument();
-          });
-
-          it("renders an Initialize persistence setup check in progress", () => {
-            // Assert
-            const label = screen.getByText("Initialize persistence");
-            expect(label).toHaveClass("setup-check-label");
-            const row = label.closest(".setup-check");
-            expect(row).not.toHaveClass("is-pending");
-            expect(row).not.toHaveClass("is-done");
-            const loader = row?.querySelector("svg.lucide-loader-circle");
-            expect(loader).toBeInTheDocument();
-            expect(loader).toHaveClass("spin");
-          });
+          itRendersDoneSetupCheck(
+            "renders a Prepare SQLite store setup check as done",
+            "Prepare SQLite store",
+          );
+          itRendersInProgressSetupCheck(
+            "renders an Initialize persistence setup check in progress",
+            "Initialize persistence",
+          );
 
           describe("after another 500ms", () => {
             beforeEach(() => {
-              act(() => {
-                vi.advanceTimersByTime(500);
-              });
+              advanceBy500ms();
             });
 
-            it("renders an Initialize persistence setup check as done", () => {
-              // Assert
-              const label = screen.getByText("Initialize persistence");
-              expect(label).toHaveClass("setup-check-label");
-              const row = label.closest(".setup-check");
-              expect(row).toHaveClass("is-done");
-              expect(
-                row?.querySelector("svg.lucide-circle-check"),
-              ).toBeInTheDocument();
-            });
-
-            it("enables the Continue button", () => {
-              // Assert
-              const button = screen.getByRole("button", { name: "Continue" });
-              expect(button).toHaveClass("button", "is-primary", "footer-grow");
-              expect(button).toBeEnabled();
-              expect(
-                button.querySelector("svg.lucide-arrow-right"),
-              ).toBeInTheDocument();
-              expect(button.closest(".onboarding-footer")).toBeInTheDocument();
-            });
+            itRendersDoneSetupCheck(
+              "renders an Initialize persistence setup check as done",
+              "Initialize persistence",
+            );
+            itEnablesContinueButton();
 
             describe("when the Back button is clicked", () => {
               beforeEach(() => {
@@ -739,120 +834,24 @@ describe("OnboardingPage", () => {
                 fireEvent.click(screen.getByRole("button", { name: "Continue" }));
               });
 
-              it("renders the Name your space heading", () => {
-                // Assert
-                const heading = screen.getByRole("heading", {
-                  name: "Name your space",
-                });
-                expect(heading).toHaveClass("step-title", "text-balance");
+              itRendersStepHeading("Name your space");
+              itRendersStepEyebrow("Workspace · Space");
+              itRendersStepLead(
+                "renders the space lead",
+                /A space groups your lists together/,
+                "A space groups your lists together. Most people start with a single personal space.",
+              );
+              itRendersDonePhase("Instance", "100%");
+              itRendersActivePhase("Workspace", "25%", "2");
+              itRendersUpcomingPhase("Ready", "0%", "3");
+              itRendersField("Space name", {
+                id: "onb-space",
+                placeholder: "Personal",
+                value: "Personal",
               });
-
-              it("renders the Workspace · Space eyebrow", () => {
-                // Assert
-                const eyebrow = screen.getByText("Workspace · Space");
-                expect(eyebrow).toHaveClass("step-eyebrow");
-              });
-
-              it("renders the space lead", () => {
-                // Assert
-                const lead = screen.getByText(
-                  /A space groups your lists together/,
-                );
-                expect(lead).toHaveClass("step-lead", "text-pretty");
-                expect(lead).toHaveTextContent(
-                  "A space groups your lists together. Most people start with a single personal space.",
-                );
-              });
-
-              it("renders the Instance phase as done", () => {
-                // Assert
-                const label = [...document.querySelectorAll(".phase-seg-label")].find(
-                  (el) => el.textContent === "Instance",
-                );
-                expect(label).toHaveClass("phase-seg-label");
-                const seg = label?.closest(".phase-seg");
-                expect(seg).toHaveClass("is-done");
-                expect(
-                  seg?.querySelector(".phase-seg-index svg.lucide-check"),
-                ).toBeInTheDocument();
-                expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({
-                  width: "100%",
-                });
-              });
-
-              it("renders the Workspace phase as active", () => {
-                // Assert
-                const label = document.querySelector(
-                  ".phase-seg.is-active .phase-seg-label",
-                );
-                expect(label).toHaveTextContent("Workspace");
-                const seg = label?.closest(".phase-seg");
-                expect(seg).toHaveClass("is-active");
-                expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent(
-                  "2",
-                );
-                expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({
-                  width: "25%",
-                });
-              });
-
-              it("renders the Ready phase as upcoming", () => {
-                // Assert
-                const label = [...document.querySelectorAll(".phase-seg-label")].find(
-                  (el) => el.textContent === "Ready",
-                );
-                expect(label).toHaveClass("phase-seg-label");
-                const seg = label?.closest(".phase-seg");
-                expect(seg).toHaveClass("is-upcoming");
-                expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent(
-                  "3",
-                );
-                expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({
-                  width: "0%",
-                });
-              });
-
-              it("renders a Space name field", () => {
-                // Assert
-                const input = screen.getByLabelText("Space name");
-                expect(input).toHaveClass("input");
-                expect(input).toHaveAttribute("id", "onb-space");
-                expect(input).toHaveAttribute("placeholder", "Personal");
-                expect(input).toHaveValue("Personal");
-                expect(screen.getByText("Space name")).toHaveClass("label");
-              });
-
-              it("renders a layers icon in the Space name field", () => {
-                // Assert
-                const control = screen
-                  .getByLabelText("Space name")
-                  .closest(".control");
-                expect(control).toHaveClass("has-icons-left");
-                expect(
-                  control?.querySelector("svg.lucide-layers"),
-                ).toBeInTheDocument();
-              });
-
-              it("renders a Back button", () => {
-                // Assert
-                const back = screen.getByRole("button", { name: "Back" });
-                expect(back).toHaveClass("button", "is-light");
-                expect(
-                  back.querySelector("svg.lucide-arrow-left"),
-                ).toBeInTheDocument();
-                expect(back.closest(".onboarding-footer")).toBeInTheDocument();
-              });
-
-              it("renders a Continue button", () => {
-                // Assert
-                const button = screen.getByRole("button", { name: "Continue" });
-                expect(button).toHaveClass("button", "is-primary", "footer-grow");
-                expect(button).toBeEnabled();
-                expect(
-                  button.querySelector("svg.lucide-arrow-right"),
-                ).toBeInTheDocument();
-                expect(button.closest(".onboarding-footer")).toBeInTheDocument();
-              });
+              itRendersFieldIcon("Space name", "layers");
+              itRendersBackButton();
+              itRendersEnabledContinueButton();
 
               describe("when the Continue button is clicked", () => {
                 beforeEach(async () => {
@@ -860,123 +859,30 @@ describe("OnboardingPage", () => {
                     ID: "SP_1",
                     Name: "Personal",
                   });
-                  
+
                   await act(async () => {
                     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
                   });
                 });
 
-                it("renders the What should we call you heading", () => {
-                  // Assert
-                  const heading = screen.getByRole("heading", {
-                    name: "What should we call you?",
-                  });
-                  expect(heading).toHaveClass("step-title", "text-balance");
+                itRendersStepHeading("What should we call you?");
+                itRendersStepEyebrow("Workspace · You");
+                itRendersStepLead(
+                  "renders the name lead",
+                  /Your name shows up on comments and activity/,
+                  "Your name shows up on comments and activity. It's just for you — no account needed.",
+                );
+                itRendersDonePhase("Instance", "100%");
+                itRendersPhaseFill("Workspace", "50%");
+                itRendersUpcomingPhase("Ready", "0%", "3");
+                itRendersField("Your name", {
+                  id: "onb-user",
+                  placeholder: "e.g. Alex",
+                  value: "",
                 });
-
-                it("renders the Workspace · You eyebrow", () => {
-                  // Assert
-                  const eyebrow = screen.getByText("Workspace · You");
-                  expect(eyebrow).toHaveClass("step-eyebrow");
-                });
-
-                it("renders the name lead", () => {
-                  // Assert
-                  const lead = screen.getByText(
-                    /Your name shows up on comments and activity/,
-                  );
-                  expect(lead).toHaveClass("step-lead", "text-pretty");
-                  expect(lead).toHaveTextContent(
-                    "Your name shows up on comments and activity. It's just for you — no account needed.",
-                  );
-                });
-
-                it("renders the Instance phase as done", () => {
-                  // Assert
-                  const label = [
-                    ...document.querySelectorAll(".phase-seg-label"),
-                  ].find((el) => el.textContent === "Instance");
-                  expect(label).toHaveClass("phase-seg-label");
-                  const seg = label?.closest(".phase-seg");
-                  expect(seg).toHaveClass("is-done");
-                  expect(
-                    seg?.querySelector(".phase-seg-index svg.lucide-check"),
-                  ).toBeInTheDocument();
-                  expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({
-                    width: "100%",
-                  });
-                });
-
-                it("renders the Workspace phase fill at 50%", () => {
-                  // Assert
-                  const label = document.querySelector(
-                    ".phase-seg.is-active .phase-seg-label",
-                  );
-                  expect(label).toHaveTextContent("Workspace");
-                  expect(
-                    label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
-                  ).toHaveStyle({
-                    width: "50%",
-                  });
-                });
-
-                it("renders the Ready phase as upcoming", () => {
-                  // Assert
-                  const label = [
-                    ...document.querySelectorAll(".phase-seg-label"),
-                  ].find((el) => el.textContent === "Ready");
-                  expect(label).toHaveClass("phase-seg-label");
-                  const seg = label?.closest(".phase-seg");
-                  expect(seg).toHaveClass("is-upcoming");
-                  expect(seg?.querySelector(".phase-seg-index")).toHaveTextContent(
-                    "3",
-                  );
-                  expect(seg?.querySelector(".phase-seg-fill")).toHaveStyle({
-                    width: "0%",
-                  });
-                });
-
-                it("renders a Your name field", () => {
-                  // Assert
-                  const input = screen.getByLabelText("Your name");
-                  expect(input).toHaveClass("input");
-                  expect(input).toHaveAttribute("id", "onb-user");
-                  expect(input).toHaveAttribute("placeholder", "e.g. Alex");
-                  expect(input).toHaveValue("");
-                  expect(screen.getByText("Your name")).toHaveClass("label");
-                });
-
-                it("renders a user icon in the Your name field", () => {
-                  // Assert
-                  const control = screen
-                    .getByLabelText("Your name")
-                    .closest(".control");
-                  expect(control).toHaveClass("has-icons-left");
-                  expect(
-                    control?.querySelector("svg.lucide-user"),
-                  ).toBeInTheDocument();
-                });
-
-                it("renders a Back button", () => {
-                  // Assert
-                  const back = screen.getByRole("button", { name: "Back" });
-                  expect(back).toHaveClass("button", "is-light");
-                  expect(
-                    back.querySelector("svg.lucide-arrow-left"),
-                  ).toBeInTheDocument();
-                  expect(back.closest(".onboarding-footer")).toBeInTheDocument();
-                });
-
-                it("renders a disabled Continue button", () => {
-                  // Assert
-                  const button = screen.getByRole("button", { name: "Continue" });
-                  expect(button).toHaveClass("button", "is-primary", "footer-grow");
-                  expect(button).toBeDisabled();
-                  expect(
-                    button.querySelector("svg.lucide-arrow-right"),
-                  ).toBeInTheDocument();
-                  expect(button.closest(".onboarding-footer")).toBeInTheDocument();
-                });
+                itRendersFieldIcon("Your name", "user");
+                itRendersBackButton();
+                itRendersDisabledContinueButton();
 
                 describe("when a name is entered", () => {
                   beforeEach(() => {
@@ -987,7 +893,9 @@ describe("OnboardingPage", () => {
 
                   it("enables the Continue button", () => {
                     // Assert
-                    const continueBtn = screen.getByRole("button", { name: "Continue" });
+                    const continueBtn = screen.getByRole("button", {
+                      name: "Continue",
+                    });
                     expect(continueBtn).not.toBeDisabled();
                   });
 
@@ -1000,7 +908,9 @@ describe("OnboardingPage", () => {
 
                     it("disables the Continue button again", () => {
                       // Assert
-                      const continueBtn = screen.getByRole("button", { name: "Continue" });
+                      const continueBtn = screen.getByRole("button", {
+                        name: "Continue",
+                      });
                       expect(continueBtn).toBeDisabled();
                     });
                   });
@@ -1011,9 +921,11 @@ describe("OnboardingPage", () => {
                         ID: "US_1",
                         Name: "Alex",
                       });
-                      
+
                       await act(async () => {
-                        fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+                        fireEvent.click(
+                          screen.getByRole("button", { name: "Continue" }),
+                        );
                       });
                     });
 
@@ -1024,129 +936,61 @@ describe("OnboardingPage", () => {
 
                     describe("when the Continue button is clicked", () => {
                       beforeEach(() => {
-                        fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-                      });
-
-                      it("renders the Getting things ready heading", () => {
-                        // Assert
-                        const heading = screen.getByRole("heading", {
-                          name: "Getting things ready",
-                        });
-                        expect(heading).toHaveClass("step-title", "text-balance");
-                      });
-
-                      it("renders the Workspace · Automatic eyebrow", () => {
-                        // Assert
-                        const eyebrow = screen.getByText("Workspace · Automatic");
-                        expect(eyebrow).toHaveClass("step-eyebrow");
-                      });
-
-                      it("renders the setup lead with the space name", () => {
-                        // Assert
-                        const lead = screen.getByText(/Listello is wiring up the essentials for/);
-                        expect(lead).toHaveClass("step-lead", "text-pretty");
-                        expect(lead).toHaveTextContent("Listello is wiring up the essentials for Personal.");
-                      });
-
-                      it("renders the Workspace phase fill at 75%", () => {
-                        // Assert
-                        const label = document.querySelector(
-                          ".phase-seg.is-active .phase-seg-label",
+                        fireEvent.click(
+                          screen.getByRole("button", { name: "Continue" }),
                         );
-                        expect(label).toHaveTextContent("Workspace");
-                        expect(
-                          label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
-                        ).toHaveStyle({
-                          width: "75%",
-                        });
                       });
 
-                      it("renders a Create Inbox setup check in progress", () => {
-                        // Assert
-                        const label = screen.getByText("Create Inbox");
-                        expect(label).toHaveClass("setup-check-label");
-                        const row = label.closest(".setup-check");
-                        expect(row).not.toHaveClass("is-pending");
-                        expect(row).not.toHaveClass("is-done");
-                        const loader = row?.querySelector("svg.lucide-loader-circle");
-                        expect(loader).toBeInTheDocument();
-                        expect(loader).toHaveClass("spin");
-                      });
-
-                      it("renders an Assign space to user setup check as pending", () => {
-                        // Assert
-                        const label = screen.getByText("Assign Personal to Alex");
-                        expect(label).toHaveClass("setup-check-label");
-                        const row = label.closest(".setup-check");
-                        expect(row).toHaveClass("is-pending");
-                        expect(row?.querySelector(".check-toggle")).toBeInTheDocument();
-                      });
-
-                      it("renders a disabled Continue button", () => {
-                        // Assert
-                        const button = screen.getByRole("button", { name: "Continue" });
-                        expect(button).toHaveClass("button", "is-primary", "footer-grow");
-                        expect(button).toBeDisabled();
-                      });
+                      itRendersStepHeading("Getting things ready");
+                      itRendersStepEyebrow("Workspace · Automatic");
+                      itRendersStepLead(
+                        "renders the setup lead with the space name",
+                        /Listello is wiring up the essentials for/,
+                        "Listello is wiring up the essentials for Personal.",
+                      );
+                      itRendersPhaseFill("Workspace", "75%");
+                      itRendersInProgressSetupCheck(
+                        "renders a Create Inbox setup check in progress",
+                        "Create Inbox",
+                      );
+                      itRendersPendingSetupCheck(
+                        "renders an Assign space to user setup check as pending",
+                        "Assign Personal to Alex",
+                      );
+                      itRendersDisabledContinueButtonWithoutChrome();
 
                       describe("after 500ms", () => {
                         beforeEach(() => {
-                          act(() => {
-                            vi.advanceTimersByTime(500);
-                          });
+                          advanceBy500ms();
                         });
 
-                        it("renders a Create Inbox setup check as done", () => {
-                          // Assert
-                          const label = screen.getByText("Create Inbox");
-                          expect(label).toHaveClass("setup-check-label");
-                          const row = label.closest(".setup-check");
-                          expect(row).toHaveClass("is-done");
-                          expect(row?.querySelector("svg.lucide-circle-check")).toBeInTheDocument();
-                        });
-
-                        it("renders an Assign space to user setup check in progress", () => {
-                          // Assert
-                          const label = screen.getByText("Assign Personal to Alex");
-                          expect(label).toHaveClass("setup-check-label");
-                          const row = label.closest(".setup-check");
-                          expect(row).not.toHaveClass("is-pending");
-                          expect(row).not.toHaveClass("is-done");
-                          const loader = row?.querySelector("svg.lucide-loader-circle");
-                          expect(loader).toBeInTheDocument();
-                          expect(loader).toHaveClass("spin");
-                        });
+                        itRendersDoneSetupCheck(
+                          "renders a Create Inbox setup check as done",
+                          "Create Inbox",
+                        );
+                        itRendersInProgressSetupCheck(
+                          "renders an Assign space to user setup check in progress",
+                          "Assign Personal to Alex",
+                        );
 
                         it("keeps the Continue button disabled", () => {
                           // Assert
-                          const button = screen.getByRole("button", { name: "Continue" });
+                          const button = screen.getByRole("button", {
+                            name: "Continue",
+                          });
                           expect(button).toBeDisabled();
                         });
 
                         describe("after another 500ms", () => {
                           beforeEach(() => {
-                            act(() => {
-                              vi.advanceTimersByTime(500);
-                            });
+                            advanceBy500ms();
                           });
 
-                          it("renders an Assign space to user setup check as done", () => {
-                            // Assert
-                            const label = screen.getByText("Assign Personal to Alex");
-                            expect(label).toHaveClass("setup-check-label");
-                            const row = label.closest(".setup-check");
-                            expect(row).toHaveClass("is-done");
-                            expect(row?.querySelector("svg.lucide-circle-check")).toBeInTheDocument();
-                          });
-
-                          it("enables the Continue button", () => {
-                            // Assert
-                            const button = screen.getByRole("button", { name: "Continue" });
-                            expect(button).toHaveClass("button", "is-primary", "footer-grow");
-                            expect(button).toBeEnabled();
-                            expect(button.querySelector("svg.lucide-arrow-right")).toBeInTheDocument();
-                            expect(button.closest(".onboarding-footer")).toBeInTheDocument();
-                          });
+                          itRendersDoneSetupCheck(
+                            "renders an Assign space to user setup check as done",
+                            "Assign Personal to Alex",
+                          );
+                          itEnablesContinueButton();
                         });
                       });
                     });
@@ -1164,74 +1008,18 @@ describe("OnboardingPage", () => {
         fireEvent.click(screen.getByRole("button", { name: /Standalone Web/ }));
       });
 
-      it("selects the Standalone Web choice card", () => {
-        // Assert
-        const card = screen.getByRole("button", { name: /Standalone Web/ });
-        expect(card).toHaveClass("choice-card", "is-selected");
-        expect(card).toHaveAttribute("aria-pressed", "true");
-        expect(
-          card.querySelector(".choice-check svg.lucide-circle-check"),
-        ).toBeInTheDocument();
-      });
-
-      it("deselects the Local choice card", () => {
-        // Assert
-        const card = screen.getByRole("button", { name: /Local/ });
-        expect(card).toHaveClass("choice-card");
-        expect(card).not.toHaveClass("is-selected");
-        expect(card).toHaveAttribute("aria-pressed", "false");
-        expect(card.querySelector(".choice-check")).not.toBeInTheDocument();
-      });
-
-      it("renders the Instance phase fill at 67%", () => {
-        // Assert
-        const label = document.querySelector(
-          ".phase-seg.is-active .phase-seg-label",
-        );
-        expect(label).toHaveTextContent("Instance");
-        expect(
-          label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
-        ).toHaveStyle({
-          width: "67%",
-        });
-      });
+      itSelectsChoiceCard("Standalone Web");
+      itDeselectsChoiceCard("Local");
+      itRendersPhaseFill("Instance", "67%");
 
       describe("when the Local choice card is clicked", () => {
         beforeEach(() => {
           fireEvent.click(screen.getByRole("button", { name: /Local/ }));
         });
 
-        it("selects the Local choice card", () => {
-          // Assert
-          const card = screen.getByRole("button", { name: /Local/ });
-          expect(card).toHaveClass("choice-card", "is-selected");
-          expect(card).toHaveAttribute("aria-pressed", "true");
-          expect(
-            card.querySelector(".choice-check svg.lucide-circle-check"),
-          ).toBeInTheDocument();
-        });
-
-        it("deselects the Standalone Web choice card", () => {
-          // Assert
-          const card = screen.getByRole("button", { name: /Standalone Web/ });
-          expect(card).toHaveClass("choice-card");
-          expect(card).not.toHaveClass("is-selected");
-          expect(card).toHaveAttribute("aria-pressed", "false");
-          expect(card.querySelector(".choice-check")).not.toBeInTheDocument();
-        });
-
-        it("renders the Instance phase fill at 50%", () => {
-          // Assert
-          const label = document.querySelector(
-            ".phase-seg.is-active .phase-seg-label",
-          );
-          expect(label).toHaveTextContent("Instance");
-          expect(
-            label?.closest(".phase-seg")?.querySelector(".phase-seg-fill"),
-          ).toHaveStyle({
-            width: "50%",
-          });
-        });
+        itSelectsChoiceCard("Local");
+        itDeselectsChoiceCard("Standalone Web");
+        itRendersPhaseFill("Instance", "50%");
       });
 
       describe("when the Continue button is clicked", () => {
