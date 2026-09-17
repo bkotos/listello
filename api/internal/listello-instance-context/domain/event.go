@@ -12,6 +12,7 @@ const (
 	EventPersistenceInitialized           EventName = "PersistenceInitialized"
 	EventSetupCompleted                   EventName = "SetupCompleted"
 	EventSpacePairedToInstance            EventName = "SpacePairedToInstance"
+	EventUserPairedToInstance             EventName = "UserPairedToInstance"
 )
 
 // EventMetadataInstanceCreated is the payload for an InstanceCreated event.
@@ -47,4 +48,10 @@ type EventMetadataSetupCompleted struct {
 type EventMetadataSpacePairedToInstance struct {
 	ID      string
 	SpaceID string
+}
+
+// EventMetadataUserPairedToInstance is the payload for a UserPairedToInstance event.
+type EventMetadataUserPairedToInstance struct {
+	ID     string
+	UserID string
 }

@@ -93,6 +93,13 @@ Feature: Create and set up a Listello instance
     Then a "SpacePairedToInstance" event should have occurred
     And the space "Personal" should be paired to the instance
 
+  Scenario: Pairing a user to an instance
+    Given an instance exists
+    And a user named "Alex" exists
+    When the system pairs the user "Alex" to the instance
+    Then a "UserPairedToInstance" event should have occurred
+    And the user "Alex" should be paired to the instance
+
   Scenario: Completing setup
     Given an instance exists
     And the user selects hosting mode "local"

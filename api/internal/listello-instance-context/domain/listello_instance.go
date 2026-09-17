@@ -15,6 +15,7 @@ type ListelloInstance struct {
 	Persistence Persistence
 	SetupState  SetupState
 	Space       productivity.Space
+	User        productivity.User
 }
 
 // CreateInstance creates a new Listello instance and raises an InstanceCreated event.
@@ -75,4 +76,10 @@ func (i ListelloInstance) IsSetupCompleted() bool {
 func (i *ListelloInstance) PairSpace(space productivity.Space) (Event, error) {
 	i.Space = space
 	return event.NewEvent(EventSpacePairedToInstance, EventMetadataSpacePairedToInstance{ID: i.ID, SpaceID: space.ID}, 1), nil
+}
+
+// PairUser pairs a user to this instance and raises a UserPairedToInstance event.
+func (i *ListelloInstance) PairUser(user productivity.User) (Event, error) {
+	i.User = user
+	return event.NewEvent(EventUserPairedToInstance, EventMetadataUserPairedToInstance{ID: i.ID, UserID: user.ID}, 1), nil
 }
