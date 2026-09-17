@@ -35,4 +35,5 @@ export interface ListelloInstanceResponse {
   PersistenceLocation: string;
   PersistenceState: string;
   SetupState: string;
+  Space: { ID: string; Name: string };
 }

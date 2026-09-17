@@ -38,4 +38,6 @@ func TestPairSpace(t *testing.T) {
 	var received viewdto.ListelloInstanceResponse
 	require.NoError(t, json.NewDecoder(rec.Body).Decode(&received))
 	assert.Equal(t, string(expected.HostingMode), received.HostingMode)
+	assert.Equal(t, expected.Space.ID, received.Space.ID)
+	assert.Equal(t, expected.Space.Name, received.Space.Name)
 }

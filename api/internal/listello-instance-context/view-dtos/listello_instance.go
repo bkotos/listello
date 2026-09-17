@@ -1,6 +1,9 @@
 package viewdto
 
-import domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
+import (
+	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
+	ppviewdto "github.com/bkotos/listello/internal/personal-productivity-context/view-dtos"
+)
 
 // SelectPersistenceLocationRequest is the HTTP request body for selecting a persistence location.
 type SelectPersistenceLocationRequest struct {
@@ -33,6 +36,7 @@ type ListelloInstanceResponse struct {
 	PersistenceLocation string `json:"PersistenceLocation"`
 	PersistenceState    string `json:"PersistenceState"`
 	SetupState          string `json:"SetupState"`
+	Space               ppviewdto.SpaceResponse `json:"Space" tstype:"{ ID: string; Name: string }"`
 }
 
 // ListelloInstanceFromDomain maps a domain Listello instance to its response DTO.
@@ -42,5 +46,6 @@ func ListelloInstanceFromDomain(instance domain.ListelloInstance) ListelloInstan
 		PersistenceLocation: instance.Persistence.Location,
 		PersistenceState:    string(instance.Persistence.State),
 		SetupState:          string(instance.SetupState),
+		Space:               ppviewdto.SpaceFromDomain(instance.Space),
 	}
 }

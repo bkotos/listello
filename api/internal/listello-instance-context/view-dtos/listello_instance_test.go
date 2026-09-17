@@ -7,6 +7,8 @@ import (
 
 	viewdto "github.com/bkotos/listello/internal/listello-instance-context/view-dtos"
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
+	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
+	ppviewdto "github.com/bkotos/listello/internal/personal-productivity-context/view-dtos"
 )
 
 func TestListelloInstanceFromDomain(t *testing.T) {
@@ -18,6 +20,10 @@ func TestListelloInstanceFromDomain(t *testing.T) {
 			State:    domain.PersistenceInitialized,
 		},
 		SetupState: domain.SetupCompleted,
+		Space: productivity.Space{
+			ID:   "SP_1",
+			Name: "Personal",
+		},
 	}
 
 	// Act
@@ -28,6 +34,7 @@ func TestListelloInstanceFromDomain(t *testing.T) {
 	assert.Equal(t, instance.Persistence.Location, received.PersistenceLocation)
 	assert.Equal(t, string(instance.Persistence.State), received.PersistenceState)
 	assert.Equal(t, string(instance.SetupState), received.SetupState)
+	assert.Equal(t, ppviewdto.SpaceFromDomain(instance.Space), received.Space)
 }
 
 func TestDefaultPersistenceLocationFromPath(t *testing.T) {
