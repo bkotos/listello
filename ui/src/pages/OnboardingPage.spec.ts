@@ -859,7 +859,7 @@ describe("OnboardingPage", () => {
                   fireEvent.click(screen.getByRole("button", { name: "Back" }));
                 });
 
-                itRendersStepHeading("Setting up persistence");
+                itRendersStepHeading("Choose a data directory");
               });
 
               describe("when the Continue button is clicked", () => {
