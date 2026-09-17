@@ -7,11 +7,13 @@ import (
 // SpaceRepository persists spaces.
 type SpaceRepository interface {
 	Save(space domain.Space) error
+	GetByID(id string) (domain.Space, error)
 }
 
 // SpaceService defines space application operations.
 type SpaceService interface {
 	CreateSpace(name string) (domain.Space, error)
+	GetByID(id string) (domain.Space, error)
 }
 
 type spaceService struct {
@@ -42,4 +44,9 @@ func (s *spaceService) CreateSpace(name string) (domain.Space, error) {
 		return domain.Space{}, err
 	}
 	return space, nil
+}
+
+// GetByID returns the space with the given ID from persistence.
+func (s *spaceService) GetByID(id string) (domain.Space, error) {
+	return s.spaceRepository.GetByID(id)
 }

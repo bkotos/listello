@@ -66,3 +66,23 @@ func TestSpaceService_CreateSpace_PublishesEvent(t *testing.T) {
 	assert.Equal(t, space.ID, meta.ID)
 	assert.NotEmpty(t, published.Timestamp)
 }
+
+func TestSpaceService_GetByID_ReturnsSpaceFromRepository(t *testing.T) {
+	// Arrange
+	const spaceID = "SP_1"
+	expected := domain.Space{ID: spaceID, Name: "Personal"}
+	repo := NewMockSpaceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewSpaceService(repo, publisher)
+
+	repo.EXPECT().
+		GetByID(spaceID).
+		Return(expected, nil)
+
+	// Act
+	received, err := svc.GetByID(spaceID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, expected, received)
+}
