@@ -1230,6 +1230,112 @@ describe("OnboardingPage", () => {
                                   name: "Errands",
                                 });
                               });
+
+                              itRendersStepHeading("You're all set, Alex");
+
+                              it("renders a rocket icon", () => {
+                                // Assert
+                                const heading = screen.getByRole("heading", {
+                                  name: "You're all set, Alex",
+                                });
+                                const icon = heading.parentElement?.querySelector(".big-icon");
+                                expect(icon).toBeInTheDocument();
+                                expect(
+                                  icon?.querySelector("svg.lucide-rocket"),
+                                ).toBeInTheDocument();
+                              });
+
+                              itRendersStepLead(
+                                "renders the all-set lead",
+                                /Your instance is ready/,
+                                "Your instance is ready. Here is what we set up — you can change any of it later.",
+                              );
+
+                              itRendersDonePhase("Instance", "100%");
+                              itRendersDonePhase("Workspace", "100%");
+                              itRendersPhaseFill("Ready", "100%");
+
+                              it("renders a Hosting summary of Local", () => {
+                                // Assert
+                                const key = screen.getByText("Hosting");
+                                expect(key).toHaveClass("summary-key");
+                                const val = key.closest(".summary-row")?.querySelector(".summary-val");
+                                expect(val).toHaveTextContent("Local");
+                              });
+
+                              it("renders a Persistence summary of SQLite", () => {
+                                // Assert
+                                const key = screen.getByText("Persistence");
+                                expect(key).toHaveClass("summary-key");
+                                const val = key.closest(".summary-row")?.querySelector(".summary-val");
+                                expect(val).toHaveTextContent("SQLite");
+                              });
+
+                              it("renders a Location summary of the data directory", () => {
+                                // Assert
+                                const key = screen.getByText("Location");
+                                expect(key).toHaveClass("summary-key");
+                                const val = key.closest(".summary-row")?.querySelector(".summary-val");
+                                expect(val).toHaveClass("is-family-code");
+                                expect(val).toHaveTextContent(apiDefaultPersistenceLocation);
+                              });
+
+                              it("renders a Space summary of Personal", () => {
+                                // Assert
+                                const key = screen.getByText("Space");
+                                expect(key).toHaveClass("summary-key");
+                                const val = key.closest(".summary-row")?.querySelector(".summary-val");
+                                expect(val).toHaveTextContent("Personal");
+                              });
+
+                              it("renders a First list summary of Errands", () => {
+                                // Assert
+                                const key = screen.getByText("First list");
+                                expect(key).toHaveClass("summary-key");
+                                const val = key.closest(".summary-row")?.querySelector(".summary-val");
+                                expect(val).toHaveTextContent("Errands");
+                              });
+
+                              it("renders an Inbox summary of Ready", () => {
+                                // Assert
+                                const key = screen.getByText("Inbox");
+                                expect(key).toHaveClass("summary-key");
+                                const row = key.closest(".summary-row");
+                                expect(row?.querySelector("svg.lucide-inbox")).toBeInTheDocument();
+                                expect(row?.querySelector(".icon-text")).toHaveTextContent("Ready");
+                              });
+
+                              it("renders the summary in a box", () => {
+                                // Assert
+                                const box = screen.getByText("Hosting").closest(".step-content");
+                                expect(box).toHaveClass("step-content", "box");
+                              });
+
+                              it("does not render a Back button", () => {
+                                // Assert
+                                expect(
+                                  screen.queryByRole("button", { name: "Back" }),
+                                ).not.toBeInTheDocument();
+                              });
+
+                              it("renders an Enter Listello button", () => {
+                                // Assert
+                                const button = screen.getByRole("button", {
+                                  name: "Enter Listello",
+                                });
+                                expect(button).toHaveClass(
+                                  "button",
+                                  "is-primary",
+                                  "footer-grow",
+                                );
+                                expect(button).toBeEnabled();
+                                expect(
+                                  button.querySelector("svg.lucide-rocket"),
+                                ).toBeInTheDocument();
+                                expect(
+                                  button.closest(".onboarding-footer"),
+                                ).toBeInTheDocument();
+                              });
                             });
                           });
                         });
