@@ -9,6 +9,7 @@ import {
   getDefaultPersistenceLocation,
   getInstance,
   initializePersistence,
+  pairSpace,
   selectHostingMode,
   selectPersistenceLocation,
 } from "./instance-client";
@@ -149,6 +150,29 @@ describe("initializePersistence", () => {
     // Assert
     expect(request).toHaveBeenCalledWith("/api/instance/initialize-persistence", {
       method: "POST",
+    });
+    expect(result).toEqual(instance);
+  });
+});
+
+describe("pairSpace", () => {
+  it("posts the space name to the API", async () => {
+    // Arrange
+    const instance = {
+      HostingMode: "local",
+      PersistenceLocation: "/var/listello",
+      PersistenceState: "initialized",
+      SetupState: "",
+    };
+    vi.mocked(request).mockResolvedValue(instance);
+
+    // Act
+    const result = await pairSpace({ name: "Personal" });
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/instance/space", {
+      method: "POST",
+      body: JSON.stringify({ name: "Personal" }),
     });
     expect(result).toEqual(instance);
   });
