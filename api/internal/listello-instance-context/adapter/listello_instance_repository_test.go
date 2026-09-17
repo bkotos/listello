@@ -11,14 +11,23 @@ import (
 
 	adapter "github.com/bkotos/listello/internal/listello-instance-context/adapter"
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
+	productivityappmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"
 	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 func newListelloInstanceRepository(t *testing.T) *adapter.ListelloInstanceRepository {
 	t.Helper()
-	repo, err := adapter.NewListelloInstanceRepository(filepath.Join(t.TempDir(), "listello_instance"))
+	repo, err := adapter.NewListelloInstanceRepository(filepath.Join(t.TempDir(), "listello_instance"), nil)
 	require.NoError(t, err)
 	return repo
+}
+
+func writeListelloInstanceLocator(t *testing.T, path string, file adapter.ListelloInstanceFile) {
+	t.Helper()
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, gob.NewEncoder(f).Encode(file))
+	require.NoError(t, f.Close())
 }
 
 func TestGetDefaultPersistenceLocation(t *testing.T) {
@@ -182,12 +191,9 @@ func TestListelloInstanceRepository_Get_LoadsInstanceFromLocatorWhenNotInMemory(
 			SetupState:          string(domain.SetupIncomplete),
 		},
 	}
-	f, err := os.Create(locatorPath)
-	require.NoError(t, err)
-	require.NoError(t, gob.NewEncoder(f).Encode(file))
-	require.NoError(t, f.Close())
+	writeListelloInstanceLocator(t, locatorPath, file)
 
-	repo, err := adapter.NewListelloInstanceRepository(locatorPath)
+	repo, err := adapter.NewListelloInstanceRepository(locatorPath, nil)
 	require.NoError(t, err)
 
 	// Act
@@ -203,13 +209,72 @@ func TestListelloInstanceRepository_Get_LoadsInstanceFromLocatorWhenNotInMemory(
 	assert.Equal(t, domain.SetupIncomplete, got.SetupState)
 }
 
+func TestListelloInstanceRepository_Get_LoadsSpaceWhenSpaceIDPresent(t *testing.T) {
+	// Arrange
+	locatorPath := filepath.Join(t.TempDir(), "listello_instance")
+	location := filepath.Join(t.TempDir(), "listello")
+	space := productivity.Space{ID: "SP_1", Name: "Personal"}
+	writeListelloInstanceLocator(t, locatorPath, adapter.ListelloInstanceFile{
+		SchemaVersion: adapter.ListelloInstanceSchemaVersion,
+		Data: adapter.ListelloInstanceData{
+			ID:                  "LI_6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+			HostingMode:         string(domain.HostingModeLocal),
+			PersistenceLocation: location,
+			PersistenceState:    string(domain.PersistenceUninitialized),
+			SetupState:          string(domain.SetupIncomplete),
+			SpaceID:             space.ID,
+		},
+	})
+	spaceService := productivityappmocks.NewMockSpaceService(t)
+	spaceService.EXPECT().GetByID(space.ID).Return(space, nil)
+
+	repo, err := adapter.NewListelloInstanceRepository(locatorPath, spaceService)
+	require.NoError(t, err)
+
+	// Act
+	got, err := repo.Get()
+
+	// Assert
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, space, got.Space)
+}
+
+func TestListelloInstanceRepository_Get_DoesNotLoadSpaceWhenSpaceIDEmpty(t *testing.T) {
+	// Arrange
+	locatorPath := filepath.Join(t.TempDir(), "listello_instance")
+	location := filepath.Join(t.TempDir(), "listello")
+	writeListelloInstanceLocator(t, locatorPath, adapter.ListelloInstanceFile{
+		SchemaVersion: adapter.ListelloInstanceSchemaVersion,
+		Data: adapter.ListelloInstanceData{
+			ID:                  "LI_6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+			HostingMode:         string(domain.HostingModeLocal),
+			PersistenceLocation: location,
+			PersistenceState:    string(domain.PersistenceUninitialized),
+			SetupState:          string(domain.SetupIncomplete),
+		},
+	})
+	spaceService := productivityappmocks.NewMockSpaceService(t)
+
+	repo, err := adapter.NewListelloInstanceRepository(locatorPath, spaceService)
+	require.NoError(t, err)
+
+	// Act
+	got, err := repo.Get()
+
+	// Assert
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, productivity.Space{}, got.Space)
+}
+
 func TestListelloInstanceRepository_Get_ReturnsNilWhenNotInMemoryAndLocatorFileAbsent(t *testing.T) {
 	// Arrange
 	locatorPath := filepath.Join(t.TempDir(), "listello_instance")
 	_, err := os.Stat(locatorPath)
 	require.ErrorIs(t, err, os.ErrNotExist)
 
-	repo, err := adapter.NewListelloInstanceRepository(locatorPath)
+	repo, err := adapter.NewListelloInstanceRepository(locatorPath, nil)
 	require.NoError(t, err)
 
 	// Act
@@ -234,7 +299,7 @@ func TestListelloInstanceRepository_Get_ReturnsNilWhenNotExists(t *testing.T) {
 
 func TestListelloInstanceRepository_New_ErrorsWhenLocatorPathEmpty(t *testing.T) {
 	// Act
-	repo, err := adapter.NewListelloInstanceRepository("")
+	repo, err := adapter.NewListelloInstanceRepository("", nil)
 
 	// Assert
 	require.Error(t, err)

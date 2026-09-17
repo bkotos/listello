@@ -36,7 +36,7 @@ func main() {
 			if err != nil {
 				return err
 			}
-			repo, err := instanceadapter.NewListelloInstanceRepository(locatorPath)
+			repo, err := instanceadapter.NewListelloInstanceRepository(locatorPath, spaceService)
 			if err != nil {
 				return err
 			}
