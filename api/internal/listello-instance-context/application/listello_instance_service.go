@@ -1,8 +1,6 @@
 package application
 
 import (
-	"fmt"
-
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
