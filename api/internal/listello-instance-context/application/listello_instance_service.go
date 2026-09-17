@@ -177,5 +177,23 @@ func (s *listelloInstanceService) PairSpace(name string) (domain.ListelloInstanc
 
 // PairUser creates a user by name, pairs it to the instance via the domain, and persists it.
 func (s *listelloInstanceService) PairUser(name string) (domain.ListelloInstance, error) {
-	return domain.ListelloInstance{}, fmt.Errorf("not implemented")
+	user, err := s.userService.CreateUser(name)
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	instance, err := s.listelloInstanceRepository.Get()
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	event, err := instance.PairUser(user)
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.listelloInstanceRepository.Save(*instance); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	return *instance, nil
 }
