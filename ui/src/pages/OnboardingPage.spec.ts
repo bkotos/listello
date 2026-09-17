@@ -1377,6 +1377,27 @@ describe("OnboardingPage", () => {
               expect(pairSpace).toHaveBeenCalledTimes(1);
             });
           });
+
+          describe("when the Space name is changed to Home", () => {
+            beforeEach(() => {
+              fireEvent.change(screen.getByLabelText("Space name"), {
+                target: { value: "Home" },
+              });
+            });
+
+            describe("when the Continue button is clicked again", () => {
+              beforeEach(async () => {
+                await act(async () => {
+                  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+                });
+              });
+
+              it("calls pairSpace with Home", () => {
+                // Assert
+                expect(pairSpace).toHaveBeenCalledWith({ name: "Home" });
+              });
+            });
+          });
         });
       });
     });
