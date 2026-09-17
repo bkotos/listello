@@ -1335,6 +1335,38 @@ describe("OnboardingPage", () => {
       // Assert
       expect(pairSpace).toHaveBeenCalledWith({ name: "Personal" });
     });
+
+    describe("when a custom space name is entered", () => {
+      beforeEach(() => {
+        fireEvent.change(screen.getByLabelText("Space name"), {
+          target: { value: "Work" },
+        });
+      });
+
+      describe("when the Continue button is clicked", () => {
+        beforeEach(async () => {
+          vi.mocked(pairSpace).mockResolvedValue({
+            ...createdInstance,
+            PersistenceState: "initialized",
+            Space: { ID: "SP_1", Name: "Work" },
+          });
+          await act(async () => {
+            fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+          });
+        });
+
+        describe("when the Back button is clicked", () => {
+          beforeEach(() => {
+            fireEvent.click(screen.getByRole("button", { name: "Back" }));
+          });
+
+          it("renders the Space name field with Work", () => {
+            // Assert
+            expect(screen.getByLabelText("Space name")).toHaveValue("Work");
+          });
+        });
+      });
+    });
   });
 
   describe("when the instance has a Space.ID set", () => {
