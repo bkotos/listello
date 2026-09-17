@@ -2,6 +2,7 @@ package application
 
 import (
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
+	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 // ListelloInstanceRepository persists Listello instances.
@@ -17,6 +18,11 @@ type PersistenceAdapter interface {
 	GetDefaultPersistenceLocation() (string, error)
 }
 
+// SpaceService creates spaces.
+type SpaceService interface {
+	CreateSpace(name string) (productivity.Space, error)
+}
+
 // ListelloInstanceService defines Listello instance application operations.
 type ListelloInstanceService interface {
 	CreateInstance() (domain.ListelloInstance, error)
@@ -25,22 +31,25 @@ type ListelloInstanceService interface {
 	SelectPersistenceLocation(location string) (domain.ListelloInstance, error)
 	InitializePersistence() (domain.ListelloInstance, error)
 	GetDefaultPersistenceLocation() (string, error)
+	PairSpace(name string) (domain.ListelloInstance, error)
 }
 
 type listelloInstanceService struct {
 	listelloInstanceRepository ListelloInstanceRepository
 	persistenceAdapter         PersistenceAdapter
 	eventPublisher             EventPublisher
+	spaceService               SpaceService
 }
 
 var _ ListelloInstanceService = (*listelloInstanceService)(nil)
 
-// NewListelloInstanceService returns a ListelloInstanceService backed by the given repository, adapter, and publisher.
-func NewListelloInstanceService(listelloInstanceRepository ListelloInstanceRepository, persistenceAdapter PersistenceAdapter, eventPublisher EventPublisher) ListelloInstanceService {
+// NewListelloInstanceService returns a ListelloInstanceService backed by the given repository, adapter, publisher, and space service.
+func NewListelloInstanceService(listelloInstanceRepository ListelloInstanceRepository, persistenceAdapter PersistenceAdapter, eventPublisher EventPublisher, spaceService SpaceService) ListelloInstanceService {
 	return &listelloInstanceService{
 		listelloInstanceRepository: listelloInstanceRepository,
 		persistenceAdapter:         persistenceAdapter,
 		eventPublisher:             eventPublisher,
+		spaceService:               spaceService,
 	}
 }
 
@@ -131,4 +140,27 @@ func (s *listelloInstanceService) InitializePersistence() (domain.ListelloInstan
 // GetDefaultPersistenceLocation returns the well-known default persistence location.
 func (s *listelloInstanceService) GetDefaultPersistenceLocation() (string, error) {
 	return s.persistenceAdapter.GetDefaultPersistenceLocation()
+}
+
+// PairSpace creates a space by name, pairs it to the instance via the domain, and persists it.
+func (s *listelloInstanceService) PairSpace(name string) (domain.ListelloInstance, error) {
+	space, err := s.spaceService.CreateSpace(name)
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	instance, err := s.listelloInstanceRepository.Get()
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	event, err := instance.PairSpace(space)
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.listelloInstanceRepository.Save(*instance); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	return *instance, nil
 }

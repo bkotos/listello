@@ -10,13 +10,14 @@ import (
 
 	application "github.com/bkotos/listello/internal/listello-instance-context/application"
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
+	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 func TestListelloInstanceService_CreateInstance_PersistsInstance(t *testing.T) {
 	// Arrange
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, NewMockSpaceService(t))
 
 	repo.EXPECT().
 		Save(mock.AnythingOfType("domain.ListelloInstance")).
@@ -36,7 +37,7 @@ func TestListelloInstanceService_CreateInstance_PublishesEvent(t *testing.T) {
 	// Arrange
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, NewMockSpaceService(t))
 
 	var published domain.Event
 	repo.EXPECT().
@@ -65,7 +66,7 @@ func TestListelloInstanceService_GetInstance_ReturnsInstanceFromRepository(t *te
 	expected := &domain.ListelloInstance{ID: "LI_1"}
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, NewMockSpaceService(t))
 
 	repo.EXPECT().
 		Get().
@@ -83,7 +84,7 @@ func TestListelloInstanceService_GetInstance_ReturnsNullWhenNotExists(t *testing
 	// Arrange
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, NewMockSpaceService(t))
 
 	repo.EXPECT().
 		Get().
@@ -102,7 +103,7 @@ func TestListelloInstanceService_SelectHostingMode_PersistsInstance(t *testing.T
 	instance := domain.ListelloInstance{ID: "LI_1"}
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, NewMockSpaceService(t))
 
 	repo.EXPECT().
 		Get().
@@ -128,7 +129,7 @@ func TestListelloInstanceService_SelectHostingMode_PublishesEvent(t *testing.T) 
 	instance := domain.ListelloInstance{ID: "LI_1"}
 	repo := NewMockListelloInstanceRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, NewMockSpaceService(t))
 
 	var published domain.Event
 	repo.EXPECT().
@@ -164,7 +165,7 @@ func TestListelloInstanceService_SelectPersistenceLocation_PersistsInstance(t *t
 	repo := NewMockListelloInstanceRepository(t)
 	observer := NewMockPersistenceAdapter(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, observer, publisher)
+	svc := application.NewListelloInstanceService(repo, observer, publisher, NewMockSpaceService(t))
 
 	repo.EXPECT().
 		Get().
@@ -196,7 +197,7 @@ func TestListelloInstanceService_SelectPersistenceLocation_PublishesEvent(t *tes
 	repo := NewMockListelloInstanceRepository(t)
 	observer := NewMockPersistenceAdapter(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, observer, publisher)
+	svc := application.NewListelloInstanceService(repo, observer, publisher, NewMockSpaceService(t))
 
 	var published domain.Event
 	repo.EXPECT().
@@ -237,7 +238,7 @@ func TestListelloInstanceService_InitializePersistence_PersistsInstance(t *testi
 	repo := NewMockListelloInstanceRepository(t)
 	persistence := NewMockPersistenceAdapter(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, persistence, publisher)
+	svc := application.NewListelloInstanceService(repo, persistence, publisher, NewMockSpaceService(t))
 
 	repo.EXPECT().
 		Get().
@@ -272,7 +273,7 @@ func TestListelloInstanceService_InitializePersistence_PublishesEvent(t *testing
 	repo := NewMockListelloInstanceRepository(t)
 	persistence := NewMockPersistenceAdapter(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, persistence, publisher)
+	svc := application.NewListelloInstanceService(repo, persistence, publisher, NewMockSpaceService(t))
 
 	var published domain.Event
 	repo.EXPECT().
@@ -316,7 +317,7 @@ func TestListelloInstanceService_InitializePersistence_DoesNotInitializeWhenProv
 	repo := NewMockListelloInstanceRepository(t)
 	persistence := NewMockPersistenceAdapter(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, persistence, publisher)
+	svc := application.NewListelloInstanceService(repo, persistence, publisher, NewMockSpaceService(t))
 
 	repo.EXPECT().
 		Get().
@@ -347,7 +348,7 @@ func TestListelloInstanceService_GetDefaultPersistenceLocation_ReturnsLocationFr
 	repo := NewMockListelloInstanceRepository(t)
 	persistence := NewMockPersistenceAdapter(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewListelloInstanceService(repo, persistence, publisher)
+	svc := application.NewListelloInstanceService(repo, persistence, publisher, NewMockSpaceService(t))
 
 	persistence.EXPECT().
 		GetDefaultPersistenceLocation().
@@ -359,4 +360,76 @@ func TestListelloInstanceService_GetDefaultPersistenceLocation_ReturnsLocationFr
 	// Assert
 	require.NoError(t, err)
 	assert.Equal(t, location, got)
+}
+
+func TestListelloInstanceService_PairSpace_PersistsInstance(t *testing.T) {
+	// Arrange
+	const spaceName = "Personal"
+	space := productivity.Space{ID: "SP_1", Name: spaceName}
+	instance := domain.ListelloInstance{ID: "LI_1"}
+	repo := NewMockListelloInstanceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	spaces := NewMockSpaceService(t)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, spaces)
+
+	spaces.EXPECT().
+		CreateSpace(spaceName).
+		Return(space, nil)
+	repo.EXPECT().
+		Get().
+		Return(&instance, nil)
+	repo.EXPECT().
+		Save(mock.MatchedBy(func(saved domain.ListelloInstance) bool {
+			return saved.Space == space
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil)
+
+	// Act
+	_, err := svc.PairSpace(spaceName)
+
+	// Assert
+	require.NoError(t, err)
+}
+
+func TestListelloInstanceService_PairSpace_PublishesEvent(t *testing.T) {
+	// Arrange
+	const spaceName = "Personal"
+	space := productivity.Space{ID: "SP_1", Name: spaceName}
+	instance := domain.ListelloInstance{ID: "LI_1"}
+	repo := NewMockListelloInstanceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	spaces := NewMockSpaceService(t)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, spaces)
+
+	var published domain.Event
+	spaces.EXPECT().
+		CreateSpace(spaceName).
+		Return(space, nil)
+	repo.EXPECT().
+		Get().
+		Return(&instance, nil)
+	repo.EXPECT().
+		Save(mock.AnythingOfType("domain.ListelloInstance")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			_, ok := event.Metadata.(domain.EventMetadataSpacePairedToInstance)
+			return event.Name == domain.EventSpacePairedToInstance && ok
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.PairSpace(spaceName)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataSpacePairedToInstance)
+	require.True(t, ok)
+	assert.Equal(t, instance.ID, metadata.ID)
+	assert.Equal(t, space.ID, metadata.SpaceID)
+	assert.NotEmpty(t, published.Timestamp)
 }

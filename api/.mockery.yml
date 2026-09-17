@@ -40,6 +40,7 @@ packages:
       ListelloInstanceRepository:
       PersistenceAdapter:
       EventPublisher:
+      SpaceService:
       ListelloInstanceService:
         config:
           dir: '{{.InterfaceDir}}/mocks'

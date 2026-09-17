@@ -15,19 +15,10 @@ func NewMockItemService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockItemService {
-	if helper, ok := t.(interface{ Helper() }); ok {
-		helper.Helper()
-	}
-
 	mock := &MockItemService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() {
-		if helper, ok := t.(interface{ Helper() }); ok {
-			helper.Helper()
-		}
-		mock.AssertExpectations(t)
-	})
+	t.Cleanup(func() { mock.AssertExpectations(t) })
 
 	return mock
 }
@@ -482,19 +473,10 @@ func NewMockListService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockListService {
-	if helper, ok := t.(interface{ Helper() }); ok {
-		helper.Helper()
-	}
-
 	mock := &MockListService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() {
-		if helper, ok := t.(interface{ Helper() }); ok {
-			helper.Helper()
-		}
-		mock.AssertExpectations(t)
-	})
+	t.Cleanup(func() { mock.AssertExpectations(t) })
 
 	return mock
 }
@@ -693,19 +675,10 @@ func NewMockSpaceService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockSpaceService {
-	if helper, ok := t.(interface{ Helper() }); ok {
-		helper.Helper()
-	}
-
 	mock := &MockSpaceService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() {
-		if helper, ok := t.(interface{ Helper() }); ok {
-			helper.Helper()
-		}
-		mock.AssertExpectations(t)
-	})
+	t.Cleanup(func() { mock.AssertExpectations(t) })
 
 	return mock
 }
@@ -789,19 +762,10 @@ func NewMockUserService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockUserService {
-	if helper, ok := t.(interface{ Helper() }); ok {
-		helper.Helper()
-	}
-
 	mock := &MockUserService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() {
-		if helper, ok := t.(interface{ Helper() }); ok {
-			helper.Helper()
-		}
-		mock.AssertExpectations(t)
-	})
+	t.Cleanup(func() { mock.AssertExpectations(t) })
 
 	return mock
 }

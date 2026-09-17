@@ -51,6 +51,10 @@ func (s *workspaceOpeningInstanceService) GetDefaultPersistenceLocation() (strin
 	return s.inner.GetDefaultPersistenceLocation()
 }
 
+func (s *workspaceOpeningInstanceService) PairSpace(name string) (domain.ListelloInstance, error) {
+	return s.inner.PairSpace(name)
+}
+
 func openWorkspaceDB(workspace *sqlite.WorkspaceDB, persistenceLocation string) error {
 	return workspace.Open(filepath.Join(persistenceLocation, "listello.db"))
 }
