@@ -1131,83 +1131,32 @@ describe("OnboardingPage", () => {
                               ).toBeInTheDocument();
                             });
 
-                            describe("when the Shopping suggestion tag is clicked", () => {
-                              beforeEach(() => {
-                                fireEvent.click(
-                                  screen.getByRole("button", { name: "Shopping" }),
-                                );
-                              });
-
-                              it("sets the List name field to Shopping", () => {
-                                // Assert
-                                expect(screen.getByLabelText("List name")).toHaveValue(
-                                  "Shopping",
-                                );
-                              });
-                            });
-
-                            describe("when the Ideas suggestion tag is clicked", () => {
-                              beforeEach(() => {
-                                fireEvent.click(
-                                  screen.getByRole("button", { name: "Ideas" }),
-                                );
-                              });
-
-                              it("sets the List name field to Ideas", () => {
-                                // Assert
-                                expect(screen.getByLabelText("List name")).toHaveValue(
-                                  "Ideas",
-                                );
-                              });
-                            });
-
-                            describe("when the Reading suggestion tag is clicked", () => {
-                              beforeEach(() => {
-                                fireEvent.click(
-                                  screen.getByRole("button", { name: "Reading" }),
-                                );
-                              });
-
-                              it("sets the List name field to Reading", () => {
-                                // Assert
-                                expect(screen.getByLabelText("List name")).toHaveValue(
-                                  "Reading",
-                                );
-                              });
-                            });
-
-                            describe("when the Goals suggestion tag is clicked", () => {
-                              beforeEach(() => {
-                                fireEvent.click(
-                                  screen.getByRole("button", { name: "Goals" }),
-                                );
-                              });
-
-                              it("sets the List name field to Goals", () => {
-                                // Assert
-                                expect(screen.getByLabelText("List name")).toHaveValue(
-                                  "Goals",
-                                );
-                              });
-                            });
-
-                            describe("when the Errands suggestion tag is clicked", () => {
-                              beforeEach(() => {
-                                fireEvent.change(screen.getByLabelText("List name"), {
-                                  target: { value: "Custom" },
+                            for (const name of [
+                              "Errands",
+                              "Shopping",
+                              "Ideas",
+                              "Reading",
+                              "Goals",
+                            ]) {
+                              describe(`when the ${name} suggestion tag is clicked`, () => {
+                                beforeEach(() => {
+                                  fireEvent.change(
+                                    screen.getByLabelText("List name"),
+                                    { target: { value: "Custom" } },
+                                  );
+                                  fireEvent.click(
+                                    screen.getByRole("button", { name }),
+                                  );
                                 });
-                                fireEvent.click(
-                                  screen.getByRole("button", { name: "Errands" }),
-                                );
-                              });
 
-                              it("sets the List name field to Errands", () => {
-                                // Assert
-                                expect(screen.getByLabelText("List name")).toHaveValue(
-                                  "Errands",
-                                );
+                                it(`sets the List name field to ${name}`, () => {
+                                  // Assert
+                                  expect(
+                                    screen.getByLabelText("List name"),
+                                  ).toHaveValue(name);
+                                });
                               });
-                            });
+                            }
                           });
                         });
                       });
