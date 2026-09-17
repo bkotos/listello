@@ -67,6 +67,71 @@ func TestListService_CreateList_PublishesEvent(t *testing.T) {
 	assert.NotEmpty(t, published.Timestamp)
 }
 
+func TestListService_CreateFirstList_PersistsList(t *testing.T) {
+	// Arrange
+	const listName = "Next actions"
+	repo := NewMockListRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListService(repo, publisher)
+
+	repo.EXPECT().
+		Save(mock.MatchedBy(func(list domain.List) bool {
+			return list.Name == listName && strings.HasPrefix(list.ID, "LS_")
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil).
+		Times(2)
+
+	// Act
+	list, err := svc.CreateFirstList(listName)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, listName, list.Name)
+	assert.True(t, strings.HasPrefix(list.ID, "LS_"))
+}
+
+func TestListService_CreateFirstList_PublishesEvents(t *testing.T) {
+	// Arrange
+	const listName = "Next actions"
+	repo := NewMockListRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListService(repo, publisher)
+
+	var published []domain.Event
+	repo.EXPECT().
+		Save(mock.AnythingOfType("domain.List")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = append(published, event)
+			return true
+		})).
+		Return(nil).
+		Times(2)
+
+	// Act
+	list, err := svc.CreateFirstList(listName)
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, published, 2)
+
+	assert.Equal(t, domain.EventListCreated, published[0].Name)
+	listCreated, ok := published[0].Metadata.(domain.EventMetadataListCreated)
+	require.True(t, ok)
+	assert.Equal(t, list.ID, listCreated.ID)
+	assert.NotEmpty(t, published[0].Timestamp)
+
+	assert.Equal(t, domain.EventFirstListCreated, published[1].Name)
+	firstListCreated, ok := published[1].Metadata.(domain.EventMetadataFirstListCreated)
+	require.True(t, ok)
+	assert.Equal(t, list.ID, firstListCreated.ID)
+	assert.NotEmpty(t, published[1].Timestamp)
+}
+
 func TestListService_GetAll_ReturnsListsFromRepository(t *testing.T) {
 	// Arrange
 	expected := []domain.List{

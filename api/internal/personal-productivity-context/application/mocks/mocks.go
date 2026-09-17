@@ -512,6 +512,66 @@ func (_m *MockListService) EXPECT() *MockListService_Expecter {
 	return &MockListService_Expecter{mock: &_m.Mock}
 }
 
+// CreateFirstList provides a mock function for the type MockListService
+func (_mock *MockListService) CreateFirstList(name string) (domain.List, error) {
+	ret := _mock.Called(name)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateFirstList")
+	}
+
+	var r0 domain.List
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (domain.List, error)); ok {
+		return returnFunc(name)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) domain.List); ok {
+		r0 = returnFunc(name)
+	} else {
+		r0 = ret.Get(0).(domain.List)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(name)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockListService_CreateFirstList_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateFirstList'
+type MockListService_CreateFirstList_Call struct {
+	*mock.Call
+}
+
+// CreateFirstList is a helper method to define mock.On call
+//   - name string
+func (_e *MockListService_Expecter) CreateFirstList(name any) *MockListService_CreateFirstList_Call {
+	return &MockListService_CreateFirstList_Call{Call: _e.mock.On("CreateFirstList", name)}
+}
+
+func (_c *MockListService_CreateFirstList_Call) Run(run func(name string)) *MockListService_CreateFirstList_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockListService_CreateFirstList_Call) Return(list domain.List, err error) *MockListService_CreateFirstList_Call {
+	_c.Call.Return(list, err)
+	return _c
+}
+
+func (_c *MockListService_CreateFirstList_Call) RunAndReturn(run func(name string) (domain.List, error)) *MockListService_CreateFirstList_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateList provides a mock function for the type MockListService
 func (_mock *MockListService) CreateList(name string) (domain.List, error) {
 	ret := _mock.Called(name)
