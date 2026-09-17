@@ -1,4 +1,4 @@
-import type { ListResponse } from "api-types";
+import type { CreateFirstListRequest, ListResponse } from "api-types";
 import { request } from "./util";
 
 export async function getAllLists(init?: RequestInit): Promise<ListResponse[]> {
@@ -13,5 +13,12 @@ export async function createList(name: string): Promise<ListResponse> {
   return request<ListResponse>("/api/lists", {
     method: "POST",
     body: JSON.stringify({ name }),
+  });
+}
+
+export async function createFirstList(body: CreateFirstListRequest): Promise<ListResponse> {
+  return request<ListResponse>("/api/lists/first", {
+    method: "POST",
+    body: JSON.stringify(body),
   });
 }
