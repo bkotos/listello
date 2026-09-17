@@ -55,6 +55,10 @@ func (s *workspaceOpeningInstanceService) PairSpace(name string) (domain.Listell
 	return s.inner.PairSpace(name)
 }
 
+func (s *workspaceOpeningInstanceService) PairUser(name string) (domain.ListelloInstance, error) {
+	return s.inner.PairUser(name)
+}
+
 func openWorkspaceDB(workspace *sqlite.WorkspaceDB, persistenceLocation string) error {
 	return workspace.Open(filepath.Join(persistenceLocation, "listello.db"))
 }
