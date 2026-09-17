@@ -1359,4 +1359,36 @@ describe("OnboardingPage", () => {
 
     itRendersStepHeading("What should we call you?");
   });
+
+  describe("when the instance has a Space named Work", () => {
+    beforeEach(async () => {
+      cleanup();
+      vi.mocked(getInstance).mockResolvedValue({
+        ...createdInstance,
+        HostingMode: "local",
+        PersistenceLocation: instancePersistenceLocation,
+        PersistenceState: "initialized",
+        Space: { ID: "SP_1", Name: "Work" },
+      });
+      renderOnboardingPage();
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", {
+            name: "What should we call you?",
+          }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    describe("when the Back button is clicked", () => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByRole("button", { name: "Back" }));
+      });
+
+      it("renders the Space name field with Work", () => {
+        // Assert
+        expect(screen.getByLabelText("Space name")).toHaveValue("Work");
+      });
+    });
+  });
 });

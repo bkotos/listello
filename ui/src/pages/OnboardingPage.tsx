@@ -107,6 +107,9 @@ function OnboardingPage() {
     if (nextStep) {
       setStep(nextStep);
     }
+    if (instance?.Space?.Name) {
+      setSpaceName(instance.Space.Name);
+    }
   }, [instance]);
 
   const dataDirectory = getDataDirectory(
