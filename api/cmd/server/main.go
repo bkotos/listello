@@ -46,6 +46,7 @@ func main() {
 					instanceadapter.NewFilesystemPersistenceAdapter(),
 					ppadapter.NewLoggingEventPublisher(eventLog),
 					spaceService,
+					userService,
 				),
 				workspace,
 			)

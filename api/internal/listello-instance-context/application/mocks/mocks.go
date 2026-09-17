@@ -15,10 +15,19 @@ func NewMockListelloInstanceService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockListelloInstanceService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockListelloInstanceService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -306,6 +315,66 @@ func (_c *MockListelloInstanceService_PairSpace_Call) Return(listelloInstance do
 }
 
 func (_c *MockListelloInstanceService_PairSpace_Call) RunAndReturn(run func(name string) (domain.ListelloInstance, error)) *MockListelloInstanceService_PairSpace_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// PairUser provides a mock function for the type MockListelloInstanceService
+func (_mock *MockListelloInstanceService) PairUser(name string) (domain.ListelloInstance, error) {
+	ret := _mock.Called(name)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PairUser")
+	}
+
+	var r0 domain.ListelloInstance
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (domain.ListelloInstance, error)); ok {
+		return returnFunc(name)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) domain.ListelloInstance); ok {
+		r0 = returnFunc(name)
+	} else {
+		r0 = ret.Get(0).(domain.ListelloInstance)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(name)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockListelloInstanceService_PairUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PairUser'
+type MockListelloInstanceService_PairUser_Call struct {
+	*mock.Call
+}
+
+// PairUser is a helper method to define mock.On call
+//   - name string
+func (_e *MockListelloInstanceService_Expecter) PairUser(name any) *MockListelloInstanceService_PairUser_Call {
+	return &MockListelloInstanceService_PairUser_Call{Call: _e.mock.On("PairUser", name)}
+}
+
+func (_c *MockListelloInstanceService_PairUser_Call) Run(run func(name string)) *MockListelloInstanceService_PairUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockListelloInstanceService_PairUser_Call) Return(listelloInstance domain.ListelloInstance, err error) *MockListelloInstanceService_PairUser_Call {
+	_c.Call.Return(listelloInstance, err)
+	return _c
+}
+
+func (_c *MockListelloInstanceService_PairUser_Call) RunAndReturn(run func(name string) (domain.ListelloInstance, error)) *MockListelloInstanceService_PairUser_Call {
 	_c.Call.Return(run)
 	return _c
 }

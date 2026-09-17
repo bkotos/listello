@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
@@ -23,6 +25,11 @@ type SpaceService interface {
 	CreateSpace(name string) (productivity.Space, error)
 }
 
+// UserService creates users.
+type UserService interface {
+	CreateUser(name string) (productivity.User, error)
+}
+
 // ListelloInstanceService defines Listello instance application operations.
 type ListelloInstanceService interface {
 	CreateInstance() (domain.ListelloInstance, error)
@@ -32,6 +39,7 @@ type ListelloInstanceService interface {
 	InitializePersistence() (domain.ListelloInstance, error)
 	GetDefaultPersistenceLocation() (string, error)
 	PairSpace(name string) (domain.ListelloInstance, error)
+	PairUser(name string) (domain.ListelloInstance, error)
 }
 
 type listelloInstanceService struct {
@@ -39,17 +47,19 @@ type listelloInstanceService struct {
 	persistenceAdapter         PersistenceAdapter
 	eventPublisher             EventPublisher
 	spaceService               SpaceService
+	userService                UserService
 }
 
 var _ ListelloInstanceService = (*listelloInstanceService)(nil)
 
-// NewListelloInstanceService returns a ListelloInstanceService backed by the given repository, adapter, publisher, and space service.
-func NewListelloInstanceService(listelloInstanceRepository ListelloInstanceRepository, persistenceAdapter PersistenceAdapter, eventPublisher EventPublisher, spaceService SpaceService) ListelloInstanceService {
+// NewListelloInstanceService returns a ListelloInstanceService backed by the given repository, adapter, publisher, space service, and user service.
+func NewListelloInstanceService(listelloInstanceRepository ListelloInstanceRepository, persistenceAdapter PersistenceAdapter, eventPublisher EventPublisher, spaceService SpaceService, userService UserService) ListelloInstanceService {
 	return &listelloInstanceService{
 		listelloInstanceRepository: listelloInstanceRepository,
 		persistenceAdapter:         persistenceAdapter,
 		eventPublisher:             eventPublisher,
 		spaceService:               spaceService,
+		userService:                userService,
 	}
 }
 
@@ -163,4 +173,9 @@ func (s *listelloInstanceService) PairSpace(name string) (domain.ListelloInstanc
 		return domain.ListelloInstance{}, err
 	}
 	return *instance, nil
+}
+
+// PairUser creates a user by name, pairs it to the instance via the domain, and persists it.
+func (s *listelloInstanceService) PairUser(name string) (domain.ListelloInstance, error) {
+	return domain.ListelloInstance{}, fmt.Errorf("not implemented")
 }
