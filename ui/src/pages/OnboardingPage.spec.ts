@@ -1301,4 +1301,26 @@ describe("OnboardingPage", () => {
       );
     });
   });
+
+  describe("when the instance PersistenceState is initialized", () => {
+    beforeEach(async () => {
+      cleanup();
+      vi.mocked(getInstance).mockResolvedValue({
+        ...createdInstance,
+        HostingMode: "local",
+        PersistenceLocation: instancePersistenceLocation,
+        PersistenceState: "initialized",
+      });
+      renderOnboardingPage();
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", {
+            name: "Name your space",
+          }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    itRendersStepHeading("Name your space");
+  });
 });
