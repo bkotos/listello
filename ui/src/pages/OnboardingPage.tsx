@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ListelloInstanceResponse } from "api-types/listello-instance";
 import { Check } from "lucide-react";
-import { createInstance, initializePersistence, pairSpace, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
+import { createInstance, initializePersistence, pairSpace, pairUser, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
 import { useDefaultPersistenceLocationQuery, useInstanceQuery } from "../lib/api/instance-queries";
-import { createUser } from "../lib/api/user-client";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
   DataDirectoryFooter,
@@ -151,7 +150,7 @@ function OnboardingPage() {
   }
 
   async function handleCreateUser() {
-    await createUser({ name: userName });
+    await pairUser({ name: userName });
     setStep(OnboardingStep.Step7SystemSetup);
   }
 

@@ -2,6 +2,7 @@ import type {
   DefaultPersistenceLocationResponse,
   ListelloInstanceResponse,
   PairSpaceRequest,
+  PairUserRequest,
   SelectHostingModeRequest,
   SelectPersistenceLocationRequest,
 } from "api-types/listello-instance";
@@ -52,6 +53,13 @@ export async function initializePersistence(): Promise<ListelloInstanceResponse>
 
 export async function pairSpace(body: PairSpaceRequest): Promise<ListelloInstanceResponse> {
   return request<ListelloInstanceResponse>("/api/instance/space", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function pairUser(body: PairUserRequest): Promise<ListelloInstanceResponse> {
+  return request<ListelloInstanceResponse>("/api/instance/user", {
     method: "POST",
     body: JSON.stringify(body),
   });
