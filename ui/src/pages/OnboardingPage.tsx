@@ -4,6 +4,7 @@ import { createInstance, initializePersistence, selectHostingMode, selectPersist
 import { useDefaultPersistenceLocationQuery, useInstanceQuery } from "../lib/api/instance-queries";
 import { createUser } from "../lib/api/user-client";
 import { createSpace } from "../lib/api/space-client";
+import { createFirstList } from "../lib/api/list-client";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
   DataDirectoryFooter,
@@ -72,6 +73,7 @@ function OnboardingPage() {
   const [spaceName, setSpaceName] = useState("Personal");
   const [userName, setUserName] = useState("");
   const [systemSetupComplete, setSystemSetupComplete] = useState(false);
+  const [listName, setListName] = useState("Errands");
 
   useEffect(() => {
     if (instance?.HostingMode) {
@@ -121,6 +123,10 @@ function OnboardingPage() {
   async function handleCreateSpace() {
     await createSpace({ name: spaceName });
     setStep(OnboardingStep.Step6YourName);
+  }
+
+  async function handleCreateFirstList() {
+    await createFirstList({ name: listName });
   }
 
   const isStep1Welcome = step === OnboardingStep.Step1Welcome;
@@ -219,7 +225,7 @@ function OnboardingPage() {
               onComplete={handleSystemSetupComplete}
             />
           )}
-          {isStep8FirstList && <FirstListStep />}
+          {isStep8FirstList && <FirstListStep value={listName} onChange={setListName} />}
         </div>
       </div>
 
@@ -266,7 +272,7 @@ function OnboardingPage() {
             onContinue={() => setStep(OnboardingStep.Step8FirstList)}
           />
         )}
-        {isStep8FirstList && <FirstListFooter />}
+        {isStep8FirstList && <FirstListFooter onCreateList={handleCreateFirstList} />}
       </footer>
     </div>
   );

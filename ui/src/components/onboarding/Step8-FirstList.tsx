@@ -1,11 +1,13 @@
-import { useState } from "react";
 import { ArrowLeft, ArrowRight, ListChecks } from "lucide-react";
 
 const suggestions = ["Errands", "Shopping", "Ideas", "Reading", "Goals"];
 
-export function FirstListStep() {
-  const [listName, setListName] = useState("Errands");
+type FirstListStepProps = {
+  value: string;
+  onChange: (value: string) => void;
+};
 
+export function FirstListStep({ value, onChange }: FirstListStepProps) {
   return (
     <div>
       <p className="step-eyebrow">Workspace · First list</p>
@@ -25,8 +27,8 @@ export function FirstListStep() {
               className="input"
               type="text"
               placeholder="Errands"
-              value={listName}
-              onChange={(e) => setListName(e.target.value)}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
             />
             <span className="icon is-small is-left">
               <ListChecks size={16} />
@@ -38,8 +40,8 @@ export function FirstListStep() {
               <button
                 key={name}
                 type="button"
-                className={`tag is-medium${name === listName ? " is-primary" : ""}`}
-                onClick={() => setListName(name)}
+                className={`tag is-medium${name === value ? " is-primary" : ""}`}
+                onClick={() => onChange(name)}
               >
                 {name}
               </button>
@@ -54,7 +56,11 @@ export function FirstListStep() {
   );
 }
 
-export function FirstListFooter() {
+type FirstListFooterProps = {
+  onCreateList: () => void;
+};
+
+export function FirstListFooter({ onCreateList }: FirstListFooterProps) {
   return (
     <>
       <button type="button" className="button is-light">
@@ -63,7 +69,7 @@ export function FirstListFooter() {
         </span>
         <span>Back</span>
       </button>
-      <button type="button" className="button is-primary footer-grow">
+      <button type="button" className="button is-primary footer-grow" onClick={onCreateList}>
         <span>Create list</span>
         <span className="icon">
           <ArrowRight size={18} />
