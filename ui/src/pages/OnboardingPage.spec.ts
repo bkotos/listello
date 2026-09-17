@@ -43,6 +43,7 @@ const createdInstance: ListelloInstanceResponse = {
   PersistenceState: "",
   SetupState: "",
   Space: { ID: "", Name: "" },
+  User: { ID: "", Name: "" },
 };
 
 const apiDefaultPersistenceLocation =

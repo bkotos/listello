@@ -53,5 +53,6 @@ func ListelloInstanceFromDomain(instance domain.ListelloInstance) ListelloInstan
 		PersistenceState:    string(instance.Persistence.State),
 		SetupState:          string(instance.SetupState),
 		Space:               ppviewdto.SpaceFromDomain(instance.Space),
+		User:                ppviewdto.UserFromDomain(instance.User),
 	}
 }

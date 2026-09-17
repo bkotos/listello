@@ -22,6 +22,12 @@ export interface PairSpaceRequest {
   name: string;
 }
 /**
+ * PairUserRequest is the HTTP request body for pairing a user to the instance.
+ */
+export interface PairUserRequest {
+  name: string;
+}
+/**
  * DefaultPersistenceLocationResponse is the HTTP representation of the default persistence location.
  */
 export interface DefaultPersistenceLocationResponse {
@@ -36,4 +42,5 @@ export interface ListelloInstanceResponse {
   PersistenceState: string;
   SetupState: string;
   Space: { ID: string; Name: string };
+  User: { ID: string; Name: string };
 }
