@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
@@ -14,6 +16,7 @@ type ListRepository interface {
 // ListService defines list application operations.
 type ListService interface {
 	CreateList(name string) (domain.List, error)
+	CreateFirstList(name string) (domain.List, error)
 	GetAll() ([]domain.List, error)
 	GetByID(id string) (domain.List, error)
 }
@@ -46,6 +49,11 @@ func (s *listService) CreateList(name string) (domain.List, error) {
 		return domain.List{}, err
 	}
 	return list, nil
+}
+
+// CreateFirstList creates the user's first list via the domain and persists it.
+func (s *listService) CreateFirstList(name string) (domain.List, error) {
+	return domain.List{}, fmt.Errorf("not implemented")
 }
 
 // GetAll returns all lists from persistence.
