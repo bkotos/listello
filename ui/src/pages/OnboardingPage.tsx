@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import type { ListelloInstanceResponse } from "api-types/listello-instance";
 import { Check } from "lucide-react";
 import { createInstance, initializePersistence, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
 import { useDefaultPersistenceLocationQuery, useInstanceQuery } from "../lib/api/instance-queries";
@@ -62,6 +63,29 @@ function workspacePhaseFill(step: OnboardingStep): string {
   return "0%";
 }
 
+function getDataDirectory(
+  dataDirectoryOverride: string | null,
+  instance: ListelloInstanceResponse | null | undefined,
+  defaultPersistenceLocation: string | undefined,
+): string {
+  return (
+    dataDirectoryOverride ??
+    (instance?.PersistenceLocation || defaultPersistenceLocation) ??
+    ""
+  );
+}
+
+function onboardingStepFromInstance(
+  instance: ListelloInstanceResponse | null | undefined,
+): OnboardingStep | undefined {
+  if (instance?.PersistenceLocation) {
+    return OnboardingStep.Step3DataDirectory;
+  }
+  if (instance?.HostingMode) {
+    return OnboardingStep.Step2Hosting;
+  }
+}
+
 function OnboardingPage() {
   const { data: instance } = useInstanceQuery();
   const { data: defaultPersistenceLocation } = useDefaultPersistenceLocationQuery();
@@ -74,13 +98,17 @@ function OnboardingPage() {
   const [systemSetupComplete, setSystemSetupComplete] = useState(false);
 
   useEffect(() => {
-    if (instance?.HostingMode) {
-      setStep(OnboardingStep.Step2Hosting);
+    const nextStep = onboardingStepFromInstance(instance);
+    if (nextStep) {
+      setStep(nextStep);
     }
   }, [instance]);
 
-  const dataDirectory =
-    dataDirectoryOverride ?? defaultPersistenceLocation?.Location ?? "";
+  const dataDirectory = getDataDirectory(
+    dataDirectoryOverride,
+    instance,
+    defaultPersistenceLocation?.Location,
+  );
 
   const handleInitializeComplete = useCallback(() => {
     setInitializeComplete(true);
