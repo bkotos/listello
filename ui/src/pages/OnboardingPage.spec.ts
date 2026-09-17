@@ -23,10 +23,6 @@ vi.mock("../lib/api/instance-client", () => ({
   pairUser: vi.fn(),
 }));
 
-vi.mock("../lib/api/user-client", () => ({
-  createUser: vi.fn(),
-}));
-
 import {
   createInstance,
   getDefaultPersistenceLocation,
