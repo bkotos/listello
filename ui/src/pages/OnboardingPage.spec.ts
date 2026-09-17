@@ -50,6 +50,8 @@ const createdInstance: ListelloInstanceResponse = {
 const apiDefaultPersistenceLocation =
   "/Users/api/Library/Application Support/listello";
 
+const instancePersistenceLocation = "/Users/me/Documents/listello";
+
 function renderOnboardingPage() {
   const { QueryWrapper } = createQueryWrapper();
   return render(createElement(QueryWrapper, null, createElement(OnboardingPage)));
@@ -1270,5 +1272,33 @@ describe("OnboardingPage", () => {
     });
 
     itRendersStepHeading("How should Listello be hosted?");
+  });
+
+  describe("when the instance has a PersistenceLocation set", () => {
+    beforeEach(async () => {
+      cleanup();
+      vi.mocked(getInstance).mockResolvedValue({
+        ...createdInstance,
+        HostingMode: "local",
+        PersistenceLocation: instancePersistenceLocation,
+      });
+      renderOnboardingPage();
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", {
+            name: "Choose a data directory",
+          }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    itRendersStepHeading("Choose a data directory");
+
+    it("renders the Data directory field with the instance PersistenceLocation", () => {
+      // Assert
+      expect(screen.getByLabelText("Data directory")).toHaveValue(
+        instancePersistenceLocation,
+      );
+    });
   });
 });
