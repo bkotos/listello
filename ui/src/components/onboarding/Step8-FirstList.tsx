@@ -38,7 +38,7 @@ export function FirstListStep() {
               <button
                 key={name}
                 type="button"
-                className={`tag is-medium${name === "Errands" ? " is-primary" : ""}`}
+                className={`tag is-medium${name === listName ? " is-primary" : ""}`}
                 onClick={() => setListName(name)}
               >
                 {name}
