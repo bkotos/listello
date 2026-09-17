@@ -555,6 +555,32 @@ body {
   background-color: hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l));
 }
 
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-key {
+  font-family: var(--bulma-family-code);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(0deg 0% 50%);
+}
+
+.summary-val {
+  font-weight: 600;
+  color: hsl(0deg 0% 18%);
+}
+
 @media (min-width: 768px) {
   .onboarding-topbar {
     padding: 1.75rem 1.25rem 1.25rem;

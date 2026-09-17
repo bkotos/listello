@@ -15,6 +15,7 @@ import { NameSpaceFooter, NameSpaceStep } from "../components/onboarding/Step5-N
 import { YourNameFooter, YourNameStep } from "../components/onboarding/Step6-YourName";
 import { SystemSetupFooter, SystemSetupStep } from "../components/onboarding/Step7-SystemSetup";
 import { FirstListFooter, FirstListStep } from "../components/onboarding/Step8-FirstList";
+import { AllSetFooter, AllSetStep } from "../components/onboarding/Step9-AllSet";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 enum OnboardingStep {
@@ -26,6 +27,15 @@ enum OnboardingStep {
   Step6YourName = "step6-your-name",
   Step7SystemSetup = "step7-system-setup",
   Step8FirstList = "step8-first-list",
+  Step9AllSet = "step9-all-set",
+}
+
+function hostingLabel(mode: HostingMode): string {
+  return mode === HostingMode.StandaloneWeb ? "Standalone Web" : "Local";
+}
+
+function persistenceForMode(mode: HostingMode): string {
+  return mode === HostingMode.StandaloneWeb ? "IndexedDB / OPFS" : "SQLite";
 }
 
 function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): string {
@@ -34,7 +44,8 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
     step === OnboardingStep.Step5NameSpace ||
     step === OnboardingStep.Step6YourName ||
     step === OnboardingStep.Step7SystemSetup ||
-    step === OnboardingStep.Step8FirstList
+    step === OnboardingStep.Step8FirstList ||
+    step === OnboardingStep.Step9AllSet
   ) {
     return "100%";
   }
@@ -48,7 +59,7 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
 }
 
 function workspacePhaseFill(step: OnboardingStep): string {
-  if (step === OnboardingStep.Step8FirstList) {
+  if (step === OnboardingStep.Step8FirstList || step === OnboardingStep.Step9AllSet) {
     return "100%";
   }
   if (step === OnboardingStep.Step7SystemSetup) {
@@ -127,6 +138,7 @@ function OnboardingPage() {
 
   async function handleCreateFirstList() {
     await createFirstList({ name: listName });
+    setStep(OnboardingStep.Step9AllSet);
   }
 
   const isStep1Welcome = step === OnboardingStep.Step1Welcome;
@@ -137,10 +149,14 @@ function OnboardingPage() {
   const isStep6YourName = step === OnboardingStep.Step6YourName;
   const isStep7SystemSetup = step === OnboardingStep.Step7SystemSetup;
   const isStep8FirstList = step === OnboardingStep.Step8FirstList;
+  const isStep9AllSet = step === OnboardingStep.Step9AllSet;
   const isWorkspacePhase =
     isStep5NameSpace || isStep6YourName || isStep7SystemSetup || isStep8FirstList;
+  const isReadyPhase = isStep9AllSet;
   const instanceFill = instancePhaseFill(step, hostingMode);
   const workspaceFill = workspacePhaseFill(step);
+  const instanceDone = isWorkspacePhase || isReadyPhase;
+  const workspaceDone = isReadyPhase;
 
   return (
     <div className="onboarding-page">
@@ -157,10 +173,10 @@ function OnboardingPage() {
           </div>
 
           <div className="phase-progress" aria-hidden="true">
-            <div className={`phase-seg ${isWorkspacePhase ? "is-done" : "is-active"}`}>
+            <div className={`phase-seg ${instanceDone ? "is-done" : "is-active"}`}>
               <span className="phase-seg-head">
                 <span className="phase-seg-index">
-                  {isWorkspacePhase ? <Check size={12} strokeWidth={3} /> : "1"}
+                  {instanceDone ? <Check size={12} strokeWidth={3} /> : "1"}
                 </span>
                 <span className="phase-seg-label">Instance</span>
               </span>
@@ -173,9 +189,15 @@ function OnboardingPage() {
                 />
               </span>
             </div>
-            <div className={`phase-seg ${isWorkspacePhase ? "is-active" : "is-upcoming"}`}>
+            <div
+              className={`phase-seg ${
+                workspaceDone ? "is-done" : isWorkspacePhase ? "is-active" : "is-upcoming"
+              }`}
+            >
               <span className="phase-seg-head">
-                <span className="phase-seg-index">2</span>
+                <span className="phase-seg-index">
+                  {workspaceDone ? <Check size={12} strokeWidth={3} /> : "2"}
+                </span>
                 <span className="phase-seg-label">Workspace</span>
               </span>
               <span className="phase-seg-track">
@@ -185,13 +207,16 @@ function OnboardingPage() {
                 />
               </span>
             </div>
-            <div className="phase-seg is-upcoming">
+            <div className={`phase-seg ${isReadyPhase ? "is-active" : "is-upcoming"}`}>
               <span className="phase-seg-head">
                 <span className="phase-seg-index">3</span>
                 <span className="phase-seg-label">Ready</span>
               </span>
               <span className="phase-seg-track">
-                <span className="phase-seg-fill" style={{ width: "0%" }} />
+                <span
+                  className="phase-seg-fill"
+                  style={{ width: isReadyPhase ? "100%" : "0%" }}
+                />
               </span>
             </div>
           </div>
@@ -226,6 +251,16 @@ function OnboardingPage() {
             />
           )}
           {isStep8FirstList && <FirstListStep value={listName} onChange={setListName} />}
+          {isStep9AllSet && (
+            <AllSetStep
+              userName={userName}
+              hostingLabel={hostingLabel(hostingMode)}
+              persistence={persistenceForMode(hostingMode)}
+              location={dataDirectory}
+              spaceName={spaceName}
+              firstListName={listName}
+            />
+          )}
         </div>
       </div>
 
@@ -273,6 +308,7 @@ function OnboardingPage() {
           />
         )}
         {isStep8FirstList && <FirstListFooter onCreateList={handleCreateFirstList} />}
+        {isStep9AllSet && <AllSetFooter />}
       </footer>
     </div>
   );
