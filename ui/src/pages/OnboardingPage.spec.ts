@@ -1336,4 +1336,27 @@ describe("OnboardingPage", () => {
       expect(pairSpace).toHaveBeenCalledWith({ name: "Personal" });
     });
   });
+
+  describe("when the instance has a Space.ID set", () => {
+    beforeEach(async () => {
+      cleanup();
+      vi.mocked(getInstance).mockResolvedValue({
+        ...createdInstance,
+        HostingMode: "local",
+        PersistenceLocation: instancePersistenceLocation,
+        PersistenceState: "initialized",
+        Space: { ID: "SP_1", Name: "Personal" },
+      });
+      renderOnboardingPage();
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", {
+            name: "What should we call you?",
+          }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    itRendersStepHeading("What should we call you?");
+  });
 });

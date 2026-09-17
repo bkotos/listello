@@ -77,6 +77,9 @@ function getDataDirectory(
 function onboardingStepFromInstance(
   instance: ListelloInstanceResponse | null | undefined,
 ): OnboardingStep | undefined {
+  if (instance?.Space?.ID) {
+    return OnboardingStep.Step6YourName;
+  }
   if (instance?.PersistenceState === "initialized") {
     return OnboardingStep.Step5NameSpace;
   }
