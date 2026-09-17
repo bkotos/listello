@@ -80,5 +80,6 @@ func (i *ListelloInstance) PairSpace(space productivity.Space) (Event, error) {
 
 // PairUser pairs a user to this instance and raises a UserPairedToInstance event.
 func (i *ListelloInstance) PairUser(user productivity.User) (Event, error) {
-	return Event{}, fmt.Errorf("not implemented")
+	i.User = user
+	return event.NewEvent(EventUserPairedToInstance, EventMetadataUserPairedToInstance{ID: i.ID, UserID: user.ID}, 1), nil
 }
