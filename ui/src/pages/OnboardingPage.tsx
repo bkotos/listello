@@ -99,6 +99,7 @@ function OnboardingPage() {
   const [dataDirectoryOverride, setDataDirectoryOverride] = useState<string | null>(null);
   const [initializeComplete, setInitializeComplete] = useState(false);
   const [spaceName, setSpaceName] = useState("Personal");
+  const [spacePaired, setSpacePaired] = useState(false);
   const [userName, setUserName] = useState("");
   const [systemSetupComplete, setSystemSetupComplete] = useState(false);
 
@@ -155,7 +156,10 @@ function OnboardingPage() {
   }
 
   async function handleCreateSpace() {
-    await pairSpace({ name: spaceName });
+    if (!spacePaired) {
+      await pairSpace({ name: spaceName });
+      setSpacePaired(true);
+    }
     setStep(OnboardingStep.Step6YourName);
   }
 

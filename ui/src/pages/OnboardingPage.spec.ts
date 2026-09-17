@@ -1364,6 +1364,19 @@ describe("OnboardingPage", () => {
             // Assert
             expect(screen.getByLabelText("Space name")).toHaveValue("Work");
           });
+
+          describe("when the Continue button is clicked again", () => {
+            beforeEach(async () => {
+              await act(async () => {
+                fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+              });
+            });
+
+            it("does not call pairSpace", () => {
+              // Assert
+              expect(pairSpace).toHaveBeenCalledTimes(1);
+            });
+          });
         });
       });
     });
