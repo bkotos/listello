@@ -1,8 +1,6 @@
 package application
 
 import (
-	"fmt"
-
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
@@ -53,7 +51,19 @@ func (s *listService) CreateList(name string) (domain.List, error) {
 
 // CreateFirstList creates the user's first list via the domain and persists it.
 func (s *listService) CreateFirstList(name string) (domain.List, error) {
-	return domain.List{}, fmt.Errorf("not implemented")
+	list, events, err := domain.CreateFirstList(name)
+	if err != nil {
+		return domain.List{}, err
+	}
+	if err := s.listRepository.Save(list); err != nil {
+		return domain.List{}, err
+	}
+	for _, event := range events {
+		if err := s.eventPublisher.Publish(event); err != nil {
+			return domain.List{}, err
+		}
+	}
+	return list, nil
 }
 
 // GetAll returns all lists from persistence.
