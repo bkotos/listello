@@ -1,0 +1,20 @@
+meta {
+  name: Pair User
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{apiBase}}/api/instance/user
+  body: json
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "name": "Alex"
+  }
+}

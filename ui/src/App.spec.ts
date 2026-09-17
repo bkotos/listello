@@ -27,6 +27,7 @@ const existingInstance: ListelloInstanceResponse = {
   PersistenceState: "",
   SetupState: "completed",
   Space: { ID: "", Name: "" },
+  User: { ID: "", Name: "" },
 };
 
 afterEach(() => {
