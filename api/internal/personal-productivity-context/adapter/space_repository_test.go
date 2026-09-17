@@ -32,3 +32,20 @@ func TestSQLiteSpaceRepository_Save(t *testing.T) {
 	assert.Equal(t, space.ID, id)
 	assert.Equal(t, "Personal", name)
 }
+
+func TestSQLiteSpaceRepository_SaveAndGetByID(t *testing.T) {
+	// Arrange
+	workspace := openWorkspaceDB(t, "spaces.db")
+	repo := adapter.NewSQLiteSpaceRepository(workspace)
+	space, _, err := domain.CreateSpace("Personal")
+	require.NoError(t, err)
+
+	// Act
+	require.NoError(t, repo.Save(space))
+	got, err := repo.GetByID(space.ID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, space.ID, got.ID)
+	assert.Equal(t, space.Name, got.Name)
+}

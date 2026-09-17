@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"database/sql"
 	"fmt"
 
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
@@ -30,4 +31,22 @@ ON CONFLICT(id) DO UPDATE SET name = excluded.name, user_id = excluded.user_id;`
 		return fmt.Errorf("save space: %w", err)
 	}
 	return nil
+}
+
+// GetByID returns the space with the given ID.
+func (r *SQLiteSpaceRepository) GetByID(id string) (domain.Space, error) {
+	db, err := r.workspace.DB()
+	if err != nil {
+		return domain.Space{}, fmt.Errorf("find space: %w", err)
+	}
+	const q = `SELECT id, name, user_id FROM spaces WHERE id = ?`
+	var spaceID, name, userID string
+	err = db.QueryRow(q, id).Scan(&spaceID, &name, &userID)
+	if err == sql.ErrNoRows {
+		return domain.Space{}, fmt.Errorf("space %q not found", id)
+	}
+	if err != nil {
+		return domain.Space{}, fmt.Errorf("find space: %w", err)
+	}
+	return domain.Space{ID: spaceID, Name: name, UserID: userID}, nil
 }
