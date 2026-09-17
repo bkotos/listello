@@ -120,6 +120,37 @@ func TestListelloInstanceRepository_Save_WritesSpaceWhenPaired(t *testing.T) {
 	assert.Equal(t, space.UserID, file.Data.Space.UserID)
 }
 
+func TestListelloInstanceRepository_Save_WritesUserWhenPaired(t *testing.T) {
+	// Arrange
+	location := filepath.Join(t.TempDir(), "listello")
+	require.NoError(t, os.Mkdir(location, 0o755))
+
+	repo := newListelloInstanceRepository(t)
+	instance, _, err := domain.CreateInstance()
+	require.NoError(t, err)
+	_, err = instance.SelectHostingMode(domain.HostingModeLocal)
+	require.NoError(t, err)
+	instance.Persistence.SetLocation(location)
+	instance.Persistence.Initialize()
+	user, _, err := productivity.CreateUser("Alex")
+	require.NoError(t, err)
+	_, err = instance.PairUser(user)
+	require.NoError(t, err)
+
+	// Act
+	require.NoError(t, repo.Save(instance))
+
+	// Assert
+	f, err := os.Open(filepath.Join(location, "listello_instance"))
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = f.Close() })
+
+	var file adapter.ListelloInstanceFile
+	require.NoError(t, gob.NewDecoder(f).Decode(&file))
+	assert.Equal(t, user.ID, file.Data.User.ID)
+	assert.Equal(t, user.Name, file.Data.User.Name)
+}
+
 func TestListelloInstanceRepository_Save_DoesNotWriteGobWhenPersistenceNotInitialized(t *testing.T) {
 	// Arrange
 	location := filepath.Join(t.TempDir(), "listello")
@@ -240,6 +271,38 @@ func TestListelloInstanceRepository_Get_LoadsSpaceFromLocator(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, got)
 	assert.Equal(t, space, got.Space)
+}
+
+func TestListelloInstanceRepository_Get_LoadsUserFromLocator(t *testing.T) {
+	// Arrange
+	locatorPath := filepath.Join(t.TempDir(), "listello_instance")
+	location := filepath.Join(t.TempDir(), "listello")
+	user := productivity.User{ID: "US_1", Name: "Alex"}
+	writeListelloInstanceLocator(t, locatorPath, adapter.ListelloInstanceFile{
+		SchemaVersion: adapter.ListelloInstanceSchemaVersion,
+		Data: adapter.ListelloInstanceData{
+			ID:                  "LI_6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+			HostingMode:         string(domain.HostingModeLocal),
+			PersistenceLocation: location,
+			PersistenceState:    string(domain.PersistenceUninitialized),
+			SetupState:          string(domain.SetupIncomplete),
+			User: adapter.UserData{
+				ID:   user.ID,
+				Name: user.Name,
+			},
+		},
+	})
+
+	repo, err := adapter.NewListelloInstanceRepository(locatorPath)
+	require.NoError(t, err)
+
+	// Act
+	got, err := repo.Get()
+
+	// Assert
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, user, got.User)
 }
 
 func TestListelloInstanceRepository_Get_ReturnsNilWhenNotInMemoryAndLocatorFileAbsent(t *testing.T) {

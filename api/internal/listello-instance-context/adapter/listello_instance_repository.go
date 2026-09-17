@@ -92,6 +92,10 @@ func writeListelloInstanceFile(instance domain.ListelloInstance) error {
 				Name:   instance.Space.Name,
 				UserID: instance.Space.UserID,
 			},
+			User: UserData{
+				ID:   instance.User.ID,
+				Name: instance.User.Name,
+			},
 		},
 	}
 	if err := gob.NewEncoder(f).Encode(file); err != nil {
@@ -140,6 +144,10 @@ func readListelloInstanceFile(path string) (*domain.ListelloInstance, error) {
 			ID:     file.Data.Space.ID,
 			Name:   file.Data.Space.Name,
 			UserID: file.Data.Space.UserID,
+		},
+		User: productivity.User{
+			ID:   file.Data.User.ID,
+			Name: file.Data.User.Name,
 		},
 	}, nil
 }
