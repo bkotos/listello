@@ -40,6 +40,12 @@ export interface ItemDto {
 // source: list.go
 
 /**
+ * CreateFirstListRequest is the HTTP request body for creating the user's first list.
+ */
+export interface CreateFirstListRequest {
+  name: string;
+}
+/**
  * ListResponse is the HTTP representation of a list.
  */
 export interface ListResponse {

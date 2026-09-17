@@ -22,6 +22,7 @@ func newAPIServer(
 	mux.HandleFunc("GET /api/lists", handlers.GetAllLists(listService))
 	mux.HandleFunc("GET /api/lists/{id}", handlers.GetList(listService))
 	mux.HandleFunc("POST /api/lists", handlers.CreateList(listService))
+	mux.HandleFunc("POST /api/lists/first", handlers.CreateFirstList(listService))
 	mux.HandleFunc("POST /api/lists/{id}/items", handlers.DefineItem(itemService))
 	mux.HandleFunc("GET /api/lists/{id}/items", handlers.GetAllItems(itemService))
 	mux.HandleFunc("POST /api/items/{id}/complete", handlers.CompleteItem(itemService))
