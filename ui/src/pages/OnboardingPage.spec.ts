@@ -29,6 +29,10 @@ vi.mock("../lib/api/space-client", () => ({
   createSpace: vi.fn(),
 }));
 
+vi.mock("../lib/api/list-client", () => ({
+  createFirstList: vi.fn(),
+}));
+
 import {
   createInstance,
   getDefaultPersistenceLocation,
@@ -39,6 +43,7 @@ import {
 } from "../lib/api/instance-client";
 import { createUser } from "../lib/api/user-client";
 import { createSpace } from "../lib/api/space-client";
+import { createFirstList } from "../lib/api/list-client";
 
 const createdInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -1200,6 +1205,30 @@ describe("OnboardingPage", () => {
                                     screen.getByRole("button", { name }),
                                   ).not.toHaveClass("is-primary");
                                 }
+                              });
+                            });
+
+                            describe("when the Create list button is clicked", () => {
+                              beforeEach(async () => {
+                                vi.mocked(createFirstList).mockResolvedValue({
+                                  ID: "LS_1",
+                                  Name: "Errands",
+                                });
+
+                                await act(async () => {
+                                  fireEvent.click(
+                                    screen.getByRole("button", {
+                                      name: "Create list",
+                                    }),
+                                  );
+                                });
+                              });
+
+                              it("calls createFirstList with the list name", () => {
+                                // Assert
+                                expect(createFirstList).toHaveBeenCalledWith({
+                                  name: "Errands",
+                                });
                               });
                             });
                           });
