@@ -19,14 +19,11 @@ vi.mock("../lib/api/instance-client", () => ({
   selectHostingMode: vi.fn(),
   selectPersistenceLocation: vi.fn(),
   initializePersistence: vi.fn(),
+  pairSpace: vi.fn(),
 }));
 
 vi.mock("../lib/api/user-client", () => ({
   createUser: vi.fn(),
-}));
-
-vi.mock("../lib/api/space-client", () => ({
-  createSpace: vi.fn(),
 }));
 
 import {
@@ -34,11 +31,11 @@ import {
   getDefaultPersistenceLocation,
   getInstance,
   initializePersistence,
+  pairSpace,
   selectHostingMode,
   selectPersistenceLocation,
 } from "../lib/api/instance-client";
 import { createUser } from "../lib/api/user-client";
-import { createSpace } from "../lib/api/space-client";
 
 const createdInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -866,10 +863,7 @@ describe("OnboardingPage", () => {
 
               describe("when the Continue button is clicked", () => {
                 beforeEach(async () => {
-                  vi.mocked(createSpace).mockResolvedValue({
-                    ID: "SP_1",
-                    Name: "Personal",
-                  });
+                  vi.mocked(pairSpace).mockResolvedValue(createdInstance);
 
                   await act(async () => {
                     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
@@ -894,6 +888,11 @@ describe("OnboardingPage", () => {
                 itRendersFieldIcon("Your name", "user");
                 itRendersBackButton();
                 itRendersDisabledContinueButton();
+
+                it("calls pairSpace with the space name", () => {
+                  // Assert
+                  expect(pairSpace).toHaveBeenCalledWith({ name: "Personal" });
+                });
 
                 describe("when the Back button is clicked", () => {
                   beforeEach(() => {
@@ -1322,5 +1321,18 @@ describe("OnboardingPage", () => {
     });
 
     itRendersStepHeading("Name your space");
+
+    it("calls pairSpace with the space name when Continue is clicked", async () => {
+      // Arrange
+      vi.mocked(pairSpace).mockResolvedValue(createdInstance);
+
+      // Act
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+      });
+
+      // Assert
+      expect(pairSpace).toHaveBeenCalledWith({ name: "Personal" });
+    });
   });
 });

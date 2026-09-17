@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ListelloInstanceResponse } from "api-types/listello-instance";
 import { Check } from "lucide-react";
-import { createInstance, initializePersistence, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
+import { createInstance, initializePersistence, pairSpace, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
 import { useDefaultPersistenceLocationQuery, useInstanceQuery } from "../lib/api/instance-queries";
 import { createUser } from "../lib/api/user-client";
-import { createSpace } from "../lib/api/space-client";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
   DataDirectoryFooter,
@@ -150,7 +149,7 @@ function OnboardingPage() {
   }
 
   async function handleCreateSpace() {
-    await createSpace({ name: spaceName });
+    await pairSpace({ name: spaceName });
     setStep(OnboardingStep.Step6YourName);
   }
 
