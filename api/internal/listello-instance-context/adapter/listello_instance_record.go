@@ -16,5 +16,12 @@ type ListelloInstanceData struct {
 	PersistenceLocation string
 	PersistenceState    string
 	SetupState          string
-	SpaceID             string
+	Space               SpaceData
+}
+
+// SpaceData is the persisted space payload.
+type SpaceData struct {
+	ID     string
+	Name   string
+	UserID string
 }

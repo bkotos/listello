@@ -9,24 +9,23 @@ import (
 
 	application "github.com/bkotos/listello/internal/listello-instance-context/application"
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
-	productivityapp "github.com/bkotos/listello/internal/personal-productivity-context/application"
+	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 // ListelloInstanceRepository persists the Listello instance in memory.
 type ListelloInstanceRepository struct {
-	instance     *domain.ListelloInstance
-	locatorPath  string
-	spaceService productivityapp.SpaceService
+	instance    *domain.ListelloInstance
+	locatorPath string
 }
 
 var _ application.ListelloInstanceRepository = (*ListelloInstanceRepository)(nil)
 
 // NewListelloInstanceRepository returns a repository that loads the instance from locatorPath when it is not in memory.
-func NewListelloInstanceRepository(locatorPath string, spaceService productivityapp.SpaceService) (*ListelloInstanceRepository, error) {
+func NewListelloInstanceRepository(locatorPath string) (*ListelloInstanceRepository, error) {
 	if locatorPath == "" {
 		return nil, fmt.Errorf("locator path is required")
 	}
-	return &ListelloInstanceRepository{locatorPath: locatorPath, spaceService: spaceService}, nil
+	return &ListelloInstanceRepository{locatorPath: locatorPath}, nil
 }
 
 // ListelloInstanceLocatorPath returns the well-known locator file under the user config directory.
@@ -88,7 +87,11 @@ func writeListelloInstanceFile(instance domain.ListelloInstance) error {
 			PersistenceLocation: instance.Persistence.Location,
 			PersistenceState:    string(instance.Persistence.State),
 			SetupState:          string(instance.SetupState),
-			SpaceID:             instance.Space.ID,
+			Space: SpaceData{
+				ID:     instance.Space.ID,
+				Name:   instance.Space.Name,
+				UserID: instance.Space.UserID,
+			},
 		},
 	}
 	if err := gob.NewEncoder(f).Encode(file); err != nil {
@@ -103,34 +106,27 @@ func (r *ListelloInstanceRepository) Get() (*domain.ListelloInstance, error) {
 	if r.instance != nil {
 		return r.instance, nil
 	}
-	instance, spaceID, err := readListelloInstanceFile(r.locatorPath)
+	instance, err := readListelloInstanceFile(r.locatorPath)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, err
 	}
-	if spaceID != "" {
-		space, err := r.spaceService.GetByID(spaceID)
-		if err != nil {
-			return nil, fmt.Errorf("find listello instance: %w", err)
-		}
-		instance.Space = space
-	}
 	r.instance = instance
 	return r.instance, nil
 }
 
-func readListelloInstanceFile(path string) (*domain.ListelloInstance, string, error) {
+func readListelloInstanceFile(path string) (*domain.ListelloInstance, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, "", fmt.Errorf("find listello instance: %w", err)
+		return nil, fmt.Errorf("find listello instance: %w", err)
 	}
 	defer f.Close()
 
 	var file ListelloInstanceFile
 	if err := gob.NewDecoder(f).Decode(&file); err != nil {
-		return nil, "", fmt.Errorf("find listello instance: %w", err)
+		return nil, fmt.Errorf("find listello instance: %w", err)
 	}
 	return &domain.ListelloInstance{
 		ID:          file.Data.ID,
@@ -140,5 +136,10 @@ func readListelloInstanceFile(path string) (*domain.ListelloInstance, string, er
 			State:    domain.PersistenceState(file.Data.PersistenceState),
 		},
 		SetupState: domain.SetupState(file.Data.SetupState),
-	}, file.Data.SpaceID, nil
+		Space: productivity.Space{
+			ID:     file.Data.Space.ID,
+			Name:   file.Data.Space.Name,
+			UserID: file.Data.Space.UserID,
+		},
+	}, nil
 }
