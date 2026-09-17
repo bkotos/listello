@@ -43,6 +43,7 @@ describe("useInstanceQuery", () => {
       PersistenceLocation: "",
       PersistenceState: "",
       SetupState: "",
+      Space: { ID: "", Name: "" },
     };
     vi.mocked(getInstance).mockResolvedValue(expected);
 
