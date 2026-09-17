@@ -1,0 +1,20 @@
+meta {
+  name: Create First List
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{apiBase}}/api/lists/first
+  body: json
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "name": "Next actions"
+  }
+}

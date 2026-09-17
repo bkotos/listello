@@ -2,6 +2,11 @@ package viewdto
 
 import domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 
+// CreateFirstListRequest is the HTTP request body for creating the user's first list.
+type CreateFirstListRequest struct {
+	Name string `json:"name"`
+}
+
 // ListResponse is the HTTP representation of a list.
 type ListResponse struct {
 	ID   string `json:"ID"`
