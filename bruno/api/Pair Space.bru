@@ -1,0 +1,20 @@
+meta {
+  name: Pair Space
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{apiBase}}/api/instance/space
+  body: json
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "name": "Personal"
+  }
+}

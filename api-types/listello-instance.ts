@@ -16,6 +16,12 @@ export interface SelectHostingModeRequest {
   mode: string;
 }
 /**
+ * PairSpaceRequest is the HTTP request body for pairing a space to the instance.
+ */
+export interface PairSpaceRequest {
+  name: string;
+}
+/**
  * DefaultPersistenceLocationResponse is the HTTP representation of the default persistence location.
  */
 export interface DefaultPersistenceLocationResponse {

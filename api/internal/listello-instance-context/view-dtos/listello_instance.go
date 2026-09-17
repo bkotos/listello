@@ -12,6 +12,11 @@ type SelectHostingModeRequest struct {
 	Mode string `json:"mode"`
 }
 
+// PairSpaceRequest is the HTTP request body for pairing a space to the instance.
+type PairSpaceRequest struct {
+	Name string `json:"name"`
+}
+
 // DefaultPersistenceLocationResponse is the HTTP representation of the default persistence location.
 type DefaultPersistenceLocationResponse struct {
 	Location string `json:"Location"`
