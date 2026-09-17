@@ -41,6 +41,7 @@ type directoryState struct {
 type suiteState struct {
 	instance                    *domain.ListelloInstance
 	spaces                      map[string]productivity.Space
+	users                       map[string]productivity.User
 	events                      []domain.Event
 	lastErr                     error
 	dirs                        map[string]*directoryState
@@ -50,6 +51,7 @@ type suiteState struct {
 func (s *suiteState) reset() {
 	s.instance = nil
 	s.spaces = make(map[string]productivity.Space)
+	s.users = make(map[string]productivity.User)
 	s.events = nil
 	s.lastErr = nil
 	s.dirs = map[string]*directoryState{}
@@ -287,6 +289,32 @@ func (s *suiteState) theSpaceShouldBePairedToTheInstance(ctx context.Context, sp
 	require.Equal(t, s.spaces[spaceName], s.instance.Space)
 }
 
+func (s *suiteState) aUserNamedExists(ctx context.Context, name string) {
+	user, _, err := productivity.CreateUser(name)
+	s.lastErr = err
+	require.NoError(godog.T(ctx), err)
+	s.users[name] = user
+}
+
+func (s *suiteState) theSystemPairsTheUserToTheInstance(ctx context.Context, userName string) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.Contains(t, s.users, userName)
+	ev, err := s.instance.PairUser(s.users[userName])
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.record(ev)
+}
+
+func (s *suiteState) theUserShouldBePairedToTheInstance(ctx context.Context, userName string) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.Contains(t, s.users, userName)
+	require.Equal(t, s.users[userName], s.instance.User)
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
@@ -332,6 +360,9 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a space named "([^"]*)" exists$`, s.aSpaceNamedExists)
 	ctx.Step(`^the system pairs the space "([^"]*)" to the instance$`, s.theSystemPairsTheSpaceToTheInstance)
 	ctx.Step(`^the space "([^"]*)" should be paired to the instance$`, s.theSpaceShouldBePairedToTheInstance)
+	ctx.Step(`^a user named "([^"]*)" exists$`, s.aUserNamedExists)
+	ctx.Step(`^the system pairs the user "([^"]*)" to the instance$`, s.theSystemPairsTheUserToTheInstance)
+	ctx.Step(`^the user "([^"]*)" should be paired to the instance$`, s.theUserShouldBePairedToTheInstance)
 }
 
 func TestFeatures(t *testing.T) {

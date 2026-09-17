@@ -93,7 +93,6 @@ Feature: Create and set up a Listello instance
     Then a "SpacePairedToInstance" event should have occurred
     And the space "Personal" should be paired to the instance
 
-  @wip
   Scenario: Pairing a user to an instance
     Given an instance exists
     And a user named "Alex" exists
