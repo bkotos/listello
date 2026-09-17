@@ -86,6 +86,7 @@ func writeListelloInstanceFile(instance domain.ListelloInstance) error {
 			PersistenceLocation: instance.Persistence.Location,
 			PersistenceState:    string(instance.Persistence.State),
 			SetupState:          string(instance.SetupState),
+			SpaceID:             instance.Space.ID,
 		},
 	}
 	if err := gob.NewEncoder(f).Encode(file); err != nil {

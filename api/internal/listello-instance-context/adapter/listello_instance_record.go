@@ -16,4 +16,5 @@ type ListelloInstanceData struct {
 	PersistenceLocation string
 	PersistenceState    string
 	SetupState          string
+	SpaceID             string
 }
