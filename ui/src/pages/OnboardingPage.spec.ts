@@ -20,6 +20,7 @@ vi.mock("../lib/api/instance-client", () => ({
   selectPersistenceLocation: vi.fn(),
   initializePersistence: vi.fn(),
   pairSpace: vi.fn(),
+  pairUser: vi.fn(),
 }));
 
 vi.mock("../lib/api/user-client", () => ({
@@ -32,10 +33,10 @@ import {
   getInstance,
   initializePersistence,
   pairSpace,
+  pairUser,
   selectHostingMode,
   selectPersistenceLocation,
 } from "../lib/api/instance-client";
-import { createUser } from "../lib/api/user-client";
 
 const createdInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -937,9 +938,9 @@ describe("OnboardingPage", () => {
 
                   describe("when the Continue button is clicked", () => {
                     beforeEach(async () => {
-                      vi.mocked(createUser).mockResolvedValue({
-                        ID: "US_1",
-                        Name: "Alex",
+                      vi.mocked(pairUser).mockResolvedValue({
+                        ...createdInstance,
+                        User: { ID: "US_1", Name: "Alex" },
                       });
 
                       await act(async () => {
@@ -949,9 +950,9 @@ describe("OnboardingPage", () => {
                       });
                     });
 
-                    it("calls createUser with the entered name", () => {
+                    it("calls pairUser with the entered name", () => {
                       // Assert
-                      expect(createUser).toHaveBeenCalledWith({ name: "Alex" });
+                      expect(pairUser).toHaveBeenCalledWith({ name: "Alex" });
                     });
 
                     describe("when the Continue button is clicked", () => {

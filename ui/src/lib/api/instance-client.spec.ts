@@ -10,6 +10,7 @@ import {
   getInstance,
   initializePersistence,
   pairSpace,
+  pairUser,
   selectHostingMode,
   selectPersistenceLocation,
 } from "./instance-client";
@@ -173,6 +174,29 @@ describe("pairSpace", () => {
     expect(request).toHaveBeenCalledWith("/api/instance/space", {
       method: "POST",
       body: JSON.stringify({ name: "Personal" }),
+    });
+    expect(result).toEqual(instance);
+  });
+});
+
+describe("pairUser", () => {
+  it("posts the user name to the API", async () => {
+    // Arrange
+    const instance = {
+      HostingMode: "local",
+      PersistenceLocation: "/var/listello",
+      PersistenceState: "initialized",
+      SetupState: "",
+    };
+    vi.mocked(request).mockResolvedValue(instance);
+
+    // Act
+    const result = await pairUser({ name: "Alex" });
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/instance/user", {
+      method: "POST",
+      body: JSON.stringify({ name: "Alex" }),
     });
     expect(result).toEqual(instance);
   });
