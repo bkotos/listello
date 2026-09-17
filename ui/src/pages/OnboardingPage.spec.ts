@@ -1130,6 +1130,33 @@ describe("OnboardingPage", () => {
                                 button.closest(".onboarding-footer"),
                               ).toBeInTheDocument();
                             });
+
+                            for (const name of [
+                              "Errands",
+                              "Shopping",
+                              "Ideas",
+                              "Reading",
+                              "Goals",
+                            ]) {
+                              describe(`when the ${name} suggestion tag is clicked`, () => {
+                                beforeEach(() => {
+                                  fireEvent.change(
+                                    screen.getByLabelText("List name"),
+                                    { target: { value: "Custom" } },
+                                  );
+                                  fireEvent.click(
+                                    screen.getByRole("button", { name }),
+                                  );
+                                });
+
+                                it(`sets the List name field to ${name}`, () => {
+                                  // Assert
+                                  expect(
+                                    screen.getByLabelText("List name"),
+                                  ).toHaveValue(name);
+                                });
+                              });
+                            }
                           });
                         });
                       });
