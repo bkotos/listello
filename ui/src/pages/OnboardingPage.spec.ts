@@ -1131,13 +1131,14 @@ describe("OnboardingPage", () => {
                               ).toBeInTheDocument();
                             });
 
-                            for (const name of [
+                            const suggestionNames = [
                               "Errands",
                               "Shopping",
                               "Ideas",
                               "Reading",
                               "Goals",
-                            ]) {
+                            ];
+                            for (const name of suggestionNames) {
                               describe(`when the ${name} suggestion tag is clicked`, () => {
                                 beforeEach(() => {
                                   fireEvent.change(
@@ -1154,6 +1155,25 @@ describe("OnboardingPage", () => {
                                   expect(
                                     screen.getByLabelText("List name"),
                                   ).toHaveValue(name);
+                                });
+
+                                it(`marks the ${name} suggestion tag as selected`, () => {
+                                  // Assert
+                                  expect(
+                                    screen.getByRole("button", { name }),
+                                  ).toHaveClass("tag", "is-medium", "is-primary");
+                                });
+
+                                it("deselects the other suggestion tags", () => {
+                                  // Assert
+                                  for (const other of suggestionNames) {
+                                    if (other === name) {
+                                      continue;
+                                    }
+                                    expect(
+                                      screen.getByRole("button", { name: other }),
+                                    ).not.toHaveClass("is-primary");
+                                  }
                                 });
                               });
                             }
