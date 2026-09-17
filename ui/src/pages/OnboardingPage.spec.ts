@@ -1177,6 +1177,31 @@ describe("OnboardingPage", () => {
                                 });
                               });
                             }
+
+                            describe("when a custom list name is entered", () => {
+                              beforeEach(() => {
+                                fireEvent.change(
+                                  screen.getByLabelText("List name"),
+                                  { target: { value: "Custom" } },
+                                );
+                              });
+
+                              it("sets the List name field to Custom", () => {
+                                // Assert
+                                expect(
+                                  screen.getByLabelText("List name"),
+                                ).toHaveValue("Custom");
+                              });
+
+                              it("deselects all suggestion tags", () => {
+                                // Assert
+                                for (const name of suggestionNames) {
+                                  expect(
+                                    screen.getByRole("button", { name }),
+                                  ).not.toHaveClass("is-primary");
+                                }
+                              });
+                            });
                           });
                         });
                       });
