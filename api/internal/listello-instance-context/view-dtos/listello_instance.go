@@ -20,6 +20,11 @@ type PairSpaceRequest struct {
 	Name string `json:"name"`
 }
 
+// PairUserRequest is the HTTP request body for pairing a user to the instance.
+type PairUserRequest struct {
+	Name string `json:"name"`
+}
+
 // DefaultPersistenceLocationResponse is the HTTP representation of the default persistence location.
 type DefaultPersistenceLocationResponse struct {
 	Location string `json:"Location"`
@@ -37,6 +42,7 @@ type ListelloInstanceResponse struct {
 	PersistenceState    string `json:"PersistenceState"`
 	SetupState          string `json:"SetupState"`
 	Space               ppviewdto.SpaceResponse `json:"Space" tstype:"{ ID: string; Name: string }"`
+	User                ppviewdto.UserResponse  `json:"User" tstype:"{ ID: string; Name: string }"`
 }
 
 // ListelloInstanceFromDomain maps a domain Listello instance to its response DTO.

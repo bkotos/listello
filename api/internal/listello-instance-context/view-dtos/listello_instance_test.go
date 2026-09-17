@@ -24,6 +24,10 @@ func TestListelloInstanceFromDomain(t *testing.T) {
 			ID:   "SP_1",
 			Name: "Personal",
 		},
+		User: productivity.User{
+			ID:   "US_1",
+			Name: "Alex",
+		},
 	}
 
 	// Act
@@ -35,6 +39,7 @@ func TestListelloInstanceFromDomain(t *testing.T) {
 	assert.Equal(t, string(instance.Persistence.State), received.PersistenceState)
 	assert.Equal(t, string(instance.SetupState), received.SetupState)
 	assert.Equal(t, ppviewdto.SpaceFromDomain(instance.Space), received.Space)
+	assert.Equal(t, ppviewdto.UserFromDomain(instance.User), received.User)
 }
 
 func TestDefaultPersistenceLocationFromPath(t *testing.T) {
