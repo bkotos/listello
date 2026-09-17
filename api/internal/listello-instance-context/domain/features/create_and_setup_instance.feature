@@ -86,6 +86,13 @@ Feature: Create and set up a Listello instance
     Then a "PersistenceInitialized" event should have occurred with hosting mode of "local" and persistence location "/var/listello"
     And the instance should have persistence initialized
 
+  Scenario: Pairing a space to an instance
+    Given an instance exists
+    And a space named "Personal" exists
+    When the system pairs the space "Personal" to the instance
+    Then a "SpacePairedToInstance" event should have occurred
+    And the space "Personal" should be paired to the instance
+
   Scenario: Completing setup
     Given an instance exists
     And the user selects hosting mode "local"

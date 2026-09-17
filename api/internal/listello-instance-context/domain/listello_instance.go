@@ -5,6 +5,7 @@ import (
 
 	event "github.com/bkotos/listello/internal/event-context"
 	"github.com/bkotos/listello/internal/util"
+	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 // ListelloInstance is a running Listello instance.
@@ -13,6 +14,7 @@ type ListelloInstance struct {
 	HostingMode HostingMode
 	Persistence Persistence
 	SetupState  SetupState
+	Space       productivity.Space
 }
 
 // CreateInstance creates a new Listello instance and raises an InstanceCreated event.
@@ -67,4 +69,10 @@ func (i *ListelloInstance) CompleteSetup() (Event, error) {
 // IsSetupCompleted reports whether instance setup has been completed.
 func (i ListelloInstance) IsSetupCompleted() bool {
 	return i.SetupState == SetupCompleted
+}
+
+// PairSpace pairs a space to this instance and raises a SpacePairedToInstance event.
+func (i *ListelloInstance) PairSpace(space productivity.Space) (Event, error) {
+	i.Space = space
+	return event.NewEvent(EventSpacePairedToInstance, EventMetadataSpacePairedToInstance{ID: i.ID, SpaceID: space.ID}, 1), nil
 }

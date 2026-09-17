@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
+	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 //go:embed features/*.feature
@@ -39,6 +40,7 @@ type directoryState struct {
 
 type suiteState struct {
 	instance                    *domain.ListelloInstance
+	spaces                      map[string]productivity.Space
 	events                      []domain.Event
 	lastErr                     error
 	dirs                        map[string]*directoryState
@@ -47,6 +49,7 @@ type suiteState struct {
 
 func (s *suiteState) reset() {
 	s.instance = nil
+	s.spaces = make(map[string]productivity.Space)
 	s.events = nil
 	s.lastErr = nil
 	s.dirs = map[string]*directoryState{}
@@ -258,6 +261,32 @@ func (s *suiteState) theInstanceShouldHaveSetupCompleted(ctx context.Context) {
 	require.True(t, s.instance.IsSetupCompleted())
 }
 
+func (s *suiteState) aSpaceNamedExists(ctx context.Context, name string) {
+	space, _, err := productivity.CreateSpace(name)
+	s.lastErr = err
+	require.NoError(godog.T(ctx), err)
+	s.spaces[name] = space
+}
+
+func (s *suiteState) theSystemPairsTheSpaceToTheInstance(ctx context.Context, spaceName string) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.Contains(t, s.spaces, spaceName)
+	ev, err := s.instance.PairSpace(s.spaces[spaceName])
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.record(ev)
+}
+
+func (s *suiteState) theSpaceShouldBePairedToTheInstance(ctx context.Context, spaceName string) {
+	t := godog.T(ctx)
+	require.NotNil(t, s.instance)
+	require.Contains(t, s.spaces, spaceName)
+	require.Equal(t, s.spaces[spaceName], s.instance.Space)
+}
+
 func eventNames(events []domain.Event) []string {
 	names := make([]string, len(events))
 	for i, e := range events {
@@ -300,6 +329,9 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the instance should not have persistence initialized$`, s.theInstanceShouldNotHavePersistenceInitialized)
 	ctx.Step(`^the user completes setup$`, s.theUserCompletesSetup)
 	ctx.Step(`^the instance should have setup completed$`, s.theInstanceShouldHaveSetupCompleted)
+	ctx.Step(`^a space named "([^"]*)" exists$`, s.aSpaceNamedExists)
+	ctx.Step(`^the system pairs the space "([^"]*)" to the instance$`, s.theSystemPairsTheSpaceToTheInstance)
+	ctx.Step(`^the space "([^"]*)" should be paired to the instance$`, s.theSpaceShouldBePairedToTheInstance)
 }
 
 func TestFeatures(t *testing.T) {

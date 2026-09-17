@@ -11,6 +11,7 @@ const (
 	EventLocalPersistenceLocationSelected EventName = "LocalPersistenceLocationSelected"
 	EventPersistenceInitialized           EventName = "PersistenceInitialized"
 	EventSetupCompleted                   EventName = "SetupCompleted"
+	EventSpacePairedToInstance            EventName = "SpacePairedToInstance"
 )
 
 // EventMetadataInstanceCreated is the payload for an InstanceCreated event.
@@ -40,4 +41,10 @@ type EventMetadataPersistenceInitialized struct {
 // EventMetadataSetupCompleted is the payload for a SetupCompleted event.
 type EventMetadataSetupCompleted struct {
 	ID string
+}
+
+// EventMetadataSpacePairedToInstance is the payload for a SpacePairedToInstance event.
+type EventMetadataSpacePairedToInstance struct {
+	ID      string
+	SpaceID string
 }
