@@ -74,13 +74,17 @@ function OnboardingPage() {
   const [systemSetupComplete, setSystemSetupComplete] = useState(false);
 
   useEffect(() => {
-    if (instance?.HostingMode) {
+    if (instance?.PersistenceLocation) {
+      setStep(OnboardingStep.Step3DataDirectory);
+    } else if (instance?.HostingMode) {
       setStep(OnboardingStep.Step2Hosting);
     }
   }, [instance]);
 
   const dataDirectory =
-    dataDirectoryOverride ?? defaultPersistenceLocation?.Location ?? "";
+    dataDirectoryOverride ??
+    (instance?.PersistenceLocation || defaultPersistenceLocation?.Location) ??
+    "";
 
   const handleInitializeComplete = useCallback(() => {
     setInitializeComplete(true);
