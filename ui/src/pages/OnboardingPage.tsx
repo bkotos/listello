@@ -13,6 +13,7 @@ import { NameSpaceFooter, NameSpaceStep } from "../components/onboarding/Step5-N
 import { YourNameFooter, YourNameStep } from "../components/onboarding/Step6-YourName";
 import { SystemSetupFooter, SystemSetupStep } from "../components/onboarding/Step7-SystemSetup";
 import { FirstListFooter, FirstListStep } from "../components/onboarding/Step8-FirstList";
+import { CompleteFooter, CompleteStep } from "../components/onboarding/Step9-Complete";
 import { WelcomeFooter, WelcomeStep } from "../components/onboarding/Step1-Welcome";
 
 enum OnboardingStep {
@@ -24,6 +25,7 @@ enum OnboardingStep {
   Step6YourName = "step6-your-name",
   Step7SystemSetup = "step7-system-setup",
   Step8FirstList = "step8-first-list",
+  Step9Complete = "step9-complete",
 }
 
 function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): string {
@@ -32,7 +34,8 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
     step === OnboardingStep.Step5NameSpace ||
     step === OnboardingStep.Step6YourName ||
     step === OnboardingStep.Step7SystemSetup ||
-    step === OnboardingStep.Step8FirstList
+    step === OnboardingStep.Step8FirstList ||
+    step === OnboardingStep.Step9Complete
   ) {
     return "100%";
   }
@@ -46,7 +49,10 @@ function instancePhaseFill(step: OnboardingStep, hostingMode: HostingMode): stri
 }
 
 function workspacePhaseFill(step: OnboardingStep): string {
-  if (step === OnboardingStep.Step8FirstList) {
+  if (
+    step === OnboardingStep.Step8FirstList ||
+    step === OnboardingStep.Step9Complete
+  ) {
     return "100%";
   }
   if (step === OnboardingStep.Step7SystemSetup) {
@@ -100,6 +106,7 @@ function OnboardingPage() {
   const [spaceName, setSpaceName] = useState("Personal");
   const [pairedSpaceName, setPairedSpaceName] = useState<string | null>(null);
   const [userName, setUserName] = useState("");
+  const [listName, setListName] = useState("Errands");
   const [systemSetupComplete, setSystemSetupComplete] = useState(false);
 
   useEffect(() => {
@@ -170,8 +177,11 @@ function OnboardingPage() {
   const isStep6YourName = step === OnboardingStep.Step6YourName;
   const isStep7SystemSetup = step === OnboardingStep.Step7SystemSetup;
   const isStep8FirstList = step === OnboardingStep.Step8FirstList;
+  const isStep9Complete = step === OnboardingStep.Step9Complete;
   const isWorkspacePhase =
     isStep5NameSpace || isStep6YourName || isStep7SystemSetup || isStep8FirstList;
+  const isReadyPhase = isStep9Complete;
+  const isInstanceDone = isWorkspacePhase || isReadyPhase;
   const instanceFill = instancePhaseFill(step, hostingMode);
   const workspaceFill = workspacePhaseFill(step);
 
@@ -190,10 +200,10 @@ function OnboardingPage() {
           </div>
 
           <div className="phase-progress" aria-hidden="true">
-            <div className={`phase-seg ${isWorkspacePhase ? "is-done" : "is-active"}`}>
+            <div className={`phase-seg ${isInstanceDone ? "is-done" : "is-active"}`}>
               <span className="phase-seg-head">
                 <span className="phase-seg-index">
-                  {isWorkspacePhase ? <Check size={12} strokeWidth={3} /> : "1"}
+                  {isInstanceDone ? <Check size={12} strokeWidth={3} /> : "1"}
                 </span>
                 <span className="phase-seg-label">Instance</span>
               </span>
@@ -206,9 +216,13 @@ function OnboardingPage() {
                 />
               </span>
             </div>
-            <div className={`phase-seg ${isWorkspacePhase ? "is-active" : "is-upcoming"}`}>
+            <div
+              className={`phase-seg ${isReadyPhase ? "is-done" : isWorkspacePhase ? "is-active" : "is-upcoming"}`}
+            >
               <span className="phase-seg-head">
-                <span className="phase-seg-index">2</span>
+                <span className="phase-seg-index">
+                  {isReadyPhase ? <Check size={12} strokeWidth={3} /> : "2"}
+                </span>
                 <span className="phase-seg-label">Workspace</span>
               </span>
               <span className="phase-seg-track">
@@ -218,13 +232,16 @@ function OnboardingPage() {
                 />
               </span>
             </div>
-            <div className="phase-seg is-upcoming">
+            <div className={`phase-seg ${isReadyPhase ? "is-active" : "is-upcoming"}`}>
               <span className="phase-seg-head">
                 <span className="phase-seg-index">3</span>
                 <span className="phase-seg-label">Ready</span>
               </span>
               <span className="phase-seg-track">
-                <span className="phase-seg-fill" style={{ width: "0%" }} />
+                <span
+                  className="phase-seg-fill"
+                  style={{ width: isReadyPhase ? "100%" : "0%" }}
+                />
               </span>
             </div>
           </div>
@@ -258,7 +275,17 @@ function OnboardingPage() {
               onComplete={handleSystemSetupComplete}
             />
           )}
-          {isStep8FirstList && <FirstListStep />}
+          {isStep8FirstList && (
+            <FirstListStep value={listName} onChange={setListName} />
+          )}
+          {isStep9Complete && (
+            <CompleteStep
+              userName={userName}
+              dataDirectory={dataDirectory}
+              spaceName={spaceName}
+              firstListName={listName}
+            />
+          )}
         </div>
       </div>
 
@@ -305,7 +332,12 @@ function OnboardingPage() {
             onContinue={() => setStep(OnboardingStep.Step8FirstList)}
           />
         )}
-        {isStep8FirstList && <FirstListFooter />}
+        {isStep8FirstList && (
+          <FirstListFooter
+            onContinue={() => setStep(OnboardingStep.Step9Complete)}
+          />
+        )}
+        {isStep9Complete && <CompleteFooter />}
       </footer>
     </div>
   );
