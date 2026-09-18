@@ -12,24 +12,30 @@ Implements `application.ListRepository` with three methods: `Save`, `GetByID`, `
 
 ```go
 type SQLiteListRepository struct {
-	db *sql.DB
+	workspace *sqlite.WorkspaceDB
 }
 
-func NewSQLiteListRepository(sqlite *SQLite) *SQLiteListRepository {
-	return &SQLiteListRepository{db: sqlite.db}
+func NewSQLiteListRepository(workspace *sqlite.WorkspaceDB) *SQLiteListRepository {
+	return &SQLiteListRepository{workspace: workspace}
 }
 ```
 
-Takes `*SQLite` (not `*sql.DB` directly) — matches project wiring via `bootstrap.NewListService`.
+Takes `*sqlite.WorkspaceDB` — matches project wiring via `bootstrap.NewListService`. Queries go through bun (`openBun`).
 
 ### Save — upsert
 
 ```go
 func (r *SQLiteListRepository) Save(list domain.List) error {
-	const q = `
-INSERT INTO lists (id, name) VALUES (?, ?)
-ON CONFLICT(id) DO UPDATE SET name = excluded.name;`
-	if _, err := r.db.Exec(q, list.ID, list.Name); err != nil {
+	db, err := openBun(r.workspace)
+	if err != nil {
+		return fmt.Errorf("save list: %w", err)
+	}
+	_, err = db.NewInsert().
+		Model(&listRow{ID: list.ID, Name: list.Name, CreatedAt: newCreatedAt()}).
+		On("CONFLICT (id) DO UPDATE").
+		Set("name = EXCLUDED.name").
+		Exec(context.Background())
+	if err != nil {
 		return fmt.Errorf("save list: %w", err)
 	}
 	return nil
@@ -38,39 +44,40 @@ ON CONFLICT(id) DO UPDATE SET name = excluded.name;`
 
 Key points:
 
-- `ON CONFLICT DO UPDATE` for idempotent saves.
+- Bun `On("CONFLICT (id) DO UPDATE")` for idempotent saves.
+- Omit `created_at` from the `Set` list so a later Save does not reshuffle GetAll order.
 - Wrap DB errors with operation context (`save list`).
 
 ### GetByID — not found handling
 
 ```go
-err := r.db.QueryRow(q, id).Scan(&listID, &name)
-if err == sql.ErrNoRows {
+row := new(listRow)
+err = db.NewSelect().Model(row).Where("id = ?", id).Scan(context.Background())
+if errors.Is(err, sql.ErrNoRows) {
 	return domain.List{}, fmt.Errorf("list %q not found", id)
 }
 if err != nil {
 	return domain.List{}, fmt.Errorf("find list: %w", err)
 }
-return domain.List{ID: listID, Name: name}, nil
+return domain.List{ID: row.ID, Name: row.Name}, nil
 ```
 
 Key points:
 
 - `sql.ErrNoRows` becomes a readable not-found error (not wrapped with `%w`).
-- Scan into locals, then construct domain type.
+- Scan into a bun row struct, then construct the domain type.
 
 ### GetAll — multi-row scan
 
 ```go
-const q = `SELECT id, name FROM lists ORDER BY created_at, id`
-// ... Query, defer rows.Close(), loop rows.Next(), check rows.Err()
+var rows []listRow
+err = db.NewSelect().Model(&rows).Order("created_at ASC", "id ASC").Scan(context.Background())
 ```
 
 Key points:
 
-- `ORDER BY created_at, id` preserves insertion order (tested explicitly).
-- Stamp `created_at` on insert only — omit it from `ON CONFLICT DO UPDATE` so a later Save does not reshuffle.
-- Always `defer rows.Close()` and check `rows.Err()` after the loop.
+- `Order("created_at ASC", "id ASC")` preserves insertion order (tested explicitly).
+- Stamp `created_at` on insert only — omit it from the conflict `Set` list so a later Save does not reshuffle.
 
 ## 2. Schema — `sqlite.go`
 

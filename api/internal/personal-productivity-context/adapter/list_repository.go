@@ -1,7 +1,9 @@
 package adapter
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
@@ -20,14 +22,17 @@ func NewSQLiteListRepository(workspace *sqlite.WorkspaceDB) *SQLiteListRepositor
 
 // Save stores the list.
 func (r *SQLiteListRepository) Save(list domain.List) error {
-	db, err := r.workspace.DB()
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return fmt.Errorf("save list: %w", err)
 	}
-	const q = `
-INSERT INTO lists (id, name, created_at) VALUES (?, ?, ?)
-ON CONFLICT(id) DO UPDATE SET name = excluded.name;`
-	if _, err := db.Exec(q, list.ID, list.Name, newCreatedAt()); err != nil {
+	row := &listRow{ID: list.ID, Name: list.Name, CreatedAt: newCreatedAt()}
+	_, err = db.NewInsert().
+		Model(row).
+		On("CONFLICT (id) DO UPDATE").
+		Set("name = EXCLUDED.name").
+		Exec(context.Background())
+	if err != nil {
 		return fmt.Errorf("save list: %w", err)
 	}
 	return nil
@@ -35,45 +40,35 @@ ON CONFLICT(id) DO UPDATE SET name = excluded.name;`
 
 // GetByID returns the list with the given ID.
 func (r *SQLiteListRepository) GetByID(id string) (domain.List, error) {
-	db, err := r.workspace.DB()
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return domain.List{}, fmt.Errorf("find list: %w", err)
 	}
-	const q = `SELECT id, name FROM lists WHERE id = ?`
-	var listID, name string
-	err = db.QueryRow(q, id).Scan(&listID, &name)
-	if err == sql.ErrNoRows {
+	row := new(listRow)
+	err = db.NewSelect().Model(row).Where("id = ?", id).Scan(context.Background())
+	if errors.Is(err, sql.ErrNoRows) {
 		return domain.List{}, fmt.Errorf("list %q not found", id)
 	}
 	if err != nil {
 		return domain.List{}, fmt.Errorf("find list: %w", err)
 	}
-	return domain.List{ID: listID, Name: name}, nil
+	return domain.List{ID: row.ID, Name: row.Name}, nil
 }
 
 // GetAll returns all lists in insertion order.
 func (r *SQLiteListRepository) GetAll() ([]domain.List, error) {
-	db, err := r.workspace.DB()
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return nil, fmt.Errorf("list lists: %w", err)
 	}
-	const q = `SELECT id, name FROM lists ORDER BY created_at, id`
-	rows, err := db.Query(q)
+	var rows []listRow
+	err = db.NewSelect().Model(&rows).Order("created_at ASC", "id ASC").Scan(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("list lists: %w", err)
 	}
-	defer rows.Close()
-
-	var lists []domain.List
-	for rows.Next() {
-		var listID, name string
-		if err := rows.Scan(&listID, &name); err != nil {
-			return nil, fmt.Errorf("list lists: %w", err)
-		}
-		lists = append(lists, domain.List{ID: listID, Name: name})
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list lists: %w", err)
+	lists := make([]domain.List, 0, len(rows))
+	for _, row := range rows {
+		lists = append(lists, domain.List{ID: row.ID, Name: row.Name})
 	}
 	return lists, nil
 }
