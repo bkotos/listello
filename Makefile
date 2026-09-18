@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 COMPOSE_POSTGRES := docker compose -f docker-compose.postgres.yml
-LISTELLO_TEST_POSTGRES_DSN ?= postgres://listello:listello@127.0.0.1:5433/listello?sslmode=disable
+LISTELLO_TEST_POSTGRES_DSN := postgres://listello:listello@127.0.0.1:5433/listello?sslmode=disable
 
 .PHONY: help run run-api run-ui test-api test-ui test-e2e-cli test test-api-postgres postgres-up postgres-down api-types build
 
