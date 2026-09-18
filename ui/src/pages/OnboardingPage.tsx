@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ListelloInstanceResponse } from "api-types/listello-instance";
 import { Check } from "lucide-react";
 import { createInstance, initializePersistence, pairSpace, pairUser, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
-import { createList } from "../lib/api/list-client";
+import { createFirstList } from "../lib/api/list-client";
 import { useDefaultPersistenceLocationQuery, useInstanceQuery } from "../lib/api/instance-queries";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
@@ -171,7 +171,7 @@ function OnboardingPage() {
   }
 
   async function handleCreateList() {
-    await createList(listName);
+    await createFirstList(listName);
     setStep(OnboardingStep.Step9Complete);
   }
 

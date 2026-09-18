@@ -4,7 +4,7 @@ vi.mock("./util", () => ({
   request: vi.fn(),
 }));
 
-import { createList, getAllLists, getList } from "./list-client";
+import { createFirstList, createList, getAllLists, getList } from "./list-client";
 import { request } from "./util";
 
 afterEach(() => {
@@ -54,6 +54,24 @@ describe("createList", () => {
     expect(request).toHaveBeenCalledWith("/api/lists", {
       method: "POST",
       body: JSON.stringify({ name: "Next actions" }),
+    });
+    expect(result).toEqual(list);
+  });
+});
+
+describe("createFirstList", () => {
+  it("posts the first list to the API", async () => {
+    // Arrange
+    const list = { ID: "LS_1", Name: "Errands" };
+    vi.mocked(request).mockResolvedValue(list);
+
+    // Act
+    const result = await createFirstList("Errands");
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/lists/first", {
+      method: "POST",
+      body: JSON.stringify({ name: "Errands" }),
     });
     expect(result).toEqual(list);
   });

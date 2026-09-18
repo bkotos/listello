@@ -8,6 +8,11 @@ type ListResponse struct {
 	Name string `json:"Name"`
 }
 
+// CreateFirstListRequest is the HTTP request body for creating the user's first list.
+type CreateFirstListRequest struct {
+	Name string `json:"name"`
+}
+
 // ListFromDomain maps a domain list to its response DTO.
 func ListFromDomain(list domain.List) ListResponse {
 	return ListResponse{

@@ -46,6 +46,12 @@ export interface ListResponse {
   ID: string;
   Name: string;
 }
+/**
+ * CreateFirstListRequest is the HTTP request body for creating the user's first list.
+ */
+export interface CreateFirstListRequest {
+  name: string;
+}
 
 //////////
 // source: space.go

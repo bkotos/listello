@@ -15,3 +15,10 @@ export async function createList(name: string): Promise<ListResponse> {
     body: JSON.stringify({ name }),
   });
 }
+
+export async function createFirstList(name: string): Promise<ListResponse> {
+  return request<ListResponse>("/api/lists/first", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
+}
