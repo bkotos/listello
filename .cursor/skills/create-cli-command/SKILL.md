@@ -311,6 +311,9 @@ npm test -w e2e-cli
 # All tests (API + UI + e2e-cli) — also runs in CI via .github/workflows/test.yml
 make test
 
+# Live PostgreSQL (Docker Compose) — also runs in CI as the test-postgres job
+make test-api-postgres
+
 # Manual smoke test (after bootstrap wiring)
 make -C api run ARGS='list create "Next actions"'
 ```
