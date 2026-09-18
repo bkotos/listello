@@ -25,12 +25,12 @@ func (r *SQLiteItemRepository) Save(item domain.Item) error {
 		return fmt.Errorf("save item: %w", err)
 	}
 	const q = `
-INSERT INTO items (id, list_id, title, state) VALUES (?, ?, ?, ?)
+INSERT INTO items (id, list_id, title, state, created_at) VALUES (?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
 	list_id = excluded.list_id,
 	title = excluded.title,
 	state = excluded.state;`
-	if _, err := db.Exec(q, item.ID, item.ListID, item.Title, string(item.State)); err != nil {
+	if _, err := db.Exec(q, item.ID, item.ListID, item.Title, string(item.State), newCreatedAt()); err != nil {
 		return fmt.Errorf("save item: %w", err)
 	}
 	return nil
@@ -65,7 +65,7 @@ func (r *SQLiteItemRepository) GetAll(listID string) ([]domain.Item, error) {
 	if err != nil {
 		return nil, fmt.Errorf("list items: %w", err)
 	}
-	const q = `SELECT id, list_id, title, state FROM items WHERE list_id = ? ORDER BY rowid`
+	const q = `SELECT id, list_id, title, state FROM items WHERE list_id = ? ORDER BY created_at, id`
 	rows, err := db.Query(q, listID)
 	if err != nil {
 		return nil, fmt.Errorf("list items: %w", err)

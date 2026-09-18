@@ -25,9 +25,9 @@ func (r *SQLiteListRepository) Save(list domain.List) error {
 		return fmt.Errorf("save list: %w", err)
 	}
 	const q = `
-INSERT INTO lists (id, name) VALUES (?, ?)
+INSERT INTO lists (id, name, created_at) VALUES (?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET name = excluded.name;`
-	if _, err := db.Exec(q, list.ID, list.Name); err != nil {
+	if _, err := db.Exec(q, list.ID, list.Name, newCreatedAt()); err != nil {
 		return fmt.Errorf("save list: %w", err)
 	}
 	return nil
@@ -57,7 +57,7 @@ func (r *SQLiteListRepository) GetAll() ([]domain.List, error) {
 	if err != nil {
 		return nil, fmt.Errorf("list lists: %w", err)
 	}
-	const q = `SELECT id, name FROM lists ORDER BY rowid`
+	const q = `SELECT id, name FROM lists ORDER BY created_at, id`
 	rows, err := db.Query(q)
 	if err != nil {
 		return nil, fmt.Errorf("list lists: %w", err)
