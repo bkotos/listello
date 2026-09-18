@@ -9,14 +9,13 @@ import (
 	"github.com/bkotos/listello/internal/sqlite"
 )
 
-// MustOpenDB opens a workspace SQLite database or exits the process on failure.
-func MustOpenDB(path string) *sqlite.WorkspaceDB {
+// OpenDB opens a workspace database for the given engine and DSN.
+func OpenDB(engine sqlite.Engine, dsn string) (*sqlite.WorkspaceDB, error) {
 	workspace := sqlite.NewWorkspaceDB()
-	if err := workspace.Open(path); err != nil {
-		fmt.Fprintf(os.Stderr, "open sqlite: %v\n", err)
-		os.Exit(1)
+	if err := workspace.Open(engine, dsn); err != nil {
+		return nil, err
 	}
-	return workspace
+	return workspace, nil
 }
 
 // MustOpenEventLog opens the domain event log or exits the process on failure.

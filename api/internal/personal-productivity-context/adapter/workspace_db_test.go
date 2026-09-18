@@ -12,7 +12,7 @@ import (
 func openWorkspaceDB(t *testing.T, name string) *sqlite.WorkspaceDB {
 	t.Helper()
 	workspace := sqlite.NewWorkspaceDB()
-	require.NoError(t, workspace.Open(filepath.Join(t.TempDir(), name)))
+	require.NoError(t, workspace.Open(sqlite.EngineSQLite, filepath.Join(t.TempDir(), name)))
 	t.Cleanup(func() { _ = workspace.Close() })
 	return workspace
 }

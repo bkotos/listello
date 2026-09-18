@@ -20,7 +20,7 @@ func TestSQLiteItemRepository_Save_PersistsItem(t *testing.T) {
 	// Arrange
 	path := filepath.Join(t.TempDir(), "items.db")
 	workspace := sqlite.NewWorkspaceDB()
-	require.NoError(t, workspace.Open(path))
+	require.NoError(t, workspace.Open(sqlite.EngineSQLite, path))
 	t.Cleanup(func() { _ = workspace.Close() })
 
 	listRepo := adapter.NewSQLiteListRepository(workspace)

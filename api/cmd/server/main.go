@@ -17,11 +17,16 @@ import (
 func main() {
 	var port int
 	var host string
+	var engineName string
 
 	cmd := &cobra.Command{
 		Use:   "listello-server",
 		Short: "Listello HTTP API server",
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			engine, err := sqlite.ParseEngine(engineName)
+			if err != nil {
+				return err
+			}
 			workspace := sqlite.NewWorkspaceDB()
 			defer workspace.Close()
 
@@ -49,13 +54,14 @@ func main() {
 					userService,
 				),
 				workspace,
+				engine,
 			)
 			instance, err := instanceService.GetInstance()
 			if err != nil {
 				return err
 			}
 			if instance != nil && instance.Persistence.IsInitialized() {
-				if err := openWorkspaceDB(workspace, instance.Persistence.Location); err != nil {
+				if err := openWorkspaceDB(workspace, engine, instance.Persistence.Location); err != nil {
 					return err
 				}
 			}
@@ -67,6 +73,7 @@ func main() {
 
 	cmd.Flags().IntVarP(&port, "port", "p", 8080, "port to listen on")
 	cmd.Flags().StringVar(&host, "host", "0.0.0.0", "host to bind to")
+	cmd.Flags().StringVar(&engineName, "engine", "sqlite", "database engine (sqlite)")
 
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
