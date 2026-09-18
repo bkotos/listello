@@ -1,7 +1,9 @@
 package adapter
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
@@ -20,14 +22,17 @@ func NewSQLiteSpaceRepository(workspace *sqlite.WorkspaceDB) *SQLiteSpaceReposit
 
 // Save stores the space.
 func (r *SQLiteSpaceRepository) Save(space domain.Space) error {
-	db, err := r.workspace.DB()
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return fmt.Errorf("save space: %w", err)
 	}
-	const q = `
-INSERT INTO spaces (id, name, user_id) VALUES (?, ?, ?)
-ON CONFLICT(id) DO UPDATE SET name = excluded.name, user_id = excluded.user_id;`
-	if _, err := db.Exec(q, space.ID, space.Name, space.UserID); err != nil {
+	_, err = db.NewInsert().
+		Model(&spaceRow{ID: space.ID, Name: space.Name, UserID: space.UserID}).
+		On("CONFLICT (id) DO UPDATE").
+		Set("name = EXCLUDED.name").
+		Set("user_id = EXCLUDED.user_id").
+		Exec(context.Background())
+	if err != nil {
 		return fmt.Errorf("save space: %w", err)
 	}
 	return nil
@@ -35,18 +40,17 @@ ON CONFLICT(id) DO UPDATE SET name = excluded.name, user_id = excluded.user_id;`
 
 // GetByID returns the space with the given ID.
 func (r *SQLiteSpaceRepository) GetByID(id string) (domain.Space, error) {
-	db, err := r.workspace.DB()
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return domain.Space{}, fmt.Errorf("find space: %w", err)
 	}
-	const q = `SELECT id, name, user_id FROM spaces WHERE id = ?`
-	var spaceID, name, userID string
-	err = db.QueryRow(q, id).Scan(&spaceID, &name, &userID)
-	if err == sql.ErrNoRows {
+	row := new(spaceRow)
+	err = db.NewSelect().Model(row).Where("id = ?", id).Scan(context.Background())
+	if errors.Is(err, sql.ErrNoRows) {
 		return domain.Space{}, fmt.Errorf("space %q not found", id)
 	}
 	if err != nil {
 		return domain.Space{}, fmt.Errorf("find space: %w", err)
 	}
-	return domain.Space{ID: spaceID, Name: name, UserID: userID}, nil
+	return domain.Space{ID: row.ID, Name: row.Name, UserID: row.UserID}, nil
 }

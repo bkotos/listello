@@ -1,7 +1,9 @@
 package adapter
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
@@ -20,17 +22,25 @@ func NewSQLiteItemRepository(workspace *sqlite.WorkspaceDB) *SQLiteItemRepositor
 
 // Save stores the item.
 func (r *SQLiteItemRepository) Save(item domain.Item) error {
-	db, err := r.workspace.DB()
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return fmt.Errorf("save item: %w", err)
 	}
-	const q = `
-INSERT INTO items (id, list_id, title, state, created_at) VALUES (?, ?, ?, ?, ?)
-ON CONFLICT(id) DO UPDATE SET
-	list_id = excluded.list_id,
-	title = excluded.title,
-	state = excluded.state;`
-	if _, err := db.Exec(q, item.ID, item.ListID, item.Title, string(item.State), newCreatedAt()); err != nil {
+	row := &itemRow{
+		ID:        item.ID,
+		ListID:    item.ListID,
+		Title:     item.Title,
+		State:     string(item.State),
+		CreatedAt: newCreatedAt(),
+	}
+	_, err = db.NewInsert().
+		Model(row).
+		On("CONFLICT (id) DO UPDATE").
+		Set("list_id = EXCLUDED.list_id").
+		Set("title = EXCLUDED.title").
+		Set("state = EXCLUDED.state").
+		Exec(context.Background())
+	if err != nil {
 		return fmt.Errorf("save item: %w", err)
 	}
 	return nil
@@ -38,67 +48,61 @@ ON CONFLICT(id) DO UPDATE SET
 
 // GetByID returns the item with the given ID.
 func (r *SQLiteItemRepository) GetByID(id string) (domain.Item, error) {
-	db, err := r.workspace.DB()
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return domain.Item{}, fmt.Errorf("find item: %w", err)
 	}
-	const q = `SELECT id, list_id, title, state FROM items WHERE id = ?`
-	var itemID, listID, title, state string
-	err = db.QueryRow(q, id).Scan(&itemID, &listID, &title, &state)
-	if err == sql.ErrNoRows {
+	row := new(itemRow)
+	err = db.NewSelect().Model(row).Where("id = ?", id).Scan(context.Background())
+	if errors.Is(err, sql.ErrNoRows) {
 		return domain.Item{}, fmt.Errorf("item %q not found", id)
 	}
 	if err != nil {
 		return domain.Item{}, fmt.Errorf("find item: %w", err)
 	}
 	return domain.Item{
-		ID:     itemID,
-		ListID: listID,
-		Title:  title,
-		State:  domain.ItemState(state),
+		ID:     row.ID,
+		ListID: row.ListID,
+		Title:  row.Title,
+		State:  domain.ItemState(row.State),
 	}, nil
 }
 
 // GetAll returns all items for the given list in insertion order.
 func (r *SQLiteItemRepository) GetAll(listID string) ([]domain.Item, error) {
-	db, err := r.workspace.DB()
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return nil, fmt.Errorf("list items: %w", err)
 	}
-	const q = `SELECT id, list_id, title, state FROM items WHERE list_id = ? ORDER BY created_at, id`
-	rows, err := db.Query(q, listID)
+	var rows []itemRow
+	err = db.NewSelect().
+		Model(&rows).
+		Where("list_id = ?", listID).
+		Order("created_at ASC", "id ASC").
+		Scan(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("list items: %w", err)
 	}
-	defer rows.Close()
-
-	var items []domain.Item
-	for rows.Next() {
-		var id, listID, title, state string
-		if err := rows.Scan(&id, &listID, &title, &state); err != nil {
-			return nil, fmt.Errorf("list items: %w", err)
-		}
+	items := make([]domain.Item, 0, len(rows))
+	for _, row := range rows {
 		items = append(items, domain.Item{
-			ID:     id,
-			ListID: listID,
-			Title:  title,
-			State:  domain.ItemState(state),
+			ID:     row.ID,
+			ListID: row.ListID,
+			Title:  row.Title,
+			State:  domain.ItemState(row.State),
 		})
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list items: %w", err)
 	}
 	return items, nil
 }
 
 // Delete removes the item with the given ID.
 func (r *SQLiteItemRepository) Delete(id string) error {
-	db, err := r.workspace.DB()
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return fmt.Errorf("delete item: %w", err)
 	}
-	const q = `DELETE FROM items WHERE id = ?`
-	if _, err := db.Exec(q, id); err != nil {
+	_, err = db.NewDelete().Model((*itemRow)(nil)).Where("id = ?", id).Exec(context.Background())
+	if err != nil {
 		return fmt.Errorf("delete item: %w", err)
 	}
 	return nil

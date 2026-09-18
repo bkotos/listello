@@ -29,7 +29,7 @@ If any check fails → **stop**. Tell the user to use `create-application-servic
 
 ## Scope
 
-**In scope:** `SQLite{Aggregate}Repository`, SQL queries, schema additions in `sqlite.go`, integration tests with real SQLite.
+**In scope:** `SQLite{Aggregate}Repository`, bun queries, schema additions in `sqlite.go`, integration tests with real SQLite.
 
 **Out of scope** (mention as follow-ups only; do not implement unless asked):
 
@@ -41,10 +41,10 @@ If any check fails → **stop**. Tell the user to use `create-application-servic
 ## Architecture constraints
 
 - Adapter implements an application port interface (e.g. `application.ListRepository`).
-- Adapter depends on `internal/personal-productivity-context/domain` and `database/sql` — never on HTTP, CLI, or application service types.
-- Map SQL rows to domain types; no business rules in the adapter.
+- Adapter depends on `internal/personal-productivity-context/domain`, bun, and `sqlite.WorkspaceDB` — never on HTTP, CLI, or application service types.
+- Keep bun row structs in the adapter; map them to domain types. No business rules in the adapter.
 - Wrap errors with context: `fmt.Errorf("save list: %w", err)`.
-- Return domain-friendly errors for not-found (`sql.ErrNoRows` → e.g. `fmt.Errorf("list %q not found", id)`).
+- Return domain-friendly errors for not-found (`errors.Is(err, sql.ErrNoRows)` → e.g. `fmt.Errorf("list %q not found", id)`).
 
 ## Preconditions
 
@@ -92,7 +92,7 @@ Task progress:
 | Test name | `TestSQLite{Aggregate}Repository_{Method}_{Behavior}` |
 | Domain import | `domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"` |
 
-Existing shared infrastructure: `SQLite`, `OpenSQLite` in `sqlite.go`.
+Existing shared infrastructure: `SQLite`, `OpenSQLite` in `sqlite.go`; `openBun` and row structs in the adapter package.
 
 ## Code templates
 
@@ -102,32 +102,44 @@ Existing shared infrastructure: `SQLite`, `OpenSQLite` in `sqlite.go`.
 package adapter
 
 import (
-	"database/sql"
 	"fmt"
 
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
+	"github.com/bkotos/listello/internal/sqlite"
 )
 
 // SQLite{Aggregate}Repository persists {aggregates} in SQLite.
 type SQLite{Aggregate}Repository struct {
-	db *sql.DB
+	workspace *sqlite.WorkspaceDB
 }
 
-// NewSQLite{Aggregate}Repository returns a {aggregate} repository using the given SQLite connection.
-func NewSQLite{Aggregate}Repository(sqlite *SQLite) *SQLite{Aggregate}Repository {
-	return &SQLite{Aggregate}Repository{db: sqlite.db}
+// NewSQLite{Aggregate}Repository returns a {aggregate} repository using the given workspace database.
+func NewSQLite{Aggregate}Repository(workspace *sqlite.WorkspaceDB) *SQLite{Aggregate}Repository {
+	return &SQLite{Aggregate}Repository{workspace: workspace}
 }
 ```
 
 ### Save (upsert)
 
 ```go
+type {aggregate}Row struct {
+	bun.BaseModel `bun:"table:{table}"`
+	ID            string `bun:"id,pk"`
+	// other columns
+}
+
 // Save stores the {aggregate}.
 func (r *SQLite{Aggregate}Repository) Save(/* args */) error {
-	const q = `
-INSERT INTO {table} (/* columns; include created_at when GetAll is insertion-ordered */) VALUES (/* ? placeholders */)
-ON CONFLICT(/* pk */) DO UPDATE SET /* columns = excluded.columns */;`
-	if _, err := r.db.Exec(q, /* values; newCreatedAt() on insert-only */); err != nil {
+	db, err := openBun(r.workspace)
+	if err != nil {
+		return fmt.Errorf("save {aggregate}: %w", err)
+	}
+	_, err = db.NewInsert().
+		Model(&{aggregate}Row{/* fields; CreatedAt: newCreatedAt() when insertion-ordered */}).
+		On("CONFLICT (id) DO UPDATE").
+		Set("/* columns = EXCLUDED.columns; omit created_at */").
+		Exec(context.Background())
+	if err != nil {
 		return fmt.Errorf("save {aggregate}: %w", err)
 	}
 	return nil
@@ -139,16 +151,19 @@ ON CONFLICT(/* pk */) DO UPDATE SET /* columns = excluded.columns */;`
 ```go
 // GetByID returns the {aggregate} with the given ID.
 func (r *SQLite{Aggregate}Repository) GetByID(id string) (domain.{Aggregate}, error) {
-	const q = `SELECT /* columns */ FROM {table} WHERE id = ?`
-	// scan into locals
-	err := r.db.QueryRow(q, id).Scan(/* &fields */)
-	if err == sql.ErrNoRows {
+	db, err := openBun(r.workspace)
+	if err != nil {
+		return domain.{Aggregate}{}, fmt.Errorf("find {aggregate}: %w", err)
+	}
+	row := new({aggregate}Row)
+	err = db.NewSelect().Model(row).Where("id = ?", id).Scan(context.Background())
+	if errors.Is(err, sql.ErrNoRows) {
 		return domain.{Aggregate}{}, fmt.Errorf("{aggregate} %q not found", id)
 	}
 	if err != nil {
 		return domain.{Aggregate}{}, fmt.Errorf("find {aggregate}: %w", err)
 	}
-	return domain.{Aggregate}{/* fields */}, nil
+	return domain.{Aggregate}{/* fields from row */}, nil
 }
 ```
 
@@ -157,19 +172,18 @@ func (r *SQLite{Aggregate}Repository) GetByID(id string) (domain.{Aggregate}, er
 ```go
 // GetAll returns all {aggregates} in insertion order.
 func (r *SQLite{Aggregate}Repository) GetAll() ([]domain.{Aggregate}, error) {
-	const q = `SELECT /* columns */ FROM {table} ORDER BY created_at, id`
-	rows, err := r.db.Query(q)
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return nil, fmt.Errorf("list {aggregates}: %w", err)
 	}
-	defer rows.Close()
-
-	var results []domain.{Aggregate}
-	for rows.Next() {
-		// scan row, append to results
-	}
-	if err := rows.Err(); err != nil {
+	var rows []{aggregate}Row
+	err = db.NewSelect().Model(&rows).Order("created_at ASC", "id ASC").Scan(context.Background())
+	if err != nil {
 		return nil, fmt.Errorf("list {aggregates}: %w", err)
+	}
+	results := make([]domain.{Aggregate}, 0, len(rows))
+	for _, row := range rows {
+		results = append(results, domain.{Aggregate}{/* fields from row */})
 	}
 	return results, nil
 }

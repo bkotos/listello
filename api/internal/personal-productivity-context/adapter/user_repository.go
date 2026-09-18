@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"context"
 	"fmt"
 
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
@@ -19,14 +20,16 @@ func NewSQLiteUserRepository(workspace *sqlite.WorkspaceDB) *SQLiteUserRepositor
 
 // Save stores the user.
 func (r *SQLiteUserRepository) Save(user domain.User) error {
-	db, err := r.workspace.DB()
+	db, err := openBun(r.workspace)
 	if err != nil {
 		return fmt.Errorf("save user: %w", err)
 	}
-	const q = `
-INSERT INTO users (id, name) VALUES (?, ?)
-ON CONFLICT(id) DO UPDATE SET name = excluded.name;`
-	if _, err := db.Exec(q, user.ID, user.Name); err != nil {
+	_, err = db.NewInsert().
+		Model(&userRow{ID: user.ID, Name: user.Name}).
+		On("CONFLICT (id) DO UPDATE").
+		Set("name = EXCLUDED.name").
+		Exec(context.Background())
+	if err != nil {
 		return fmt.Errorf("save user: %w", err)
 	}
 	return nil
