@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	_ "github.com/ncruces/go-sqlite3/driver"
 )
@@ -101,11 +102,48 @@ func (s *SQLite) ensureCreatedAtColumn(table string) error {
 		}
 	}
 
-	_, err = s.db.Exec(`UPDATE ` + table + ` SET created_at = printf('1970-01-01T00:00:00.%09dZ', rowid) WHERE created_at = ''`)
+	return s.backfillCreatedAt(table)
+}
+
+func (s *SQLite) backfillCreatedAt(table string) error {
+	rows, err := s.db.Query(`SELECT id, rowid FROM ` + table + ` WHERE created_at = '' ORDER BY rowid`)
 	if err != nil {
 		return fmt.Errorf("migrate %s created_at: %w", table, err)
 	}
+	defer rows.Close()
+
+	type legacyRow struct {
+		id    string
+		rowid int64
+	}
+	var legacy []legacyRow
+	for rows.Next() {
+		var row legacyRow
+		if err := rows.Scan(&row.id, &row.rowid); err != nil {
+			return fmt.Errorf("migrate %s created_at: %w", table, err)
+		}
+		legacy = append(legacy, row)
+	}
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("migrate %s created_at: %w", table, err)
+	}
+
+	for _, row := range legacy {
+		_, err := s.db.Exec(
+			`UPDATE `+table+` SET created_at = ? WHERE id = ?`,
+			FormatCreatedAt(time.Unix(0, row.rowid)),
+			row.id,
+		)
+		if err != nil {
+			return fmt.Errorf("migrate %s created_at: %w", table, err)
+		}
+	}
 	return nil
+}
+
+// FormatCreatedAt returns t as UTC ISO 8601 (RFC 3339 with nanoseconds).
+func FormatCreatedAt(t time.Time) string {
+	return t.UTC().Format(time.RFC3339Nano)
 }
 
 // DB returns the underlying database connection.

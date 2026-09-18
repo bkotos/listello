@@ -1,7 +1,11 @@
 package adapter
 
-import "time"
+import (
+	"time"
+
+	"github.com/bkotos/listello/internal/sqlite"
+)
 
 func newCreatedAt() string {
-	return time.Now().UTC().Format(time.RFC3339Nano)
+	return sqlite.FormatCreatedAt(time.Now())
 }

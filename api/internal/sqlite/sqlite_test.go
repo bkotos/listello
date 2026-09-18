@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -59,6 +60,8 @@ INSERT INTO items (id, list_id, title, state) VALUES
 	// Assert
 	assert.Equal(t, []string{"LS_a", "LS_b"}, queryIDs(t, opened.DB(), `SELECT id FROM lists ORDER BY created_at, id`))
 	assert.Equal(t, []string{"IT_a", "IT_b"}, queryIDs(t, opened.DB(), `SELECT id FROM items ORDER BY created_at, id`))
+	assertISO8601(t, queryCreatedAt(t, opened.DB(), `SELECT created_at FROM lists WHERE id = 'LS_a'`))
+	assertISO8601(t, queryCreatedAt(t, opened.DB(), `SELECT created_at FROM items WHERE id = 'IT_a'`))
 }
 
 func hasColumn(t *testing.T, db *sql.DB, table, column string) bool {
@@ -70,6 +73,20 @@ func hasColumn(t *testing.T, db *sql.DB, table, column string) bool {
 	).Scan(&count)
 	require.NoError(t, err)
 	return count > 0
+}
+
+func queryCreatedAt(t *testing.T, db *sql.DB, q string) string {
+	t.Helper()
+	var createdAt string
+	require.NoError(t, db.QueryRow(q).Scan(&createdAt))
+	return createdAt
+}
+
+func assertISO8601(t *testing.T, createdAt string) {
+	t.Helper()
+	_, err := time.Parse(time.RFC3339Nano, createdAt)
+	require.NoError(t, err)
+	assert.Regexp(t, `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$`, createdAt)
 }
 
 func queryIDs(t *testing.T, db *sql.DB, q string) []string {
