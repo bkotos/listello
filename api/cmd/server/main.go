@@ -18,6 +18,7 @@ func main() {
 	var port int
 	var host string
 	var engineName string
+	var dbDSN string
 
 	cmd := &cobra.Command{
 		Use:   "listello-server",
@@ -55,13 +56,14 @@ func main() {
 				),
 				workspace,
 				engine,
+				dbDSN,
 			)
 			instance, err := instanceService.GetInstance()
 			if err != nil {
 				return err
 			}
 			if instance != nil && instance.Persistence.IsInitialized() {
-				if err := openWorkspaceDB(workspace, engine, instance.Persistence.Location); err != nil {
+				if err := openWorkspaceDB(workspace, engine, instance.Persistence.Location, dbDSN); err != nil {
 					return err
 				}
 			}
@@ -73,7 +75,8 @@ func main() {
 
 	cmd.Flags().IntVarP(&port, "port", "p", 8080, "port to listen on")
 	cmd.Flags().StringVar(&host, "host", "0.0.0.0", "host to bind to")
-	cmd.Flags().StringVar(&engineName, "engine", "sqlite", "database engine (sqlite)")
+	cmd.Flags().StringVar(&engineName, "engine", "sqlite", "database engine (sqlite or postgres)")
+	cmd.Flags().StringVar(&dbDSN, "db", "", "database DSN (required for postgres)")
 
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)

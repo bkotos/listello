@@ -14,12 +14,13 @@ type workspaceOpeningInstanceService struct {
 	inner     instanceapp.ListelloInstanceService
 	workspace *sqlite.WorkspaceDB
 	engine    sqlite.Engine
+	dsn       string
 }
 
 var _ instanceapp.ListelloInstanceService = (*workspaceOpeningInstanceService)(nil)
 
-func newWorkspaceOpeningInstanceService(inner instanceapp.ListelloInstanceService, workspace *sqlite.WorkspaceDB, engine sqlite.Engine) *workspaceOpeningInstanceService {
-	return &workspaceOpeningInstanceService{inner: inner, workspace: workspace, engine: engine}
+func newWorkspaceOpeningInstanceService(inner instanceapp.ListelloInstanceService, workspace *sqlite.WorkspaceDB, engine sqlite.Engine, dsn string) *workspaceOpeningInstanceService {
+	return &workspaceOpeningInstanceService{inner: inner, workspace: workspace, engine: engine, dsn: dsn}
 }
 
 func (s *workspaceOpeningInstanceService) CreateInstance() (domain.ListelloInstance, error) {
@@ -43,7 +44,7 @@ func (s *workspaceOpeningInstanceService) InitializePersistence() (domain.Listel
 	if err != nil {
 		return domain.ListelloInstance{}, err
 	}
-	if err := openWorkspaceDB(s.workspace, s.engine, instance.Persistence.Location); err != nil {
+	if err := openWorkspaceDB(s.workspace, s.engine, instance.Persistence.Location, s.dsn); err != nil {
 		return domain.ListelloInstance{}, err
 	}
 	return instance, nil
@@ -61,10 +62,12 @@ func (s *workspaceOpeningInstanceService) PairUser(name string) (domain.Listello
 	return s.inner.PairUser(name)
 }
 
-func openWorkspaceDB(workspace *sqlite.WorkspaceDB, engine sqlite.Engine, persistenceLocation string) error {
+func openWorkspaceDB(workspace *sqlite.WorkspaceDB, engine sqlite.Engine, persistenceLocation, dsn string) error {
 	switch engine {
 	case sqlite.EngineSQLite:
 		return workspace.Open(engine, filepath.Join(persistenceLocation, "listello.db"))
+	case sqlite.EnginePostgres:
+		return workspace.Open(engine, dsn)
 	default:
 		return fmt.Errorf("unsupported engine %q", engine)
 	}

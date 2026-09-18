@@ -40,18 +40,18 @@ sequenceDiagram
 | Method | Behavior |
 |--------|----------|
 | `NewWorkspaceDB()` | Starts closed (`db == nil`) |
-| `Open(engine, dsn)` | Opens via the given engine (SQLite file path today; Postgres later), replaces any previous handle (closes the old one first) |
+| `Open(engine, dsn)` | Opens the given engine. SQLite `dsn` is a file path; Postgres `dsn` is a connection URL. Replaces any previous handle. |
 | `Engine()` | Returns the open engine, or error `"persistence not initialized"` when closed |
 | `DB()` | Returns `*sql.DB`, or error `"persistence not initialized"` when closed |
 | `Close()` | Closes the underlying database if open; closing when already closed is a no-op |
 
-Internally it holds `*sqlite.SQLite` (not `*sql.DB`). `DB()` unwraps that to `*sql.DB`. Access is guarded by an `RWMutex` so boot, `InitializePersistence`, and repository calls cannot race on the handle.
+Internally it holds `*sql.DB`. Access is guarded by an `RWMutex` so boot, `InitializePersistence`, and repository calls cannot race on the handle.
 
 `Open` is safe to call more than once (reopen / replace). Tests cover closed `DB()`, open-then-`DB()`, replace-previous-handle, and close.
 
 ## Repositories resolve the connection per call
 
-SQLite repositories hold `*sqlite.WorkspaceDB`, not a live `*sql.DB`. At the start of each method they call `r.workspace.DB()`.
+SQLite repositories hold `*sqlite.WorkspaceDB`, not a live `*sql.DB`. At the start of each method they call `r.workspace.DB()` and `openBun`, which selects the bun dialect from `Engine()`.
 
 This applies to all workspace-data adapters:
 
@@ -101,7 +101,7 @@ These are sequential, not two live connections at once:
 
 ## CLI (not deferred)
 
-The CLI still opens immediately via `--engine` (default `sqlite`) and `--db` (default `listello.db`) through `bootstrap.OpenDB`. Aligning the CLI with instance persistence location is out of scope for this design.
+The CLI still opens immediately via `--engine` (default `sqlite`) and `--db` (default `listello.db`) through `bootstrap.OpenDB`. With `--engine postgres`, `--db` is a Postgres URL (the HTTP server uses the same flag instead of `{location}/listello.db`). Aligning the CLI with instance persistence location is out of scope for this design.
 
 ## What this is not
 
