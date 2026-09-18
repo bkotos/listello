@@ -285,6 +285,9 @@ make -C api test
 
 # Adapter layer only
 cd api && go test ./internal/personal-productivity-context/adapter/...
+
+# Live PostgreSQL (Docker Compose; required when changing Postgres persistence)
+make test-api-postgres
 ```
 
 Confirm the implementation satisfies the application port by compiling packages that wire them (bootstrap can be updated separately).

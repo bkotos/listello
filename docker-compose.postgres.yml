@@ -1,0 +1,18 @@
+# PostgreSQL used by `make test-api-postgres` and the CI test-postgres job.
+# DSN: postgres://listello:listello@127.0.0.1:5433/listello?sslmode=disable
+services:
+  postgres:
+    image: postgres:16
+    container_name: listello-postgres-test
+    environment:
+      POSTGRES_USER: listello
+      POSTGRES_PASSWORD: listello
+      POSTGRES_DB: listello
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U listello -d listello"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+      start_period: 5s

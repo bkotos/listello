@@ -1,0 +1,16 @@
+---
+description: Use Docker Compose Postgres for live PostgreSQL tests
+alwaysApply: true
+---
+
+# PostgreSQL test environment
+
+When tests need a live PostgreSQL database, use this repo's Compose setup. Do not apt-install Postgres, start a one-off cluster, or invent a DSN.
+
+```bash
+make postgres-up          # docker-compose.postgres.yml
+make test-api-postgres    # sets LISTELLO_TEST_POSTGRES_DSN and runs API tests
+make postgres-down
+```
+
+Live tests skip unless `LISTELLO_TEST_POSTGRES_DSN` is set. `make test` / `make test-api` stay SQLite-only. The GitHub Actions `test-postgres` job runs `make test-api-postgres`.

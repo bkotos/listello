@@ -137,8 +137,11 @@ make api-types
 # CLI
 make -C api run ARGS='list create "Next actions"'   # → bin/listello
 
-# Tests (API + UI)
+# Tests (API + UI + CLI e2e)
 make test
+
+# API tests against PostgreSQL (starts docker-compose.postgres.yml)
+make test-api-postgres
 ```
 
 ## Testing
@@ -146,6 +149,7 @@ make test
 - **Domain** — Gherkin features + Godog (`internal/listello-domain/features`), developed with TDD.
 - **Application / adapters / HTTP / CLI** — Go unit tests with fakes/mocks at the ports (arrange/act/assert with testify, not Gherkin).
 - **UI** — Vitest unit/component tests (arrange/act/assert). API client and context modules mock HTTP or lower layers rather than hitting the real server.
+- **PostgreSQL** — Live API tests gated on `LISTELLO_TEST_POSTGRES_DSN`. `make test-api-postgres` starts `docker-compose.postgres.yml` and runs them; CI's `test-postgres` job uses the same target.
 
 ### Domain TDD
 
