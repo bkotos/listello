@@ -22,7 +22,7 @@ func newRoot() (*cobra.Command, func()) {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.PersistentFlags().StringVar(&engineName, "engine", "sqlite", "database engine (sqlite)")
+	root.PersistentFlags().StringVar(&engineName, "engine", "sqlite", "database engine (sqlite or postgres)")
 	root.PersistentFlags().StringVar(&dbPath, "db", "listello.db", "database path (sqlite file or DSN)")
 
 	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {

@@ -93,15 +93,16 @@ func TestWorkspaceDB_Engine_ErrorsWhenClosed(t *testing.T) {
 	require.EqualError(t, err, "persistence not initialized")
 }
 
-func TestWorkspaceDB_Open_Postgres_NotSupported(t *testing.T) {
+func TestWorkspaceDB_Open_Postgres_AttemptsConnection(t *testing.T) {
 	// Arrange
 	workspace := sqlite.NewWorkspaceDB()
 
 	// Act
-	err := workspace.Open(sqlite.EnginePostgres, "postgres://localhost/listello")
+	err := workspace.Open(sqlite.EnginePostgres, "postgres://listello:listello@127.0.0.1:1/listello?sslmode=disable")
 
 	// Assert
-	require.EqualError(t, err, `unsupported engine "postgres"`)
+	require.Error(t, err)
+	require.NotContains(t, err.Error(), `unsupported engine "postgres"`)
 	_, err = workspace.DB()
 	require.EqualError(t, err, "persistence not initialized")
 }

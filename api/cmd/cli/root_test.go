@@ -41,15 +41,16 @@ func TestRoot_RejectsUnknownEngine(t *testing.T) {
 	require.EqualError(t, err, `unsupported engine "mysql"`)
 }
 
-func TestRoot_RejectsPostgresUntilSupported(t *testing.T) {
+func TestRoot_PostgresEngineIsNoLongerRejected(t *testing.T) {
 	// Arrange
 	root, cleanup := newRoot()
 	defer cleanup()
-	root.SetArgs([]string{"--engine", "postgres", "--db", "postgres://localhost/listello", "list", "create", "Test list"})
+	root.SetArgs([]string{"--engine", "postgres", "--db", "postgres://listello:listello@127.0.0.1:1/listello?sslmode=disable", "list", "create", "Test list"})
 
 	// Act
 	err := root.Execute()
 
 	// Assert
-	require.ErrorContains(t, err, `unsupported engine "postgres"`)
+	require.Error(t, err)
+	require.NotContains(t, err.Error(), `unsupported engine "postgres"`)
 }
