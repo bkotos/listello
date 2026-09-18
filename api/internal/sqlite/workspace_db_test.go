@@ -26,16 +26,19 @@ func TestWorkspaceDB_OpenThenDB(t *testing.T) {
 	// Arrange
 	workspace := sqlite.NewWorkspaceDB()
 	path := filepath.Join(t.TempDir(), "listello.db")
-	require.NoError(t, workspace.Open(path))
+	require.NoError(t, workspace.Open(sqlite.EngineSQLite, path))
 	t.Cleanup(func() { _ = workspace.Close() })
 
 	// Act
 	db, err := workspace.DB()
+	engine, engineErr := workspace.Engine()
 
 	// Assert
 	require.NoError(t, err)
 	require.NotNil(t, db)
 	require.NoError(t, db.Ping())
+	require.NoError(t, engineErr)
+	assert.Equal(t, sqlite.EngineSQLite, engine)
 }
 
 func TestWorkspaceDB_Open_ReplacesPreviousHandle(t *testing.T) {
@@ -43,8 +46,8 @@ func TestWorkspaceDB_Open_ReplacesPreviousHandle(t *testing.T) {
 	workspace := sqlite.NewWorkspaceDB()
 	first := filepath.Join(t.TempDir(), "first.db")
 	second := filepath.Join(t.TempDir(), "second.db")
-	require.NoError(t, workspace.Open(first))
-	require.NoError(t, workspace.Open(second))
+	require.NoError(t, workspace.Open(sqlite.EngineSQLite, first))
+	require.NoError(t, workspace.Open(sqlite.EngineSQLite, second))
 	t.Cleanup(func() { _ = workspace.Close() })
 
 	// Act
@@ -59,7 +62,7 @@ func TestWorkspaceDB_Open_ReplacesPreviousHandle(t *testing.T) {
 func TestWorkspaceDB_Close_AllowsDBToErrorAgain(t *testing.T) {
 	// Arrange
 	workspace := sqlite.NewWorkspaceDB()
-	require.NoError(t, workspace.Open(filepath.Join(t.TempDir(), "listello.db")))
+	require.NoError(t, workspace.Open(sqlite.EngineSQLite, filepath.Join(t.TempDir(), "listello.db")))
 	require.NoError(t, workspace.Close())
 
 	// Act
@@ -76,4 +79,29 @@ func TestWorkspaceDB_Close_WhenAlreadyClosed_Succeeds(t *testing.T) {
 
 	// Act / Assert
 	require.NoError(t, workspace.Close())
+}
+
+func TestWorkspaceDB_Engine_ErrorsWhenClosed(t *testing.T) {
+	// Arrange
+	workspace := sqlite.NewWorkspaceDB()
+
+	// Act
+	engine, err := workspace.Engine()
+
+	// Assert
+	assert.Equal(t, sqlite.Engine(""), engine)
+	require.EqualError(t, err, "persistence not initialized")
+}
+
+func TestWorkspaceDB_Open_Postgres_NotSupported(t *testing.T) {
+	// Arrange
+	workspace := sqlite.NewWorkspaceDB()
+
+	// Act
+	err := workspace.Open(sqlite.EnginePostgres, "postgres://localhost/listello")
+
+	// Assert
+	require.EqualError(t, err, `unsupported engine "postgres"`)
+	_, err = workspace.DB()
+	require.EqualError(t, err, "persistence not initialized")
 }

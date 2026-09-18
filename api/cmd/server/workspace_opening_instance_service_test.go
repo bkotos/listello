@@ -63,7 +63,7 @@ func TestWorkspaceOpeningInstanceService_InitializePersistence_OpensWorkspaceDB(
 			Persistence: domain.Persistence{Location: location, State: domain.PersistenceInitialized},
 		},
 	}
-	svc := newWorkspaceOpeningInstanceService(inner, workspace)
+	svc := newWorkspaceOpeningInstanceService(inner, workspace, sqlite.EngineSQLite)
 
 	// Act
 	_, err = svc.InitializePersistence()
@@ -76,11 +76,22 @@ func TestWorkspaceOpeningInstanceService_InitializePersistence_OpensWorkspaceDB(
 	require.NoError(t, db.Ping())
 }
 
+func TestOpenWorkspaceDB_Postgres_NotSupported(t *testing.T) {
+	// Arrange
+	workspace := sqlite.NewWorkspaceDB()
+
+	// Act
+	err := openWorkspaceDB(workspace, sqlite.EnginePostgres, t.TempDir())
+
+	// Assert
+	require.EqualError(t, err, `unsupported engine "postgres"`)
+}
+
 func TestWorkspaceOpeningInstanceService_InitializePersistence_DoesNotOpenWhenInnerFails(t *testing.T) {
 	// Arrange
 	workspace := sqlite.NewWorkspaceDB()
 	inner := &stubInstanceService{err: assert.AnError}
-	svc := newWorkspaceOpeningInstanceService(inner, workspace)
+	svc := newWorkspaceOpeningInstanceService(inner, workspace, sqlite.EngineSQLite)
 
 	// Act
 	_, err := svc.InitializePersistence()

@@ -7,10 +7,12 @@ import (
 
 	"github.com/bkotos/listello/internal/bootstrap"
 	"github.com/bkotos/listello/internal/personal-productivity-context/cli-commands"
+	"github.com/bkotos/listello/internal/sqlite"
 )
 
 func newRoot() (*cobra.Command, func()) {
 	var dbPath string
+	var engineName string
 	var cleanup func()
 
 	c := &container{}
@@ -20,14 +22,22 @@ func newRoot() (*cobra.Command, func()) {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.PersistentFlags().StringVar(&dbPath, "db", "listello.db", "SQLite database path")
+	root.PersistentFlags().StringVar(&engineName, "engine", "sqlite", "database engine (sqlite)")
+	root.PersistentFlags().StringVar(&dbPath, "db", "listello.db", "database path (sqlite file or DSN)")
 
 	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if c.list != nil {
 			return nil
 		}
 
-		db := bootstrap.MustOpenDB(dbPath)
+		engine, err := sqlite.ParseEngine(engineName)
+		if err != nil {
+			return err
+		}
+		db, err := bootstrap.OpenDB(engine, dbPath)
+		if err != nil {
+			return fmt.Errorf("open db: %w", err)
+		}
 		eventLog := bootstrap.MustOpenEventLog("domain_events.log")
 		c.list = bootstrap.NewListService(db, eventLog)
 		c.item = bootstrap.NewItemService(db, eventLog)

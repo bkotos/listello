@@ -40,7 +40,8 @@ sequenceDiagram
 | Method | Behavior |
 |--------|----------|
 | `NewWorkspaceDB()` | Starts closed (`db == nil`) |
-| `Open(path)` | Opens via `sqlite.OpenSQLite` (create + migrate), replaces any previous handle (closes the old one first) |
+| `Open(engine, dsn)` | Opens via the given engine (SQLite file path today; Postgres later), replaces any previous handle (closes the old one first) |
+| `Engine()` | Returns the open engine, or error `"persistence not initialized"` when closed |
 | `DB()` | Returns `*sql.DB`, or error `"persistence not initialized"` when closed |
 | `Close()` | Closes the underlying database if open; closing when already closed is a no-op |
 
@@ -69,7 +70,7 @@ If a list/item/user/space request arrives while the holder is still closed, the 
 
 ## Server composition
 
-[`api/cmd/server/main.go`](../api/cmd/server/main.go) does **not** call `MustOpenDB` at startup.
+[`api/cmd/server/main.go`](../api/cmd/server/main.go) does **not** open the workspace database at startup. It parses `--engine` (default `sqlite`) and opens later via `openWorkspaceDB`.
 
 1. Create a closed `WorkspaceDB` and `defer workspace.Close()`.
 2. Wire list, item, user, and space services with that holder.
@@ -100,7 +101,7 @@ These are sequential, not two live connections at once:
 
 ## CLI (not deferred)
 
-The CLI still opens immediately via `--db` (default `listello.db`) and `bootstrap.MustOpenDB`. `MustOpenDB` now returns `*sqlite.WorkspaceDB` rather than `*sql.DB`. Aligning the CLI with instance persistence location is out of scope for this design.
+The CLI still opens immediately via `--engine` (default `sqlite`) and `--db` (default `listello.db`) through `bootstrap.OpenDB`. Aligning the CLI with instance persistence location is out of scope for this design.
 
 ## What this is not
 
