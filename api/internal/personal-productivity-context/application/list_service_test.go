@@ -108,3 +108,102 @@ func TestListService_GetByID_ReturnsListFromRepository(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, expected, received)
 }
+
+func TestListService_CreateFirstList_PersistsList(t *testing.T) {
+	// Arrange
+	const listName = "Errands"
+	repo := NewMockListRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListService(repo, publisher)
+
+	repo.EXPECT().
+		Save(mock.MatchedBy(func(list domain.List) bool {
+			return list.Name == listName && strings.HasPrefix(list.ID, "LS_")
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil).
+		Times(2)
+
+	// Act
+	list, err := svc.CreateFirstList(listName)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, listName, list.Name)
+	assert.True(t, strings.HasPrefix(list.ID, "LS_"))
+}
+
+func TestListService_CreateFirstList_PublishesListCreatedEvent(t *testing.T) {
+	// Arrange
+	const listName = "Errands"
+	repo := NewMockListRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListService(repo, publisher)
+
+	var published domain.Event
+	repo.EXPECT().
+		Save(mock.AnythingOfType("domain.List")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			if event.Name != domain.EventListCreated {
+				return false
+			}
+			published = event
+			meta, ok := event.Metadata.(domain.EventMetadataListCreated)
+			return ok && strings.HasPrefix(meta.ID, "LS_")
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			return event.Name == domain.EventFirstListCreated
+		})).
+		Return(nil)
+
+	// Act
+	list, err := svc.CreateFirstList(listName)
+
+	// Assert
+	require.NoError(t, err)
+	meta, ok := published.Metadata.(domain.EventMetadataListCreated)
+	require.True(t, ok)
+	assert.Equal(t, list.ID, meta.ID)
+	assert.NotEmpty(t, published.Timestamp)
+}
+
+func TestListService_CreateFirstList_PublishesFirstListCreatedEvent(t *testing.T) {
+	// Arrange
+	const listName = "Errands"
+	repo := NewMockListRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListService(repo, publisher)
+
+	var published domain.Event
+	repo.EXPECT().
+		Save(mock.AnythingOfType("domain.List")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			return event.Name == domain.EventListCreated
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			meta, ok := event.Metadata.(domain.EventMetadataFirstListCreated)
+			return event.Name == domain.EventFirstListCreated && ok && strings.HasPrefix(meta.ID, "LS_")
+		})).
+		Return(nil)
+
+	// Act
+	list, err := svc.CreateFirstList(listName)
+
+	// Assert
+	require.NoError(t, err)
+	meta, ok := published.Metadata.(domain.EventMetadataFirstListCreated)
+	require.True(t, ok)
+	assert.Equal(t, list.ID, meta.ID)
+	assert.NotEmpty(t, published.Timestamp)
+}
