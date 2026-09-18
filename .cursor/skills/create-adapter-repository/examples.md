@@ -62,13 +62,14 @@ Key points:
 ### GetAll — multi-row scan
 
 ```go
-const q = `SELECT id, name FROM lists ORDER BY rowid`
+const q = `SELECT id, name FROM lists ORDER BY created_at, id`
 // ... Query, defer rows.Close(), loop rows.Next(), check rows.Err()
 ```
 
 Key points:
 
-- `ORDER BY rowid` preserves insertion order (tested explicitly).
+- `ORDER BY created_at, id` preserves insertion order (tested explicitly).
+- Stamp `created_at` on insert only — omit it from `ON CONFLICT DO UPDATE` so a later Save does not reshuffle.
 - Always `defer rows.Close()` and check `rows.Err()` after the loop.
 
 ## 2. Schema — `sqlite.go`
@@ -80,7 +81,8 @@ func (s *SQLite) migrate() error {
 	const q = `
 CREATE TABLE IF NOT EXISTS lists (
 	id TEXT PRIMARY KEY NOT NULL,
-	name TEXT NOT NULL
+	name TEXT NOT NULL,
+	created_at TEXT NOT NULL
 );`
 	if _, err := s.db.Exec(q); err != nil {
 		return fmt.Errorf("migrate lists: %w", err)
@@ -144,7 +146,7 @@ func TestSQLiteListRepository_GetAll(t *testing.T) {
 }
 ```
 
-Asserts order matches insertion order (`ORDER BY rowid`).
+Asserts order matches insertion order (`ORDER BY created_at, id`).
 
 ## 4. Application port (implemented by adapter)
 

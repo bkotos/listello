@@ -35,7 +35,8 @@ func (s *SQLite) migrate() error {
 	const q = `
 CREATE TABLE IF NOT EXISTS lists (
 	id TEXT PRIMARY KEY NOT NULL,
-	name TEXT NOT NULL
+	name TEXT NOT NULL,
+	created_at TEXT NOT NULL
 );`
 	if _, err := s.db.Exec(q); err != nil {
 		return fmt.Errorf("migrate lists: %w", err)
@@ -46,6 +47,7 @@ CREATE TABLE IF NOT EXISTS items (
 	list_id TEXT NOT NULL,
 	title TEXT NOT NULL,
 	state TEXT NOT NULL,
+	created_at TEXT NOT NULL,
 	FOREIGN KEY (list_id) REFERENCES lists(id)
 );`
 	if _, err := s.db.Exec(itemsQ); err != nil {
@@ -67,6 +69,41 @@ CREATE TABLE IF NOT EXISTS spaces (
 );`
 	if _, err := s.db.Exec(spacesQ); err != nil {
 		return fmt.Errorf("migrate spaces: %w", err)
+	}
+	if err := s.ensureCreatedAtColumn("lists"); err != nil {
+		return err
+	}
+	if err := s.ensureCreatedAtColumn("items"); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *SQLite) ensureCreatedAtColumn(table string) error {
+	switch table {
+	case "lists", "items":
+	default:
+		return fmt.Errorf("migrate created_at: unknown table %q", table)
+	}
+
+	var count int
+	err := s.db.QueryRow(
+		`SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = 'created_at'`,
+		table,
+	).Scan(&count)
+	if err != nil {
+		return fmt.Errorf("migrate %s created_at: %w", table, err)
+	}
+	if count == 0 {
+		_, err = s.db.Exec(`ALTER TABLE ` + table + ` ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`)
+		if err != nil {
+			return fmt.Errorf("migrate %s created_at: %w", table, err)
+		}
+	}
+
+	_, err = s.db.Exec(`UPDATE ` + table + ` SET created_at = printf('1970-01-01T00:00:00.%09dZ', rowid) WHERE created_at = ''`)
+	if err != nil {
+		return fmt.Errorf("migrate %s created_at: %w", table, err)
 	}
 	return nil
 }

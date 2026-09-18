@@ -125,9 +125,9 @@ func NewSQLite{Aggregate}Repository(sqlite *SQLite) *SQLite{Aggregate}Repository
 // Save stores the {aggregate}.
 func (r *SQLite{Aggregate}Repository) Save(/* args */) error {
 	const q = `
-INSERT INTO {table} (/* columns */) VALUES (/* ? placeholders */)
+INSERT INTO {table} (/* columns; include created_at when GetAll is insertion-ordered */) VALUES (/* ? placeholders */)
 ON CONFLICT(/* pk */) DO UPDATE SET /* columns = excluded.columns */;`
-	if _, err := r.db.Exec(q, /* values */); err != nil {
+	if _, err := r.db.Exec(q, /* values; newCreatedAt() on insert-only */); err != nil {
 		return fmt.Errorf("save {aggregate}: %w", err)
 	}
 	return nil
@@ -157,7 +157,7 @@ func (r *SQLite{Aggregate}Repository) GetByID(id string) (domain.{Aggregate}, er
 ```go
 // GetAll returns all {aggregates} in insertion order.
 func (r *SQLite{Aggregate}Repository) GetAll() ([]domain.{Aggregate}, error) {
-	const q = `SELECT /* columns */ FROM {table} ORDER BY rowid`
+	const q = `SELECT /* columns */ FROM {table} ORDER BY created_at, id`
 	rows, err := r.db.Query(q)
 	if err != nil {
 		return nil, fmt.Errorf("list {aggregates}: %w", err)

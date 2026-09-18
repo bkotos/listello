@@ -87,6 +87,36 @@ func TestSQLiteItemRepository_GetAll_ReturnsItemsForList(t *testing.T) {
 	assert.Equal(t, []domain.Item{buyMilk, callDentist}, got)
 }
 
+func TestSQLiteItemRepository_GetAll_SaveAgainDoesNotChangeOrder(t *testing.T) {
+	// Arrange
+	workspace := openWorkspaceDB(t, "items.db")
+	listRepo := adapter.NewSQLiteListRepository(workspace)
+	itemRepo := adapter.NewSQLiteItemRepository(workspace)
+
+	work, _, err := domain.CreateList("Work")
+	require.NoError(t, err)
+	require.NoError(t, listRepo.Save(work))
+
+	buyMilk, _, err := domain.DefineItem(work, "Buy milk")
+	require.NoError(t, err)
+	callDentist, _, err := domain.DefineItem(work, "Call dentist")
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(buyMilk))
+	require.NoError(t, itemRepo.Save(callDentist))
+
+	_, err = buyMilk.ModifyTitle("Buy oat milk")
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(buyMilk))
+
+	// Act
+	got, err := itemRepo.GetAll(work.ID)
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, got, 2)
+	assert.Equal(t, []domain.Item{buyMilk, callDentist}, got)
+}
+
 func TestSQLiteItemRepository_SaveAndGetByID(t *testing.T) {
 	// Arrange
 	workspace := openWorkspaceDB(t, "items.db")
