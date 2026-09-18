@@ -375,6 +375,21 @@ function itRendersFieldIcon(label: string, iconName: string) {
   });
 }
 
+function expectSummaryRow(key: string, value: string) {
+  const keyEl = screen.getByText(key);
+  expect(keyEl).toHaveClass("summary-key");
+  const row = keyEl.closest(".summary-row");
+  expect(row?.querySelector(".summary-val")).toHaveTextContent(value);
+  return row;
+}
+
+function itRendersSummaryRow(key: string, value: string) {
+  it(`renders a ${key} summary row`, () => {
+    // Assert
+    expectSummaryRow(key, value);
+  });
+}
+
 type ChoiceCardDetails = {
   name: string | RegExp;
   title: string;
@@ -1200,6 +1215,109 @@ describe("OnboardingPage", () => {
                                     screen.getByRole("button", { name }),
                                   ).not.toHaveClass("is-primary");
                                 }
+                              });
+                            });
+
+                            describe("when the Create list button is clicked", () => {
+                              beforeEach(() => {
+                                fireEvent.click(
+                                  screen.getByRole("button", {
+                                    name: "Create list",
+                                  }),
+                                );
+                              });
+
+                              itRendersStepHeading("You're all set, Alex");
+
+                              it("renders a rocket icon", () => {
+                                // Assert
+                                const heading = screen.getByRole("heading", {
+                                  name: "You're all set, Alex",
+                                });
+                                const icon =
+                                  heading.parentElement?.querySelector(
+                                    ".big-icon",
+                                  );
+                                expect(icon).toBeInTheDocument();
+                                expect(
+                                  icon?.querySelector("svg.lucide-rocket"),
+                                ).toBeInTheDocument();
+                              });
+
+                              itRendersStepLead(
+                                "renders the complete lead",
+                                /Your instance is ready/,
+                                "Your instance is ready. Here is what we set up — you can change any of it later.",
+                              );
+                              itRendersDonePhase("Instance", "100%");
+                              itRendersDonePhase("Workspace", "100%");
+                              itRendersActivePhase("Ready", "100%", "3");
+
+                              it("renders the summary in a box", () => {
+                                // Assert
+                                const box =
+                                  screen.getByText("Hosting").closest(
+                                    ".step-content",
+                                  );
+                                expect(box).toHaveClass("box");
+                              });
+
+                              itRendersSummaryRow("Hosting", "Local");
+                              itRendersSummaryRow("Persistence", "SQLite");
+
+                              it("renders a Location summary row", () => {
+                                // Assert
+                                const row = expectSummaryRow(
+                                  "Location",
+                                  apiDefaultPersistenceLocation,
+                                );
+                                expect(
+                                  row?.querySelector(".summary-val"),
+                                ).toHaveClass("is-family-code");
+                              });
+
+                              itRendersSummaryRow("Space", "Personal");
+                              itRendersSummaryRow("First list", "Errands");
+
+                              it("renders an Inbox summary row", () => {
+                                // Assert
+                                const row = expectSummaryRow("Inbox", "Ready");
+                                const val = row?.querySelector(".summary-val");
+                                expect(
+                                  val?.querySelector(".icon-text"),
+                                ).toBeInTheDocument();
+                                expect(
+                                  val?.querySelector(
+                                    ".icon.has-text-primary svg.lucide-inbox",
+                                  ),
+                                ).toBeInTheDocument();
+                              });
+
+                              it("does not render a Back button", () => {
+                                // Assert
+                                expect(
+                                  screen.queryByRole("button", {
+                                    name: "Back",
+                                  }),
+                                ).not.toBeInTheDocument();
+                              });
+
+                              it("renders an Enter Listello button", () => {
+                                // Assert
+                                const button = screen.getByRole("button", {
+                                  name: "Enter Listello",
+                                });
+                                expect(button).toHaveClass(
+                                  "button",
+                                  "is-primary",
+                                  "footer-grow",
+                                );
+                                expect(
+                                  button.querySelector("svg.lucide-rocket"),
+                                ).toBeInTheDocument();
+                                expect(
+                                  button.closest(".onboarding-footer"),
+                                ).toBeInTheDocument();
                               });
                             });
                           });
