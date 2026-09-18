@@ -23,6 +23,10 @@ vi.mock("../lib/api/instance-client", () => ({
   pairUser: vi.fn(),
 }));
 
+vi.mock("../lib/api/list-client", () => ({
+  createList: vi.fn(),
+}));
+
 import {
   createInstance,
   getDefaultPersistenceLocation,
@@ -33,6 +37,7 @@ import {
   selectHostingMode,
   selectPersistenceLocation,
 } from "../lib/api/instance-client";
+import { createList } from "../lib/api/list-client";
 
 const createdInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -1219,12 +1224,24 @@ describe("OnboardingPage", () => {
                             });
 
                             describe("when the Create list button is clicked", () => {
-                              beforeEach(() => {
-                                fireEvent.click(
-                                  screen.getByRole("button", {
-                                    name: "Create list",
-                                  }),
-                                );
+                              beforeEach(async () => {
+                                vi.mocked(createList).mockResolvedValue({
+                                  ID: "LS_1",
+                                  Name: "Errands",
+                                });
+
+                                await act(async () => {
+                                  fireEvent.click(
+                                    screen.getByRole("button", {
+                                      name: "Create list",
+                                    }),
+                                  );
+                                });
+                              });
+
+                              it("calls createList with the list name", () => {
+                                // Assert
+                                expect(createList).toHaveBeenCalledWith("Errands");
                               });
 
                               itRendersStepHeading("You're all set, Alex");
