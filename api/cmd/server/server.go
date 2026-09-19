@@ -40,5 +40,6 @@ func newAPIServer(
 	mux.HandleFunc("POST /api/instance/initialize-persistence", instancehandlers.InitializePersistence(instanceService))
 	mux.HandleFunc("POST /api/instance/space", instancehandlers.PairSpace(instanceService))
 	mux.HandleFunc("POST /api/instance/user", instancehandlers.PairUser(instanceService))
+	mux.HandleFunc("POST /api/instance/complete-setup", instancehandlers.CompleteSetup(instanceService))
 	return mux
 }
