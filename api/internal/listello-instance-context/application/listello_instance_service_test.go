@@ -505,3 +505,66 @@ func TestListelloInstanceService_PairUser_PublishesEvent(t *testing.T) {
 	assert.Equal(t, user.ID, metadata.UserID)
 	assert.NotEmpty(t, published.Timestamp)
 }
+
+func TestListelloInstanceService_CompleteSetup_PersistsInstance(t *testing.T) {
+	// Arrange
+	instance := domain.ListelloInstance{ID: "LI_1"}
+	repo := NewMockListelloInstanceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, NewMockSpaceService(t), NewMockUserService(t))
+
+	var saved domain.ListelloInstance
+	repo.EXPECT().
+		Get().
+		Return(&instance, nil)
+	repo.EXPECT().
+		Save(mock.MatchedBy(func(got domain.ListelloInstance) bool {
+			saved = got
+			return got.IsSetupCompleted()
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil)
+
+	// Act
+	result, err := svc.CompleteSetup()
+
+	// Assert
+	require.NoError(t, err)
+	assert.True(t, result.IsSetupCompleted())
+	assert.True(t, saved.IsSetupCompleted())
+}
+
+func TestListelloInstanceService_CompleteSetup_PublishesEvent(t *testing.T) {
+	// Arrange
+	instance := domain.ListelloInstance{ID: "LI_1"}
+	repo := NewMockListelloInstanceRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, NewMockSpaceService(t), NewMockUserService(t))
+
+	var published domain.Event
+	repo.EXPECT().
+		Get().
+		Return(&instance, nil)
+	repo.EXPECT().
+		Save(mock.AnythingOfType("domain.ListelloInstance")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			_, ok := event.Metadata.(domain.EventMetadataSetupCompleted)
+			return event.Name == domain.EventSetupCompleted && ok
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.CompleteSetup()
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataSetupCompleted)
+	require.True(t, ok)
+	assert.Equal(t, instance.ID, metadata.ID)
+	assert.NotEmpty(t, published.Timestamp)
+}

@@ -38,6 +38,7 @@ type ListelloInstanceService interface {
 	GetDefaultPersistenceLocation() (string, error)
 	PairSpace(name string) (domain.ListelloInstance, error)
 	PairUser(name string) (domain.ListelloInstance, error)
+	CompleteSetup() (domain.ListelloInstance, error)
 }
 
 type listelloInstanceService struct {
@@ -184,6 +185,25 @@ func (s *listelloInstanceService) PairUser(name string) (domain.ListelloInstance
 		return domain.ListelloInstance{}, err
 	}
 	event, err := instance.PairUser(user)
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.listelloInstanceRepository.Save(*instance); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	return *instance, nil
+}
+
+// CompleteSetup completes instance setup via the domain and persists it.
+func (s *listelloInstanceService) CompleteSetup() (domain.ListelloInstance, error) {
+	instance, err := s.listelloInstanceRepository.Get()
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	event, err := instance.CompleteSetup()
 	if err != nil {
 		return domain.ListelloInstance{}, err
 	}
