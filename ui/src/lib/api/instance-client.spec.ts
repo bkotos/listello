@@ -13,6 +13,7 @@ import {
   pairUser,
   selectHostingMode,
   selectPersistenceLocation,
+  completeSetup,
 } from "./instance-client";
 import { request } from "./util";
 
@@ -197,6 +198,28 @@ describe("pairUser", () => {
     expect(request).toHaveBeenCalledWith("/api/instance/user", {
       method: "POST",
       body: JSON.stringify({ name: "Alex" }),
+    });
+    expect(result).toEqual(instance);
+  });
+});
+
+describe("completeSetup", () => {
+  it("posts complete setup to the API", async () => {
+    // Arrange
+    const instance = {
+      HostingMode: "local",
+      PersistenceLocation: "/var/listello",
+      PersistenceState: "initialized",
+      SetupState: "completed",
+    };
+    vi.mocked(request).mockResolvedValue(instance);
+
+    // Act
+    const result = await completeSetup();
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/instance/complete-setup", {
+      method: "POST",
     });
     expect(result).toEqual(instance);
   });
