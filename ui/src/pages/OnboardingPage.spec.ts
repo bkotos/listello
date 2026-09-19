@@ -8,8 +8,10 @@ import {
 } from "@testing-library/react";
 import { createElement } from "react";
 import type { ListelloInstanceResponse } from "api-types/listello-instance";
+import { MemoryRouter, Outlet, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createQueryWrapper } from "../test/renderWithQueryClient";
+import InboxPage from "./InboxPage";
 import OnboardingPage from "./OnboardingPage";
 
 vi.mock("../lib/api/instance-client", () => ({
@@ -57,7 +59,37 @@ const instancePersistenceLocation = "/Users/me/Documents/listello";
 
 function renderOnboardingPage() {
   const { QueryWrapper } = createQueryWrapper();
-  return render(createElement(QueryWrapper, null, createElement(OnboardingPage)));
+
+  function Shell() {
+    return createElement(Outlet, { context: { openSidebar: vi.fn() } });
+  }
+
+  return render(
+    createElement(
+      QueryWrapper,
+      null,
+      createElement(
+        MemoryRouter,
+        { initialEntries: ["/onboarding"] },
+        createElement(
+          Routes,
+          null,
+          createElement(Route, {
+            path: "onboarding",
+            element: createElement(OnboardingPage),
+          }),
+          createElement(
+            Route,
+            { element: createElement(Shell) },
+            createElement(Route, {
+              path: "inbox",
+              element: createElement(InboxPage),
+            }),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 function expectStepHeading(name: string) {
@@ -1355,6 +1387,28 @@ describe("OnboardingPage", () => {
 
                                 // Assert
                                 expect(completeSetup).toHaveBeenCalledOnce();
+                              });
+
+                              it("shows the Inbox heading after Enter Listello is clicked", async () => {
+                                // Arrange
+                                vi.mocked(completeSetup).mockResolvedValue({
+                                  ...createdInstance,
+                                  SetupState: "completed",
+                                });
+
+                                // Act
+                                fireEvent.click(
+                                  screen.getByRole("button", {
+                                    name: "Enter Listello",
+                                  }),
+                                );
+
+                                // Assert
+                                await waitFor(() => {
+                                  expect(
+                                    screen.getByRole("heading", { name: "Inbox" }),
+                                  ).toBeInTheDocument();
+                                });
                               });
                             });
                           });
