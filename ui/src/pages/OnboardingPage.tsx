@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ListelloInstanceResponse } from "api-types/listello-instance";
 import { Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { createInstance, initializePersistence, pairSpace, pairUser, selectHostingMode, selectPersistenceLocation, completeSetup } from "../lib/api/instance-client";
 import { createFirstList } from "../lib/api/list-client";
-import { useDefaultPersistenceLocationQuery, useInstanceQuery } from "../lib/api/instance-queries";
+import { instanceQueryKeys, useDefaultPersistenceLocationQuery, useInstanceQuery } from "../lib/api/instance-queries";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
 import {
   DataDirectoryFooter,
@@ -98,6 +100,8 @@ function onboardingStepFromInstance(
 }
 
 function OnboardingPage() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: instance } = useInstanceQuery();
   const { data: defaultPersistenceLocation } = useDefaultPersistenceLocationQuery();
   const [step, setStep] = useState(OnboardingStep.Step1Welcome);
@@ -176,7 +180,9 @@ function OnboardingPage() {
   }
 
   async function handleEnterListello() {
-    await completeSetup();
+    const instance = await completeSetup();
+    queryClient.setQueryData(instanceQueryKeys.current, instance);
+    navigate("/inbox");
   }
 
   const isStep1Welcome = step === OnboardingStep.Step1Welcome;
