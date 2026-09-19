@@ -513,12 +513,14 @@ func TestListelloInstanceService_CompleteSetup_PersistsInstance(t *testing.T) {
 	publisher := NewMockEventPublisher(t)
 	svc := application.NewListelloInstanceService(repo, NewMockPersistenceAdapter(t), publisher, NewMockSpaceService(t), NewMockUserService(t))
 
+	var saved domain.ListelloInstance
 	repo.EXPECT().
 		Get().
 		Return(&instance, nil)
 	repo.EXPECT().
-		Save(mock.MatchedBy(func(saved domain.ListelloInstance) bool {
-			return saved.IsSetupCompleted()
+		Save(mock.MatchedBy(func(got domain.ListelloInstance) bool {
+			saved = got
+			return got.IsSetupCompleted()
 		})).
 		Return(nil)
 	publisher.EXPECT().
@@ -526,10 +528,12 @@ func TestListelloInstanceService_CompleteSetup_PersistsInstance(t *testing.T) {
 		Return(nil)
 
 	// Act
-	_, err := svc.CompleteSetup()
+	result, err := svc.CompleteSetup()
 
 	// Assert
 	require.NoError(t, err)
+	assert.True(t, result.IsSetupCompleted())
+	assert.True(t, saved.IsSetupCompleted())
 }
 
 func TestListelloInstanceService_CompleteSetup_PublishesEvent(t *testing.T) {
