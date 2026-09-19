@@ -1405,18 +1405,18 @@ describe("OnboardingPage", () => {
                                 });
 
                                 // Act
-                                fireEvent.click(
-                                  screen.getByRole("button", {
-                                    name: "Enter Listello",
-                                  }),
-                                );
+                                await act(async () => {
+                                  fireEvent.click(
+                                    screen.getByRole("button", {
+                                      name: "Enter Listello",
+                                    }),
+                                  );
+                                });
 
                                 // Assert
-                                await waitFor(() => {
-                                  expect(
-                                    screen.getByRole("heading", { name: "Inbox" }),
-                                  ).toBeInTheDocument();
-                                });
+                                expect(
+                                  screen.getByRole("heading", { name: "Inbox" }),
+                                ).toBeInTheDocument();
                               });
                             });
                           });
