@@ -1,8 +1,6 @@
 package application
 
 import (
-	"fmt"
-
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
@@ -201,5 +199,19 @@ func (s *listelloInstanceService) PairUser(name string) (domain.ListelloInstance
 
 // CompleteSetup completes instance setup via the domain and persists it.
 func (s *listelloInstanceService) CompleteSetup() (domain.ListelloInstance, error) {
-	return domain.ListelloInstance{}, fmt.Errorf("not implemented")
+	instance, err := s.listelloInstanceRepository.Get()
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	event, err := instance.CompleteSetup()
+	if err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.listelloInstanceRepository.Save(*instance); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.ListelloInstance{}, err
+	}
+	return *instance, nil
 }
