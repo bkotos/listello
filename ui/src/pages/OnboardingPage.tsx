@@ -340,7 +340,7 @@ function OnboardingPage() {
         )}
         {isStep8FirstList && (
           <FirstListFooter
-            onBack={() => setStep(OnboardingStep.Step7SystemSetup)}
+            onBack={() => setStep(OnboardingStep.Step6YourName)}
             onContinue={handleCreateList}
           />
         )}

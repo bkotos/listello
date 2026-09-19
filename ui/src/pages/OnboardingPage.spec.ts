@@ -1137,7 +1137,7 @@ describe("OnboardingPage", () => {
                                 fireEvent.click(screen.getByRole("button", { name: "Back" }));
                               });
 
-                              itRendersStepHeading("Getting things ready");
+                              itRendersStepHeading("What should we call you?");
                             });
 
                             it("renders a Create list button", () => {
