@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ListelloInstanceResponse } from "api-types/listello-instance";
 import { Check } from "lucide-react";
-import { createInstance, initializePersistence, pairSpace, pairUser, selectHostingMode, selectPersistenceLocation } from "../lib/api/instance-client";
+import { createInstance, initializePersistence, pairSpace, pairUser, selectHostingMode, selectPersistenceLocation, completeSetup } from "../lib/api/instance-client";
 import { createFirstList } from "../lib/api/list-client";
 import { useDefaultPersistenceLocationQuery, useInstanceQuery } from "../lib/api/instance-queries";
 import { HostingFooter, HostingMode, HostingStep } from "../components/onboarding/Step2-Hosting";
@@ -175,6 +175,10 @@ function OnboardingPage() {
     setStep(OnboardingStep.Step9Complete);
   }
 
+  async function handleEnterListello() {
+    await completeSetup();
+  }
+
   const isStep1Welcome = step === OnboardingStep.Step1Welcome;
   const isStep2Hosting = step === OnboardingStep.Step2Hosting;
   const isStep3DataDirectory = step === OnboardingStep.Step3DataDirectory;
@@ -341,7 +345,7 @@ function OnboardingPage() {
         {isStep8FirstList && (
           <FirstListFooter onContinue={handleCreateList} />
         )}
-        {isStep9Complete && <CompleteFooter />}
+        {isStep9Complete && <CompleteFooter onContinue={handleEnterListello} />}
       </footer>
     </div>
   );
