@@ -115,6 +115,10 @@ function OnboardingPage() {
   const [systemSetupComplete, setSystemSetupComplete] = useState(false);
 
   useEffect(() => {
+    if (instance?.SetupState === "completed") {
+      navigate("/inbox");
+      return;
+    }
     const nextStep = onboardingStepFromInstance(instance);
     if (nextStep) {
       setStep(nextStep);
@@ -122,7 +126,7 @@ function OnboardingPage() {
     if (instance?.Space?.Name) {
       setSpaceName(instance.Space.Name);
     }
-  }, [instance]);
+  }, [instance, navigate]);
 
   const dataDirectory = getDataDirectory(
     dataDirectoryOverride,

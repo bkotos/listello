@@ -1641,6 +1641,26 @@ describe("OnboardingPage", () => {
     itRendersStepHeading("What should we call you?");
   });
 
+  describe("when the instance setup is completed", () => {
+    beforeEach(async () => {
+      cleanup();
+      vi.mocked(getInstance).mockResolvedValue({
+        ...createdInstance,
+        SetupState: "completed",
+      });
+      renderOnboardingPage();
+    });
+
+    it("shows the Inbox heading", async () => {
+      // Assert
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", { name: "Inbox" }),
+        ).toBeInTheDocument();
+      });
+    });
+  });
+
   describe("when the instance has a Space named Work", () => {
     beforeEach(async () => {
       cleanup();
