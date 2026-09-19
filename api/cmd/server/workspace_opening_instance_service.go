@@ -62,6 +62,10 @@ func (s *workspaceOpeningInstanceService) PairUser(name string) (domain.Listello
 	return s.inner.PairUser(name)
 }
 
+func (s *workspaceOpeningInstanceService) CompleteSetup() (domain.ListelloInstance, error) {
+	return s.inner.CompleteSetup()
+}
+
 func openWorkspaceDB(workspace *sqlite.WorkspaceDB, engine sqlite.Engine, persistenceLocation, dsn string) error {
 	switch engine {
 	case sqlite.EngineSQLite:

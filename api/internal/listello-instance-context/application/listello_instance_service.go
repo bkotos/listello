@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	domain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 	productivity "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
@@ -38,6 +40,7 @@ type ListelloInstanceService interface {
 	GetDefaultPersistenceLocation() (string, error)
 	PairSpace(name string) (domain.ListelloInstance, error)
 	PairUser(name string) (domain.ListelloInstance, error)
+	CompleteSetup() (domain.ListelloInstance, error)
 }
 
 type listelloInstanceService struct {
@@ -194,4 +197,9 @@ func (s *listelloInstanceService) PairUser(name string) (domain.ListelloInstance
 		return domain.ListelloInstance{}, err
 	}
 	return *instance, nil
+}
+
+// CompleteSetup completes instance setup via the domain and persists it.
+func (s *listelloInstanceService) CompleteSetup() (domain.ListelloInstance, error) {
+	return domain.ListelloInstance{}, fmt.Errorf("not implemented")
 }

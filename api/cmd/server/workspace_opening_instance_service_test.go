@@ -48,6 +48,10 @@ func (s *stubInstanceService) PairUser(string) (domain.ListelloInstance, error) 
 	return domain.ListelloInstance{}, nil
 }
 
+func (s *stubInstanceService) CompleteSetup() (domain.ListelloInstance, error) {
+	return domain.ListelloInstance{}, nil
+}
+
 func TestWorkspaceOpeningInstanceService_InitializePersistence_OpensWorkspaceDB(t *testing.T) {
 	// Arrange
 	location := t.TempDir()
