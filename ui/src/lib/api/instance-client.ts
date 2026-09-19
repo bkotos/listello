@@ -64,3 +64,9 @@ export async function pairUser(body: PairUserRequest): Promise<ListelloInstanceR
     body: JSON.stringify(body),
   });
 }
+
+export async function completeSetup(): Promise<ListelloInstanceResponse> {
+  return request<ListelloInstanceResponse>("/api/instance/complete-setup", {
+    method: "POST",
+  });
+}
