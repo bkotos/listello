@@ -180,8 +180,8 @@ function OnboardingPage() {
   }
 
   async function handleEnterListello() {
-    await completeSetup();
-    await queryClient.invalidateQueries({ queryKey: instanceQueryKeys.current });
+    const instance = await completeSetup();
+    queryClient.setQueryData(instanceQueryKeys.current, instance);
     navigate("/inbox");
   }
 
