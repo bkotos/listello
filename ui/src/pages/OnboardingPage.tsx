@@ -339,7 +339,10 @@ function OnboardingPage() {
           />
         )}
         {isStep8FirstList && (
-          <FirstListFooter onContinue={handleCreateList} />
+          <FirstListFooter
+            onBack={() => setStep(OnboardingStep.Step7SystemSetup)}
+            onContinue={handleCreateList}
+          />
         )}
         {isStep9Complete && <CompleteFooter />}
       </footer>

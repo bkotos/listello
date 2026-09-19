@@ -1132,6 +1132,14 @@ describe("OnboardingPage", () => {
 
                             itRendersBackButton();
 
+                            describe("when the Back button is clicked", () => {
+                              beforeEach(() => {
+                                fireEvent.click(screen.getByRole("button", { name: "Back" }));
+                              });
+
+                              itRendersStepHeading("Getting things ready");
+                            });
+
                             it("renders a Create list button", () => {
                               // Assert
                               const button = screen.getByRole("button", {
