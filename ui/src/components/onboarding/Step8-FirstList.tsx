@@ -57,13 +57,14 @@ export function FirstListStep({ value, onChange }: FirstListStepProps) {
 }
 
 type FirstListFooterProps = {
+  onBack: () => void;
   onContinue: () => void;
 };
 
-export function FirstListFooter({ onContinue }: FirstListFooterProps) {
+export function FirstListFooter({ onBack, onContinue }: FirstListFooterProps) {
   return (
     <>
-      <button type="button" className="button is-light">
+      <button type="button" className="button is-light" onClick={onBack}>
         <span className="icon">
           <ArrowLeft size={18} />
         </span>
