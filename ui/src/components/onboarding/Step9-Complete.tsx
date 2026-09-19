@@ -59,9 +59,13 @@ export function CompleteStep({
   );
 }
 
-export function CompleteFooter() {
+type CompleteFooterProps = {
+  onContinue: () => void;
+};
+
+export function CompleteFooter({ onContinue }: CompleteFooterProps) {
   return (
-    <button type="button" className="button is-primary footer-grow">
+    <button type="button" className="button is-primary footer-grow" onClick={onContinue}>
       <span>Enter Listello</span>
       <span className="icon">
         <Rocket size={18} />

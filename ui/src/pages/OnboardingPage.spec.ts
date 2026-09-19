@@ -21,6 +21,7 @@ vi.mock("../lib/api/instance-client", () => ({
   initializePersistence: vi.fn(),
   pairSpace: vi.fn(),
   pairUser: vi.fn(),
+  completeSetup: vi.fn(),
 }));
 
 vi.mock("../lib/api/list-client", () => ({
@@ -36,6 +37,7 @@ import {
   pairUser,
   selectHostingMode,
   selectPersistenceLocation,
+  completeSetup,
 } from "../lib/api/instance-client";
 import { createFirstList } from "../lib/api/list-client";
 
@@ -1343,6 +1345,24 @@ describe("OnboardingPage", () => {
                                 expect(
                                   button.closest(".onboarding-footer"),
                                 ).toBeInTheDocument();
+                              });
+
+                              it("calls completeSetup when Enter Listello is clicked", () => {
+                                // Arrange
+                                vi.mocked(completeSetup).mockResolvedValue({
+                                  ...createdInstance,
+                                  SetupState: "completed",
+                                });
+
+                                // Act
+                                fireEvent.click(
+                                  screen.getByRole("button", {
+                                    name: "Enter Listello",
+                                  }),
+                                );
+
+                                // Assert
+                                expect(completeSetup).toHaveBeenCalledOnce();
                               });
                             });
                           });
