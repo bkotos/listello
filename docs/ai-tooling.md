@@ -28,9 +28,13 @@ This repo includes Cursor configuration that guides agents working on Listello: 
     ├── create-api-queries/
     │   ├── SKILL.md                         # React Query hooks
     │   └── examples.md
-    └── create-ui-component/
-        ├── SKILL.md                         # React components + TDD
-        └── examples.md
+    ├── create-ui-component/
+    │   ├── SKILL.md                         # React components + TDD
+    │   └── examples.md
+    └── implement-domain-backlog/
+        └── SKILL.md                         # Next domain-model-backlog checkbox
+└── commands/
+    └── implement-domain-backlog.md          # /implement-domain-backlog slash command
 ```
 
 ## Always-on rules
@@ -382,6 +386,50 @@ After tests pass, the agent may extract a same-file child component if you ask, 
 
 See [.cursor/skills/create-ui-component/examples.md](../.cursor/skills/create-ui-component/examples.md) for the `ItemRow` hover-actions, Task options dropdown, and ListPage delete-wiring walkthrough.
 
+### `implement-domain-backlog`
+
+Walks [docs/domain-model-backlog.md](domain-model-backlog.md) from the top and implements the **next unchecked checkbox**: one layer, one PR. Marks that line `[x]` in the backlog file in the same PR, then stops for review and merge. Invoke again after merge to continue.
+
+**In scope:** picking the first `- [ ]`, dispatching to the matching layer skill (or domain/bootstrap), TDD red → stop → green, checking off that box, opening one PR.
+
+**Out of scope:** the rest of the vertical slice; editing the Next.js mockup.
+
+Skill details: [.cursor/skills/implement-domain-backlog/SKILL.md](../.cursor/skills/implement-domain-backlog/SKILL.md). Slash command: [.cursor/commands/implement-domain-backlog.md](../.cursor/commands/implement-domain-backlog.md).
+
+#### How to invoke
+
+| Mode | What to say |
+|------|-------------|
+| **Slash command** | `/implement-domain-backlog` in Agent chat |
+| **Explicit** | `@implement-domain-backlog` or *"use the implement-domain-backlog skill"* |
+| **Auto-discover** | *"Knock off the next domain model backlog item"* / *"Continue the event-storming backlog"* |
+
+Example prompts:
+
+- `/implement-domain-backlog`
+- *"Implement the next unchecked checkbox in docs/domain-model-backlog.md"*
+- *"Continue the domain backlog"* (after the previous PR is merged)
+
+#### What the agent will do
+
+```mermaid
+flowchart TD
+    start["/implement-domain-backlog"] --> read[Read domain-model-backlog.md]
+    read --> pick[First unchecked checkbox]
+    pick --> layer[Follow matching layer skill]
+    layer --> red[Write failing spec]
+    red --> stop[STOP — summarize for review]
+    stop --> approved{You approve?}
+    approved -->|yes| green[Implement minimum code]
+    approved -->|no| red
+    green --> check[Mark checkbox x in backlog md]
+    check --> pr[Open one PR]
+    pr --> wait[Stop — wait for merge]
+    wait --> again[Invoke slash command again]
+```
+
+First checkbox today is **Delete List → Domain**. After that PR merges, the same command picks **Delete List → Application service**, and so on.
+
 ## Adding more skills
 
 Follow the same structure:
@@ -397,5 +445,5 @@ Follow the same structure:
 - **Upstream gates** — Each skill verifies lower layers exist before proceeding. If you ask for an API client but the handler does not exist yet, the agent should stop and point you to `create-api-handler` first.
 - **Approve red before green** — The TDD rule requires a stop after failing specs. Say *"approved, implement"* when you're ready for production code.
 - **Scope requests** — Skills stop at their layer. Name bootstrap, pages, or context explicitly if you want them in the same task.
-- **Full vertical slice** — domain → application → adapter → bootstrap → handler or CLI → `make api-types` → API client → query hooks → UI components. Details in [LAYER-ORDER.md](../.cursor/skills/LAYER-ORDER.md).
+- **Full vertical slice** — domain → application → adapter → bootstrap → handler or CLI → `make api-types` → API client → query hooks → UI components. Details in [LAYER-ORDER.md](../.cursor/skills/LAYER-ORDER.md). Prefer `/implement-domain-backlog` so each layer is its own PR.
 - **Reload if needed** — After adding or changing skills, start a new chat or reload the window so Cursor picks up new project skills.
