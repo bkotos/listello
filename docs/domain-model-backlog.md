@@ -20,11 +20,41 @@ Adapter and CLI/handler are siblings: both depend on the application service, no
 | CLI | Cobra command + e2e | `create-cli-command` |
 | API client | `ui/src/lib/api/{resource}-client.ts` | `create-api-client` |
 | React Query hooks | `{resource}-queries.ts` | `create-api-queries` — **new reads only**. Skip for writes when the page already has a query key to invalidate. |
-| UI | Page/component wiring | `create-ui-component` |
+| UI | Page/component wiring | `create-ui-component` — boot the mockup in Chrome first (see below) |
 
 Personal productivity commands use `api/internal/personal-productivity-context/`. Instance commands use `api/internal/listello-instance-context/` (same layer order; skills are written against the productivity paths).
 
 The first command on a new aggregate creates the service and repository. Later commands on that aggregate extend them.
+
+### One pull request per skill
+
+Each checkbox is its own skill invocation and its own pull request. Do **not** implement a whole command (domain through UI) in one giant PR.
+
+1. Do **one** layer (one skill).
+2. Open a pull request for that layer only.
+3. **Stop.** Wait for review and for the PR to be merged.
+4. Only then start the next checkbox, on a new branch, as a new PR.
+
+Do not stack the next skill onto an unmerged PR. Do not open the next PR until the previous one is merged.
+
+TDD red → stop → green still happens **inside** that one skill PR. That is not a reason to split red and green into two PRs, and it is not a reason to batch several skills into one.
+
+### UI: boot the mockup in Chrome
+
+When the next checkbox is **UI** (`create-ui-component`), do not guess the layout from memory or from the domain names alone.
+
+1. Start the Next.js mockup:
+
+   ```bash
+   cd mockup/task-management-system-bulma
+   npm run dev
+   ```
+
+2. Open it in **Chrome** (Next.js defaults to `http://localhost:3000`).
+3. Navigate to the screens and controls that correspond to this command (list, item detail, comments, subtasks, delegation, onboarding/hosting, and so on).
+4. Use what you see — structure, labels, icons, hover/menus, empty states, and interactions — as the visual spec for the `ui/` implementation.
+
+Read the mockup source under `mockup/task-management-system-bulma/` as well. **Do not edit the mockup** to make `ui/` tests pass. If the mockup has no screen for this command yet, say so and implement the smallest UI that still matches Listello patterns.
 
 ---
 
