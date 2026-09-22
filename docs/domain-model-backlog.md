@@ -69,7 +69,7 @@ Read the mockup source under `mockup/task-management-system-bulma/` as well. **D
 - [x] Domain
 - [x] Application service
 - [x] Adapter repository
-- [ ] Bootstrap
+- [x] Bootstrap
 - [ ] API handler
 - [ ] CLI
 - [ ] API client
