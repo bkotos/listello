@@ -40,7 +40,7 @@ export function renderPageWithShellContext(
           createElement(
             Route,
             { element: createElement(Shell) },
-            createElement(Route, { path, element: page }),
+            createElement(Route, { path, element: page }, createElement(Route, { path: "items/:itemId" })),
           ),
         ),
       ),

@@ -14,7 +14,9 @@ function App() {
         <Route element={<AppShell />}>
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="inbox" element={<InboxPage />} />
-          <Route path="lists/:listId" element={<ListPage />} />
+          <Route path="lists/:listId" element={<ListPage />}>
+            <Route path="items/:itemId" />
+          </Route>
         </Route>
       </Route>
     </Routes>
