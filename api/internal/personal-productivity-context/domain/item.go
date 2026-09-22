@@ -154,10 +154,10 @@ func (i *Item) LinkAsChild(parent Item) (Event, error) {
 	return event.NewEvent(EventItemLinkedAsChildOfItem, EventMetadataItemLinkedAsChildOfItem{ID: i.ID, ParentID: parent.ID}, 1), nil
 }
 
-// ChangePriority changes the item's priority and raises a SubtaskPriorityChanged event.
+// ChangePriority changes the item's priority and raises an ItemPriorityChanged event.
 func (i *Item) ChangePriority(priority ItemPriority) (Event, error) {
 	i.Priority = priority
-	return event.NewEvent(EventSubtaskPriorityChanged, EventMetadataSubtaskPriorityChanged{ID: i.ID, Priority: priority}, 1), nil
+	return event.NewEvent(EventItemPriorityChanged, EventMetadataItemPriorityChanged{ID: i.ID, Priority: priority}, 1), nil
 }
 
 // Move moves the item to another list and raises an ItemMovedToOtherList event.
