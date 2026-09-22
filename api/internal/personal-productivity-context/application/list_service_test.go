@@ -207,3 +207,62 @@ func TestListService_CreateFirstList_PublishesFirstListCreatedEvent(t *testing.T
 	assert.Equal(t, list.ID, meta.ID)
 	assert.NotEmpty(t, published.Timestamp)
 }
+
+func TestListService_DeleteList_DeletesList(t *testing.T) {
+	// Arrange
+	const listID = "LS_1"
+	list := domain.List{ID: listID, Name: "Next actions"}
+	repo := NewMockListRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListService(repo, publisher)
+
+	repo.EXPECT().
+		GetByID(listID).
+		Return(list, nil)
+	repo.EXPECT().
+		Delete(listID).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil)
+
+	// Act
+	err := svc.DeleteList(listID)
+
+	// Assert
+	require.NoError(t, err)
+}
+
+func TestListService_DeleteList_PublishesEvent(t *testing.T) {
+	// Arrange
+	const listID = "LS_1"
+	list := domain.List{ID: listID, Name: "Next actions"}
+	repo := NewMockListRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewListService(repo, publisher)
+
+	var published domain.Event
+	repo.EXPECT().
+		GetByID(listID).
+		Return(list, nil)
+	repo.EXPECT().
+		Delete(listID).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			metadata, ok := event.Metadata.(domain.EventMetadataListDeleted)
+			return event.Name == domain.EventListDeleted && ok && metadata.List.ID == listID
+		})).
+		Return(nil)
+
+	// Act
+	err := svc.DeleteList(listID)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataListDeleted)
+	require.True(t, ok)
+	assert.Equal(t, listID, metadata.List.ID)
+	assert.NotEmpty(t, published.Timestamp)
+}

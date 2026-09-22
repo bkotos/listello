@@ -72,3 +72,8 @@ func (r *SQLiteListRepository) GetAll() ([]domain.List, error) {
 	}
 	return lists, nil
 }
+
+// Delete is not implemented yet; the adapter layer will persist list deletion.
+func (r *SQLiteListRepository) Delete(id string) error {
+	return fmt.Errorf("not implemented")
+}

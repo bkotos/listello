@@ -632,6 +632,57 @@ func (_c *MockListService_CreateList_Call) RunAndReturn(run func(name string) (d
 	return _c
 }
 
+// DeleteList provides a mock function for the type MockListService
+func (_mock *MockListService) DeleteList(listID string) error {
+	ret := _mock.Called(listID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteList")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(string) error); ok {
+		r0 = returnFunc(listID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockListService_DeleteList_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteList'
+type MockListService_DeleteList_Call struct {
+	*mock.Call
+}
+
+// DeleteList is a helper method to define mock.On call
+//   - listID string
+func (_e *MockListService_Expecter) DeleteList(listID any) *MockListService_DeleteList_Call {
+	return &MockListService_DeleteList_Call{Call: _e.mock.On("DeleteList", listID)}
+}
+
+func (_c *MockListService_DeleteList_Call) Run(run func(listID string)) *MockListService_DeleteList_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockListService_DeleteList_Call) Return(err error) *MockListService_DeleteList_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockListService_DeleteList_Call) RunAndReturn(run func(listID string) error) *MockListService_DeleteList_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetAll provides a mock function for the type MockListService
 func (_mock *MockListService) GetAll() ([]domain.List, error) {
 	ret := _mock.Called()

@@ -1,12 +1,15 @@
 package application
 
 import (
+	"fmt"
+
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
 // ListRepository persists lists.
 type ListRepository interface {
 	Save(list domain.List) error
+	Delete(id string) error
 	GetAll() ([]domain.List, error)
 	GetByID(id string) (domain.List, error)
 }
@@ -15,6 +18,7 @@ type ListRepository interface {
 type ListService interface {
 	CreateList(name string) (domain.List, error)
 	CreateFirstList(name string) (domain.List, error)
+	DeleteList(listID string) error
 	GetAll() ([]domain.List, error)
 	GetByID(id string) (domain.List, error)
 }
@@ -74,4 +78,9 @@ func (s *listService) GetAll() ([]domain.List, error) {
 // GetByID returns the list with the given ID from persistence.
 func (s *listService) GetByID(id string) (domain.List, error) {
 	return s.listRepository.GetByID(id)
+}
+
+// DeleteList deletes a list via the domain and removes it from persistence.
+func (s *listService) DeleteList(listID string) error {
+	return fmt.Errorf("not implemented")
 }
