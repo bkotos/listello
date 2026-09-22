@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createQueryWrapper } from "../test/renderWithQueryClient";
 import { Sidebar } from "./Sidebar";
 
 const createList = vi.fn();
@@ -34,11 +35,17 @@ afterEach(() => {
 });
 
 function renderSidebar({ initialEntry = "/inbox", onNavigate }: RenderSidebarOptions = {}) {
+  const { QueryWrapper } = createQueryWrapper();
+
   render(
     createElement(
-      MemoryRouter,
-      { initialEntries: [initialEntry] },
-      createElement(Sidebar, { onNavigate }),
+      QueryWrapper,
+      null,
+      createElement(
+        MemoryRouter,
+        { initialEntries: [initialEntry] },
+        createElement(Sidebar, { onNavigate }),
+      ),
     ),
   );
 }
@@ -208,5 +215,24 @@ describe("Sidebar", () => {
 
     // Assert
     expect(createList).not.toHaveBeenCalled();
+  });
+
+  describe("list delete", () => {
+    beforeEach(() => {
+      renderSidebar();
+    });
+
+    it("renders a Delete Work icon button", () => {
+      // Assert
+      const deleteWork = screen.getByRole("button", { name: "Delete Work" });
+      expect(deleteWork).toHaveClass("icon-btn", "is-danger-hover", "hover-reveal");
+      expect(deleteWork.querySelector("svg.lucide-trash-2")).toBeInTheDocument();
+    });
+
+    it("wraps each list row as a hover-parent", () => {
+      // Assert
+      const row = screen.getByRole("link", { name: "Work" }).closest("li");
+      expect(row).toHaveClass("hover-parent");
+    });
   });
 });

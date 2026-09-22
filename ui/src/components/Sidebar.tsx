@@ -1,8 +1,10 @@
-import { Check, Hash, Inbox, Plus } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Check, Hash, Inbox, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAppContext } from "../contexts/useAppContext";
-import { useCreateListMutation } from "../lib/api/list-queries";
+import { deleteList } from "../lib/api/list-client";
+import { listQueryKeys, useCreateListMutation } from "../lib/api/list-queries";
 import { AccountMenu } from "./AccountMenu";
 
 type SidebarProps = {
@@ -11,6 +13,7 @@ type SidebarProps = {
 
 export function Sidebar({ onNavigate }: SidebarProps) {
   const { lists } = useAppContext();
+  const queryClient = useQueryClient();
   const { mutate: createList } = useCreateListMutation();
   const [adding, setAdding] = useState(false);
   const [newList, setNewList] = useState("");
@@ -26,6 +29,11 @@ export function Sidebar({ onNavigate }: SidebarProps) {
     setAdding(false);
     onNavigate?.();
   };
+
+  async function handleDelete(listId: string) {
+    await deleteList(listId);
+    await queryClient.invalidateQueries({ queryKey: listQueryKeys.all });
+  }
 
   return (
     <div
@@ -82,7 +90,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         <aside className="menu app-scroll">
           <ul className="menu-list">
             {lists.map((list) => (
-              <li key={list.ID}>
+              <li key={list.ID} className="hover-parent" style={{ position: "relative" }}>
                 <NavLink
                   to={`/lists/${list.ID}`}
                   className={({ isActive }) =>
@@ -103,6 +111,24 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                     {list.Name}
                   </span>
                 </NavLink>
+                <button
+                  type="button"
+                  aria-label={`Delete ${list.Name}`}
+                  className="icon-btn is-danger-hover hover-reveal"
+                  style={{
+                    position: "absolute",
+                    right: "0.5rem",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    height: "1.5rem",
+                    width: "1.5rem",
+                  }}
+                  onClick={() => {
+                    void handleDelete(list.ID);
+                  }}
+                >
+                  <Trash2 size={14} />
+                </button>
               </li>
             ))}
           </ul>
