@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createQueryWrapper } from "../test/renderWithQueryClient";
 import { Sidebar } from "./Sidebar";
 
 const createList = vi.fn();
@@ -34,11 +35,17 @@ afterEach(() => {
 });
 
 function renderSidebar({ initialEntry = "/inbox", onNavigate }: RenderSidebarOptions = {}) {
+  const { QueryWrapper } = createQueryWrapper();
+
   render(
     createElement(
-      MemoryRouter,
-      { initialEntries: [initialEntry] },
-      createElement(Sidebar, { onNavigate }),
+      QueryWrapper,
+      null,
+      createElement(
+        MemoryRouter,
+        { initialEntries: [initialEntry] },
+        createElement(Sidebar, { onNavigate }),
+      ),
     ),
   );
 }
