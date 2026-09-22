@@ -26,6 +26,28 @@ describe("request", () => {
     expect(result).toEqual(payload);
   });
 
+  it("returns undefined for an empty successful response", async () => {
+    // Arrange
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      json: async () => {
+        throw new SyntaxError("Unexpected end of JSON input");
+      },
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    // Act
+    const result = await request<void>("/api/lists/LS_1", { method: "DELETE" });
+
+    // Assert
+    expect(fetchMock).toHaveBeenCalledWith("/api/lists/LS_1", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    expect(result).toBeUndefined();
+  });
+
   it("forwards request init to fetch", async () => {
     // Arrange
     const fetchMock = vi.fn().mockResolvedValue({
