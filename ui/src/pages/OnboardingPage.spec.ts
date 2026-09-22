@@ -1641,6 +1641,41 @@ describe("OnboardingPage", () => {
     itRendersStepHeading("What should we call you?");
   });
 
+  describe("when the instance does not exist", () => {
+    beforeEach(async () => {
+      cleanup();
+      vi.mocked(getInstance).mockResolvedValue(null);
+      renderOnboardingPage();
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", { name: "Welcome to Listello" }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("shows the Welcome heading", () => {
+      // Assert
+      expectStepHeading("Welcome to Listello");
+    });
+
+    describe("when the page is refreshed", () => {
+      beforeEach(async () => {
+        cleanup();
+        renderOnboardingPage();
+        await waitFor(() => {
+          expect(
+            screen.getByRole("heading", { name: "Welcome to Listello" }),
+          ).toBeInTheDocument();
+        });
+      });
+
+      it("shows the Welcome heading", () => {
+        // Assert
+        expectStepHeading("Welcome to Listello");
+      });
+    });
+  });
+
   describe("when the instance setup is completed", () => {
     beforeEach(async () => {
       cleanup();
