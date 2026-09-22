@@ -2,6 +2,8 @@
 
 Derived from event storming sessions covering Instance Management, Personal Productivity (Spaces/Lists/Items), and Item Delegation.
 
+Implementation gaps vs the code domain: [domain-model-backlog.md](domain-model-backlog.md).
+
 ## Entity Relationship Diagram
 
 ```mermaid
