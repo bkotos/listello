@@ -73,7 +73,15 @@ func (r *SQLiteListRepository) GetAll() ([]domain.List, error) {
 	return lists, nil
 }
 
-// Delete is not implemented yet; the adapter layer will persist list deletion.
+// Delete removes the list from persistence.
 func (r *SQLiteListRepository) Delete(list domain.List) error {
-	return fmt.Errorf("not implemented")
+	db, err := openBun(r.workspace)
+	if err != nil {
+		return fmt.Errorf("delete list: %w", err)
+	}
+	_, err = db.NewDelete().Model((*listRow)(nil)).Where("id = ?", list.ID).Exec(context.Background())
+	if err != nil {
+		return fmt.Errorf("delete list: %w", err)
+	}
+	return nil
 }
