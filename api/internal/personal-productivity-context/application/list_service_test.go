@@ -220,7 +220,7 @@ func TestListService_DeleteList_DeletesList(t *testing.T) {
 		GetByID(listID).
 		Return(list, nil)
 	repo.EXPECT().
-		Delete(listID).
+		Delete(list).
 		Return(nil)
 	publisher.EXPECT().
 		Publish(mock.AnythingOfType("event.Event")).
@@ -246,7 +246,7 @@ func TestListService_DeleteList_PublishesEvent(t *testing.T) {
 		GetByID(listID).
 		Return(list, nil)
 	repo.EXPECT().
-		Delete(listID).
+		Delete(list).
 		Return(nil)
 	publisher.EXPECT().
 		Publish(mock.MatchedBy(func(event domain.Event) bool {

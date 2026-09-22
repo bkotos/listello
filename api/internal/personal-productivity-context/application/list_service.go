@@ -9,7 +9,7 @@ import (
 // ListRepository persists lists.
 type ListRepository interface {
 	Save(list domain.List) error
-	Delete(id string) error
+	Delete(list domain.List) error
 	GetAll() ([]domain.List, error)
 	GetByID(id string) (domain.List, error)
 }

@@ -8,7 +8,7 @@ import (
 
 type stubListRepository struct {
 	saveFn    func(list domain.List) error
-	deleteFn  func(id string) error
+	deleteFn  func(list domain.List) error
 	getAllFn  func() ([]domain.List, error)
 	getByIDFn func(id string) (domain.List, error)
 }
@@ -20,9 +20,9 @@ func (r *stubListRepository) Save(list domain.List) error {
 	return nil
 }
 
-func (r *stubListRepository) Delete(id string) error {
+func (r *stubListRepository) Delete(list domain.List) error {
 	if r.deleteFn != nil {
-		return r.deleteFn(id)
+		return r.deleteFn(list)
 	}
 	return fmt.Errorf("unexpected Delete call")
 }
