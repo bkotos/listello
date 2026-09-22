@@ -35,6 +35,7 @@ func init() {
 type suiteState struct {
 	placeholder  *domain.Placeholder
 	lists        map[string]domain.List
+	deletedLists map[string]domain.List
 	items        map[string]*domain.Item
 	deletedItems map[string]domain.Item
 	spaces       map[string]domain.Space
@@ -46,6 +47,7 @@ type suiteState struct {
 func (s *suiteState) reset() {
 	s.placeholder = nil
 	s.lists = make(map[string]domain.List)
+	s.deletedLists = make(map[string]domain.List)
 	s.items = make(map[string]*domain.Item)
 	s.deletedItems = make(map[string]domain.Item)
 	s.spaces = make(map[string]domain.Space)
@@ -88,6 +90,21 @@ func (s *suiteState) aEventShouldHaveOccurred(ctx context.Context, eventName str
 
 func (s *suiteState) theListShouldExist(ctx context.Context, name string) {
 	require.Contains(godog.T(ctx), s.lists, name)
+}
+
+func (s *suiteState) theListShouldNotExist(ctx context.Context, name string) {
+	require.NotContains(godog.T(ctx), s.lists, name)
+}
+
+func (s *suiteState) theUserDeletesTheList(ctx context.Context, name string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.lists, name)
+	list := s.lists[name]
+	event, err := list.Delete()
+	require.NoError(t, err)
+	s.record(event)
+	s.deletedLists[name] = list
+	delete(s.lists, name)
 }
 
 func (s *suiteState) theUserCreatesASpaceNamed(name string) {
@@ -583,6 +600,23 @@ func (s *suiteState) aEventShouldHaveOccurredWithPriority(ctx context.Context, e
 	)
 }
 
+func (s *suiteState) aEventShouldHaveOccurredWithTheList(ctx context.Context, eventName, name string) {
+	t := godog.T(ctx)
+	list, ok := s.deletedLists[name]
+	if !ok {
+		require.Contains(t, s.lists, name)
+		list = s.lists[name]
+	}
+	require.Truef(
+		t,
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			meta, ok := e.Metadata.(domain.EventMetadataListDeleted)
+			return e.Name == domain.EventName(eventName) && ok && reflect.DeepEqual(meta.List, list)
+		}),
+		"expected event %q with list %+v; got %v", eventName, list, eventSummaries(s.events),
+	)
+}
+
 func (s *suiteState) aEventShouldHaveOccurredWithTheItem(ctx context.Context, eventName, title string) {
 	t := godog.T(ctx)
 	item, ok := s.deletedItems[title]
@@ -612,6 +646,8 @@ func (s *suiteState) eventOccurredWithID(ctx context.Context, eventName, id stri
 
 func eventEntityID(e domain.Event) string {
 	switch meta := e.Metadata.(type) {
+	case domain.EventMetadataListDeleted:
+		return meta.List.ID
 	case domain.EventMetadataItemDeleted:
 		return meta.Item.ID
 	case domain.EventMetadataListCreated,
@@ -685,6 +721,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the user creates a list named "([^"]*)"$`, s.theUserCreatesAListNamed)
 	ctx.Step(`^a "([^"]*)" event should have occurred$`, s.aEventShouldHaveOccurred)
 	ctx.Step(`^the list "([^"]*)" should exist$`, s.theListShouldExist)
+	ctx.Step(`^the list "([^"]*)" should not exist$`, s.theListShouldNotExist)
+	ctx.Step(`^the user deletes the list "([^"]*)"$`, s.theUserDeletesTheList)
 	ctx.Step(`^the user creates a space named "([^"]*)"$`, s.theUserCreatesASpaceNamed)
 	ctx.Step(`^a space named "([^"]*)" exists$`, s.aSpaceNamedExists)
 	ctx.Step(`^the space "([^"]*)" should exist$`, s.theSpaceShouldExist)
@@ -752,6 +790,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred with tag "([^"]*)"$`, s.aEventShouldHaveOccurredWithTag)
 	ctx.Step(`^a "([^"]*)" event should have occurred with priority "([^"]*)"$`, s.aEventShouldHaveOccurredWithPriority)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheItem)
+	ctx.Step(`^a "([^"]*)" event should have occurred with the list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheList)
 }
 
 func TestFeatures(t *testing.T) {

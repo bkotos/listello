@@ -7,6 +7,7 @@ type Event = event.Event
 
 const (
 	EventListCreated             EventName = "ListCreated"
+	EventListDeleted             EventName = "ListDeleted"
 	EventFirstListCreated        EventName = "FirstListCreated"
 	EventItemDefined             EventName = "ItemDefined"
 	EventItemCompleted           EventName = "ItemCompleted"
@@ -36,6 +37,11 @@ type EventMetadataListCreated struct {
 // EventMetadataFirstListCreated is the payload for a FirstListCreated event.
 type EventMetadataFirstListCreated struct {
 	ID string
+}
+
+// EventMetadataListDeleted is the payload for a ListDeleted event.
+type EventMetadataListDeleted struct {
+	List List
 }
 
 // EventMetadataSpaceCreated is the payload for a SpaceCreated event.

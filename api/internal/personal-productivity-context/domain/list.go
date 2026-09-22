@@ -39,6 +39,11 @@ func CreateInbox(space Space) (List, Event, error) {
 	return list, event.NewEvent(EventInboxCreated, EventMetadataInboxCreated{ID: list.ID}, 1), nil
 }
 
+// Delete deletes the list and raises a ListDeleted event.
+func (l *List) Delete() (Event, error) {
+	return Event{}, fmt.Errorf("not implemented")
+}
+
 // CreateFirstList creates the user's first non-inbox list and raises ListCreated and FirstListCreated events.
 func CreateFirstList(name string) (List, []Event, error) {
 	list, created, err := CreateList(name)
