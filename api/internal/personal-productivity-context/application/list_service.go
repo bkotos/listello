@@ -1,8 +1,6 @@
 package application
 
 import (
-	"fmt"
-
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
@@ -82,5 +80,16 @@ func (s *listService) GetByID(id string) (domain.List, error) {
 
 // DeleteList deletes a list via the domain and removes it from persistence.
 func (s *listService) DeleteList(listID string) error {
-	return fmt.Errorf("not implemented")
+	list, err := s.listRepository.GetByID(listID)
+	if err != nil {
+		return err
+	}
+	event, err := (&list).Delete()
+	if err != nil {
+		return err
+	}
+	if err := s.listRepository.Delete(list); err != nil {
+		return err
+	}
+	return s.eventPublisher.Publish(event)
 }
