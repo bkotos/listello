@@ -22,3 +22,9 @@ export async function createFirstList(name: string): Promise<ListResponse> {
     body: JSON.stringify({ name }),
   });
 }
+
+export async function deleteList(listId: string): Promise<void> {
+  return request<void>(`/api/lists/${listId}`, {
+    method: "DELETE",
+  });
+}

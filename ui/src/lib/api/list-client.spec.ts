@@ -4,7 +4,7 @@ vi.mock("./util", () => ({
   request: vi.fn(),
 }));
 
-import { createFirstList, createList, getAllLists, getList } from "./list-client";
+import { createFirstList, createList, deleteList, getAllLists, getList } from "./list-client";
 import { request } from "./util";
 
 afterEach(() => {
@@ -74,5 +74,21 @@ describe("createFirstList", () => {
       body: JSON.stringify({ name: "Errands" }),
     });
     expect(result).toEqual(list);
+  });
+});
+
+describe("deleteList", () => {
+  it("deletes a list via the API", async () => {
+    // Arrange
+    vi.mocked(request).mockResolvedValue(undefined);
+
+    // Act
+    const result = await deleteList("LS_1");
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/lists/LS_1", {
+      method: "DELETE",
+    });
+    expect(result).toBeUndefined();
   });
 });
