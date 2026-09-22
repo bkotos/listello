@@ -67,7 +67,7 @@ Read the mockup source under `mockup/task-management-system-bulma/` as well. **D
 ### Delete List → List Deleted
 
 - [x] Domain
-- [ ] Application service
+- [x] Application service
 - [ ] Adapter repository
 - [ ] Bootstrap
 - [ ] API handler

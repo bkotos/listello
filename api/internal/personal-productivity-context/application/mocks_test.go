@@ -392,6 +392,57 @@ func (_m *MockListRepository) EXPECT() *MockListRepository_Expecter {
 	return &MockListRepository_Expecter{mock: &_m.Mock}
 }
 
+// Delete provides a mock function for the type MockListRepository
+func (_mock *MockListRepository) Delete(list domain.List) error {
+	ret := _mock.Called(list)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(domain.List) error); ok {
+		r0 = returnFunc(list)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockListRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockListRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - list domain.List
+func (_e *MockListRepository_Expecter) Delete(list any) *MockListRepository_Delete_Call {
+	return &MockListRepository_Delete_Call{Call: _e.mock.On("Delete", list)}
+}
+
+func (_c *MockListRepository_Delete_Call) Run(run func(list domain.List)) *MockListRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 domain.List
+		if args[0] != nil {
+			arg0 = args[0].(domain.List)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockListRepository_Delete_Call) Return(err error) *MockListRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockListRepository_Delete_Call) RunAndReturn(run func(list domain.List) error) *MockListRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetAll provides a mock function for the type MockListRepository
 func (_mock *MockListRepository) GetAll() ([]domain.List, error) {
 	ret := _mock.Called()

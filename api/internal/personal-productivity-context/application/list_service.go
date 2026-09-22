@@ -7,6 +7,7 @@ import (
 // ListRepository persists lists.
 type ListRepository interface {
 	Save(list domain.List) error
+	Delete(list domain.List) error
 	GetAll() ([]domain.List, error)
 	GetByID(id string) (domain.List, error)
 }
@@ -15,6 +16,7 @@ type ListRepository interface {
 type ListService interface {
 	CreateList(name string) (domain.List, error)
 	CreateFirstList(name string) (domain.List, error)
+	DeleteList(listID string) error
 	GetAll() ([]domain.List, error)
 	GetByID(id string) (domain.List, error)
 }
@@ -74,4 +76,20 @@ func (s *listService) GetAll() ([]domain.List, error) {
 // GetByID returns the list with the given ID from persistence.
 func (s *listService) GetByID(id string) (domain.List, error) {
 	return s.listRepository.GetByID(id)
+}
+
+// DeleteList deletes a list via the domain and removes it from persistence.
+func (s *listService) DeleteList(listID string) error {
+	list, err := s.listRepository.GetByID(listID)
+	if err != nil {
+		return err
+	}
+	event, err := (&list).Delete()
+	if err != nil {
+		return err
+	}
+	if err := s.listRepository.Delete(list); err != nil {
+		return err
+	}
+	return s.eventPublisher.Publish(event)
 }
