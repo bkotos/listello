@@ -2,6 +2,8 @@
 
 Tracks command/event pairs from [domain-model.md](domain-model.md) that are **not yet in the code domain**. Check items off as each vertical slice lands.
 
+To implement the next command/event pair: **`/implement-domain-backlog`** (skill: [implement-domain-backlog](../.cursor/skills/implement-domain-backlog/SKILL.md)). One invoke walks every remaining layer under that `###` heading. Each checkbox is still its own PR; the agent marks it `[x]` in this file in that PR, waits for merge, then continues to the next layer. Invoke again when that command is fully checked off.
+
 Source: event storming → `docs/domain-model.md`. This list is the gap vs `api/internal/personal-productivity-context/domain` and `api/internal/listello-instance-context/domain`. It does not track misalignments (extra pairing commands, `standalone-web` vs the storming hosting names, item-level `ItemPriorityChanged`, and so on).
 
 ## How to work a slice
@@ -28,14 +30,16 @@ The first command on a new aggregate creates the service and repository. Later c
 
 ### One pull request per skill
 
-Each checkbox is its own skill invocation and its own pull request. Do **not** implement a whole command (domain through UI) in one giant PR.
+Each **checkbox** is its own pull request. One **slash invoke** covers one **command/event pair** (one `###` heading) and walks the remaining checkboxes under it.
+
+Do **not** implement a whole command (domain through UI) in one giant PR.
 
 1. Do **one** layer (one skill).
 2. Open a pull request for that layer only.
 3. **Stop.** Wait for review and for the PR to be merged.
-4. Only then start the next checkbox, on a new branch, as a new PR.
+4. Then, in the **same** `/implement-domain-backlog` run, start the next checkbox under that command, on a new branch, as a new PR.
 
-Do not stack the next skill onto an unmerged PR. Do not open the next PR until the previous one is merged.
+Do not stack the next skill onto an unmerged PR. Do not open the next PR until the previous one is merged. Do not start a different `###` command until the user invokes the skill again.
 
 TDD red → stop → green still happens **inside** that one skill PR. That is not a reason to split red and green into two PRs, and it is not a reason to batch several skills into one.
 
