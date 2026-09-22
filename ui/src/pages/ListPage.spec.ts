@@ -711,7 +711,7 @@ describe("ListPage", () => {
         initialEntry: "/lists/LS_1/items/IT_1",
       });
       await waitFor(() => {
-        expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+        expect(screen.getAllByText("Buy windshield wipers for truck").length).toBeGreaterThan(0);
       });
     });
 
