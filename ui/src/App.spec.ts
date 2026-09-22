@@ -19,8 +19,18 @@ vi.mock("./lib/api/list-client", () => ({
   createList: vi.fn(),
 }));
 
+vi.mock("./lib/api/item-client", () => ({
+  getAllItems: vi.fn(),
+  defineItem: vi.fn(),
+  completeItem: vi.fn(),
+  uncompleteItem: vi.fn(),
+  deleteItem: vi.fn(),
+  modifyItemTitle: vi.fn(),
+}));
+
 import { getDefaultPersistenceLocation, getInstance } from "./lib/api/instance-client";
-import { getAllLists } from "./lib/api/list-client";
+import { getAllItems } from "./lib/api/item-client";
+import { getAllLists, getList } from "./lib/api/list-client";
 
 const existingInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -94,6 +104,20 @@ describe("App", () => {
       });
     },
   );
+
+  it("shows the list when visiting an item route", async () => {
+    // Arrange
+    vi.mocked(getInstance).mockResolvedValue(existingInstance);
+    vi.mocked(getAllLists).mockResolvedValue([{ ID: "LS_1", Name: "Work" }]);
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue([]);
+    renderApp(["/lists/LS_1/items/IT_1"]);
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Work" })).toBeInTheDocument();
+    });
+  });
 
   describe("when visiting /onboarding and the instance does not exist", () => {
     beforeEach(async () => {

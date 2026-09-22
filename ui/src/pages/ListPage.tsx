@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ContentArea } from "../components/ContentArea";
 import { ItemDetail } from "../components/ItemDetail";
 import { ItemRow } from "../components/ItemRow";
@@ -10,14 +9,14 @@ import { useListQuery } from "../lib/api/list-queries";
 import { useShellContext } from "../lib/useShellContext";
 
 function ListPage() {
-  const { listId } = useParams();
+  const { listId, itemId } = useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { openSidebar } = useShellContext();
   const { data: list } = useListQuery(listId);
   const { data: items } = useAllItemsQuery(listId);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const title = list?.Name ?? "List";
-  const selectedItem = items?.find((item) => item.ID === selectedItemId) ?? null;
+  const selectedItem = items?.find((item) => item.ID === itemId) ?? null;
 
   async function handleCaptureSubmit(itemTitle: string) {
     if (!listId) {
@@ -76,8 +75,8 @@ function ListPage() {
                   <ItemRow
                     key={item.ID}
                     item={item}
-                    selected={item.ID === selectedItemId}
-                    onSelect={setSelectedItemId}
+                    selected={item.ID === itemId}
+                    onSelect={(selectedId) => navigate(`/lists/${listId}/items/${selectedId}`)}
                     onComplete={handleComplete}
                     onUncomplete={handleUncomplete}
                     onDelete={handleDelete}
@@ -96,7 +95,7 @@ function ListPage() {
           key={selectedItem.ID}
           item={selectedItem}
           listName={title}
-          onClose={() => setSelectedItemId(null)}
+          onClose={() => navigate(`/lists/${listId}`)}
           onModifyTitle={handleModifyTitle}
         />
       ) : null}

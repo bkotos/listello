@@ -695,5 +695,37 @@ describe("ListPage", () => {
       // Assert
       expect(screen.getByDisplayValue("Draft weekly status update")).toBeInTheDocument();
     });
+
+    it("navigates to the item route", () => {
+      // Assert
+      expect(screen.getByTestId("location-pathname")).toHaveTextContent("/lists/LS_1/items/IT_1");
+    });
+  });
+
+  describe("when visiting an item route", () => {
+    beforeEach(async () => {
+      vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+      vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+      renderPageWithShellContext(createElement(ListPage), {
+        path: "lists/:listId/items/:itemId",
+        initialEntry: "/lists/LS_1/items/IT_1",
+      });
+      await waitFor(() => {
+        expect(screen.getAllByText("Buy windshield wipers for truck").length).toBeGreaterThan(0);
+      });
+    });
+
+    it("opens the detail panel", () => {
+      // Assert
+      const panel = document.querySelector("aside.app-detail");
+      expect(panel).toBeInTheDocument();
+      expect(panel).toHaveClass("is-hidden-touch");
+    });
+
+    it("marks the item row as active", () => {
+      // Assert
+      const row = screen.getAllByText("Buy windshield wipers for truck")[0].closest(".task-row");
+      expect(row).toHaveClass("is-active");
+    });
   });
 });
