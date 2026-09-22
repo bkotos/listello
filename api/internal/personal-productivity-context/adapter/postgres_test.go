@@ -41,3 +41,30 @@ func TestPostgresListRepository_SaveAndGetAll(t *testing.T) {
 	assert.Equal(t, work.ID, got[0].ID)
 	assert.Equal(t, personal.ID, got[1].ID)
 }
+
+func TestPostgresListRepository_Delete_RemovesList(t *testing.T) {
+	dsn := os.Getenv("LISTELLO_TEST_POSTGRES_DSN")
+	if dsn == "" {
+		t.Skip("LISTELLO_TEST_POSTGRES_DSN not set")
+	}
+
+	workspace := sqlite.NewWorkspaceDB()
+	require.NoError(t, workspace.Open(sqlite.EnginePostgres, dsn))
+	t.Cleanup(func() { _ = workspace.Close() })
+
+	db, err := workspace.DB()
+	require.NoError(t, err)
+	_, err = db.Exec(`TRUNCATE items, lists CASCADE`)
+	require.NoError(t, err)
+
+	repo := adapter.NewSQLiteListRepository(workspace)
+	list, _, err := domain.CreateList("Next actions")
+	require.NoError(t, err)
+	require.NoError(t, repo.Save(list))
+
+	err = repo.Delete(list)
+	require.NoError(t, err)
+	_, err = repo.GetByID(list.ID)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, `list "`+list.ID+`" not found`)
+}

@@ -80,3 +80,21 @@ func TestSQLiteListRepository_GetAll_SaveAgainDoesNotChangeOrder(t *testing.T) {
 	assert.Equal(t, personal.ID, got[1].ID)
 	assert.Equal(t, "Work renamed", got[0].Name)
 }
+
+func TestSQLiteListRepository_Delete_RemovesList(t *testing.T) {
+	// Arrange
+	workspace := openWorkspaceDB(t, "lists.db")
+	repo := adapter.NewSQLiteListRepository(workspace)
+	list, _, err := domain.CreateList("Next actions")
+	require.NoError(t, err)
+	require.NoError(t, repo.Save(list))
+
+	// Act
+	err = repo.Delete(list)
+
+	// Assert
+	require.NoError(t, err)
+	_, err = repo.GetByID(list.ID)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, `list "`+list.ID+`" not found`)
+}
