@@ -10,5 +10,6 @@ func NewList(container Container) *cobra.Command {
 		Short: "Manage lists",
 	}
 	cmd.AddCommand(NewListCreate(container))
+	cmd.AddCommand(NewListDelete(container))
 	return cmd
 }

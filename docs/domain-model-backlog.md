@@ -71,7 +71,7 @@ Read the mockup source under `mockup/task-management-system-bulma/` as well. **D
 - [x] Adapter repository
 - [x] Bootstrap
 - [x] API handler
-- [ ] CLI
+- [x] CLI
 - [ ] API client
 - [ ] React Query hooks
 - [ ] UI
