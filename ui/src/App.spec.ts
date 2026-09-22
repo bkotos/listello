@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
 import type { ListelloInstanceResponse } from "api-types/listello-instance";
 import { MemoryRouter } from "react-router-dom";
@@ -17,6 +17,7 @@ vi.mock("./lib/api/list-client", () => ({
   getAllLists: vi.fn(),
   getList: vi.fn(),
   createList: vi.fn(),
+  deleteList: vi.fn(),
 }));
 
 vi.mock("./lib/api/item-client", () => ({
@@ -30,7 +31,7 @@ vi.mock("./lib/api/item-client", () => ({
 
 import { getDefaultPersistenceLocation, getInstance } from "./lib/api/instance-client";
 import { getAllItems } from "./lib/api/item-client";
-import { getAllLists, getList } from "./lib/api/list-client";
+import { deleteList, getAllLists, getList } from "./lib/api/list-client";
 
 const existingInstance: ListelloInstanceResponse = {
   HostingMode: "",
@@ -104,6 +105,53 @@ describe("App", () => {
       });
     },
   );
+
+  it("calls deleteList when Delete Work is clicked", async () => {
+    // Arrange
+    vi.mocked(getInstance).mockResolvedValue(existingInstance);
+    vi.mocked(getAllLists).mockResolvedValue([
+      { ID: "LS_1", Name: "Work" },
+      { ID: "LS_2", Name: "Personal" },
+    ]);
+    vi.mocked(deleteList).mockResolvedValue(undefined);
+    renderApp(["/inbox"]);
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: "Work" })).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Delete Work" }));
+
+    // Assert
+    expect(deleteList).toHaveBeenCalledWith("LS_1");
+  });
+
+  it("reloads lists after deleteList is called", async () => {
+    // Arrange
+    vi.mocked(getInstance).mockResolvedValue(existingInstance);
+    vi.mocked(getAllLists)
+      .mockResolvedValueOnce([
+        { ID: "LS_1", Name: "Work" },
+        { ID: "LS_2", Name: "Personal" },
+      ])
+      .mockResolvedValueOnce([{ ID: "LS_2", Name: "Personal" }]);
+    vi.mocked(deleteList).mockResolvedValue(undefined);
+    renderApp(["/inbox"]);
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: "Work" })).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllLists).toHaveBeenCalledTimes(1);
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Delete Work" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllLists).toHaveBeenCalledTimes(2);
+    });
+  });
 
   it("shows the list when visiting an item route", async () => {
     // Arrange
