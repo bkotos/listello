@@ -41,7 +41,7 @@ func CreateInbox(space Space) (List, Event, error) {
 
 // Delete deletes the list and raises a ListDeleted event.
 func (l *List) Delete() (Event, error) {
-	return Event{}, fmt.Errorf("not implemented")
+	return event.NewEvent(EventListDeleted, EventMetadataListDeleted{List: *l}, 1), nil
 }
 
 // CreateFirstList creates the user's first non-inbox list and raises ListCreated and FirstListCreated events.

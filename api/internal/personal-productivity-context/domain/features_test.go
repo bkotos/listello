@@ -500,8 +500,9 @@ func (s *suiteState) theItemsShouldHaveDifferentIDs(ctx context.Context, titleA,
 
 func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfList(ctx context.Context, eventName, listName string) {
 	t := godog.T(ctx)
-	require.Contains(t, s.lists, listName)
-	s.eventOccurredWithID(ctx, eventName, s.lists[listName].ID)
+	id, ok := s.listID(listName)
+	require.Truef(t, ok, "unknown list %q", listName)
+	s.eventOccurredWithID(ctx, eventName, id)
 }
 
 func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfItem(ctx context.Context, eventName, title string) {
@@ -509,6 +510,14 @@ func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfItem(ctx context.Context
 	id, ok := s.itemID(title)
 	require.Truef(t, ok, "unknown item %q", title)
 	s.eventOccurredWithID(ctx, eventName, id)
+}
+
+func (s *suiteState) listID(name string) (string, bool) {
+	if list, ok := s.lists[name]; ok {
+		return list.ID, true
+	}
+	list, ok := s.deletedLists[name]
+	return list.ID, ok
 }
 
 func (s *suiteState) itemID(title string) (string, bool) {
