@@ -2,7 +2,7 @@
 
 Tracks command/event pairs from [domain-model.md](domain-model.md) that are **not yet in the code domain**. Check items off as each vertical slice lands.
 
-Source: event storming → `docs/domain-model.md`. This list is the gap vs `api/internal/personal-productivity-context/domain` and `api/internal/listello-instance-context/domain`. It does not track misalignments (extra pairing commands, `standalone-web` vs the storming hosting names, item-level priority using a subtask event, and so on).
+Source: event storming → `docs/domain-model.md`. This list is the gap vs `api/internal/personal-productivity-context/domain` and `api/internal/listello-instance-context/domain`. It does not track misalignments (extra pairing commands, `standalone-web` vs the storming hosting names, item-level `ItemPriorityChanged`, and so on).
 
 ## How to work a slice
 
