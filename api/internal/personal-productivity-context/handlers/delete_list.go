@@ -1,0 +1,32 @@
+package handlers
+
+import (
+	"net/http"
+	"strings"
+
+	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
+
+	util "github.com/bkotos/listello/internal/util"
+)
+
+func DeleteList(listService application.ListService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		if id == "" {
+			util.WriteError(w, http.StatusBadRequest, "id is required")
+			return
+		}
+
+		err := listService.DeleteList(id)
+		if err != nil {
+			if strings.Contains(err.Error(), "not found") {
+				util.WriteError(w, http.StatusNotFound, err.Error())
+				return
+			}
+			util.WriteError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
