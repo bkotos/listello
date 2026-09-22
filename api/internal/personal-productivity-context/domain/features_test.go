@@ -576,7 +576,7 @@ func (s *suiteState) aEventShouldHaveOccurredWithPriority(ctx context.Context, e
 	require.Truef(
 		godog.T(ctx),
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			meta, ok := e.Metadata.(domain.EventMetadataSubtaskPriorityChanged)
+			meta, ok := e.Metadata.(domain.EventMetadataItemPriorityChanged)
 			return e.Name == domain.EventName(eventName) && ok && meta.Priority == domain.ItemPriority(priority)
 		}),
 		"expected event %q with priority %q; got %v", eventName, priority, eventSummaries(s.events),
@@ -625,7 +625,7 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataDueDateRemovedFromItem,
 		domain.EventMetadataTagAddedToItem,
 		domain.EventMetadataTagRemovedFromItem,
-		domain.EventMetadataSubtaskPriorityChanged,
+		domain.EventMetadataItemPriorityChanged,
 		domain.EventMetadataItemMovedToOtherList,
 		domain.EventMetadataItemLinkedAsChildOfItem:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()

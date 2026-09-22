@@ -118,9 +118,9 @@ Feature: Capture and refine an inbox item
   Scenario Outline: Changing the priority of a captured item
     Given a captured item "Schedule dentist" exists
     When the owner changes the priority of the item "Schedule dentist" to "<priority>"
-    Then a "SubtaskPriorityChanged" event should have occurred
-    And a "SubtaskPriorityChanged" event should have occurred with the ID of item "Schedule dentist"
-    And a "SubtaskPriorityChanged" event should have occurred with priority "<priority>"
+    Then a "ItemPriorityChanged" event should have occurred
+    And a "ItemPriorityChanged" event should have occurred with the ID of item "Schedule dentist"
+    And a "ItemPriorityChanged" event should have occurred with priority "<priority>"
     And the item "Schedule dentist" should have priority "<priority>"
 
     Examples:
@@ -133,8 +133,8 @@ Feature: Capture and refine an inbox item
     Given a captured item "Schedule dentist" exists
     When the owner changes the priority of the item "Schedule dentist" to "high"
     And the owner changes the priority of the item "Schedule dentist" to "no priority"
-    Then a "SubtaskPriorityChanged" event should have occurred
-    And a "SubtaskPriorityChanged" event should have occurred with priority "no priority"
+    Then a "ItemPriorityChanged" event should have occurred
+    And a "ItemPriorityChanged" event should have occurred with priority "no priority"
     And the item "Schedule dentist" should have priority "no priority"
 
   Scenario: Moving a captured item to a list
@@ -160,7 +160,7 @@ Feature: Capture and refine an inbox item
     And a "ItemDescriptionChanged" event should have occurred
     And a "DueDateAddedToItem" event should have occurred
     And a "TagAddedToItem" event should have occurred
-    And a "SubtaskPriorityChanged" event should have occurred
+    And a "ItemPriorityChanged" event should have occurred
     And a "ItemMovedToOtherList" event should have occurred
     And the item "Schedule dentist" should have description "Call the clinic on Monday"
     And the item "Schedule dentist" should be due on "2026-08-03T00:00:00Z"
