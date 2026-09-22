@@ -2,7 +2,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
 import type { ListelloInstanceResponse } from "api-types/listello-instance";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AppProvider } from "./contexts/AppContext";
 import { createQueryWrapper } from "./test/renderWithQueryClient";
 import App from "./App";
@@ -10,6 +10,7 @@ import App from "./App";
 vi.mock("./lib/api/instance-client", () => ({
   getInstance: vi.fn(),
   createInstance: vi.fn(),
+  getDefaultPersistenceLocation: vi.fn(),
 }));
 
 vi.mock("./lib/api/list-client", () => ({
@@ -18,7 +19,7 @@ vi.mock("./lib/api/list-client", () => ({
   createList: vi.fn(),
 }));
 
-import { getInstance } from "./lib/api/instance-client";
+import { getDefaultPersistenceLocation, getInstance } from "./lib/api/instance-client";
 import { getAllLists } from "./lib/api/list-client";
 
 const existingInstance: ListelloInstanceResponse = {
@@ -35,7 +36,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function renderApp() {
+function renderApp(initialEntries = ["/"]) {
   const { QueryWrapper } = createQueryWrapper();
 
   return render(
@@ -44,7 +45,7 @@ function renderApp() {
       null,
       createElement(
         MemoryRouter,
-        { initialEntries: ["/"] },
+        { initialEntries },
         createElement(AppProvider, null, createElement(App)),
       ),
     ),
@@ -93,4 +94,46 @@ describe("App", () => {
       });
     },
   );
+
+  describe("when visiting /onboarding and the instance does not exist", () => {
+    beforeEach(async () => {
+      vi.mocked(getInstance).mockResolvedValue(null);
+      vi.mocked(getDefaultPersistenceLocation).mockResolvedValue({
+        Location: "/Users/api/Library/Application Support/listello",
+      });
+      vi.mocked(getAllLists).mockResolvedValue([]);
+      renderApp(["/onboarding"]);
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", { name: "Welcome to Listello" }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("shows the Welcome heading", () => {
+      // Assert
+      expect(
+        screen.getByRole("heading", { name: "Welcome to Listello" }),
+      ).toBeInTheDocument();
+    });
+
+    describe("when the page is refreshed", () => {
+      beforeEach(async () => {
+        cleanup();
+        renderApp(["/onboarding"]);
+        await waitFor(() => {
+          expect(
+            screen.getByRole("heading", { name: "Welcome to Listello" }),
+          ).toBeInTheDocument();
+        });
+      });
+
+      it("shows the Welcome heading", () => {
+        // Assert
+        expect(
+          screen.getByRole("heading", { name: "Welcome to Listello" }),
+        ).toBeInTheDocument();
+      });
+    });
+  });
 });
