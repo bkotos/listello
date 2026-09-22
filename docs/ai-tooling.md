@@ -388,11 +388,11 @@ See [.cursor/skills/create-ui-component/examples.md](../.cursor/skills/create-ui
 
 ### `implement-domain-backlog`
 
-Walks [docs/domain-model-backlog.md](domain-model-backlog.md) from the top and implements the **next unchecked checkbox**: one layer, one PR. Marks that line `[x]` in the backlog file in the same PR, then stops for review and merge. Invoke again after merge to continue.
+Walks **one command/event pair** in [docs/domain-model-backlog.md](domain-model-backlog.md) (one `###` heading) through every remaining layer checkbox. Each checkbox is its own PR. The agent marks that line `[x]` in the same PR, waits for merge, then continues to the next layer in the same run. Invoke again when that command is done.
 
-**In scope:** picking the first `- [ ]`, dispatching to the matching layer skill (or domain/bootstrap), TDD red → stop → green, checking off that box, opening one PR.
+**In scope:** picking the command (named, or first heading with a `- [ ]`), dispatching each checkbox to the matching layer skill (or domain/bootstrap), TDD red → stop → green, checking off that box, one PR per layer, waiting for merge.
 
-**Out of scope:** the rest of the vertical slice; editing the Next.js mockup.
+**Out of scope:** other command/event pairs in the same invoke; editing the Next.js mockup.
 
 Skill details: [.cursor/skills/implement-domain-backlog/SKILL.md](../.cursor/skills/implement-domain-backlog/SKILL.md). Slash command: [.cursor/commands/implement-domain-backlog.md](../.cursor/commands/implement-domain-backlog.md).
 
@@ -402,21 +402,22 @@ Skill details: [.cursor/skills/implement-domain-backlog/SKILL.md](../.cursor/ski
 |------|-------------|
 | **Slash command** | `/implement-domain-backlog` in Agent chat |
 | **Explicit** | `@implement-domain-backlog` or *"use the implement-domain-backlog skill"* |
-| **Auto-discover** | *"Knock off the next domain model backlog item"* / *"Continue the event-storming backlog"* |
+| **Auto-discover** | *"Implement Comment → Item Commented On from the domain backlog"* / *"Knock off the next domain-model command"* |
 
 Example prompts:
 
 - `/implement-domain-backlog`
-- *"Implement the next unchecked checkbox in docs/domain-model-backlog.md"*
-- *"Continue the domain backlog"* (after the previous PR is merged)
+- *"Implement Comment → Item Commented On from docs/domain-model-backlog.md"*
+- *"Continue"* (after the current layer PR is merged — same run, next checkbox)
 
 #### What the agent will do
 
 ```mermaid
 flowchart TD
     start["/implement-domain-backlog"] --> read[Read domain-model-backlog.md]
-    read --> pick[First unchecked checkbox]
-    pick --> layer[Follow matching layer skill]
+    read --> pick[One command/event heading]
+    pick --> box[Next unchecked checkbox under it]
+    box --> layer[Follow matching layer skill]
     layer --> red[Write failing spec]
     red --> stop[STOP — summarize for review]
     stop --> approved{You approve?}
@@ -424,11 +425,13 @@ flowchart TD
     approved -->|no| red
     green --> check[Mark checkbox x in backlog md]
     check --> pr[Open one PR]
-    pr --> wait[Stop — wait for merge]
-    wait --> again[Invoke slash command again]
+    pr --> wait[Wait for merge]
+    wait --> more{More checkboxes on this command?}
+    more -->|yes| box
+    more -->|no| done[Stop — invoke again for the next command]
 ```
 
-First checkbox today is **Delete List → Domain**. After that PR merges, the same command picks **Delete List → Application service**, and so on.
+Example: Comment → Item Commented On walks Domain PR, then Application PR, then Adapter PR, and so on, without a new slash command between them. After UI is merged, invoke again for the next `###` heading.
 
 ## Adding more skills
 
