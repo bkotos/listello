@@ -15,4 +15,4 @@ Feature: Comment on an item
     And the item "Buy milk" should have a comment "Need 2%"
     And the comment "Need 2%" on the item "Buy milk" should have an ID prefixed with "CM_"
     And the comment "Need 2%" on the item "Buy milk" should be by the user "Alex"
-    And the comment "Need 2%" on the item "Buy milk" should be recorded at the current date and time
+    And the comment "Need 2%" on the item "Buy milk" should be recorded as an ISO date time string

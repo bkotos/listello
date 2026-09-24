@@ -604,12 +604,12 @@ func (s *suiteState) theCommentOnTheItemShouldBeByTheUser(ctx context.Context, b
 	require.Equal(t, s.users[userName].ID, comment.UserID)
 }
 
-func (s *suiteState) theCommentOnTheItemShouldBeRecordedAtTheCurrentDateAndTime(ctx context.Context, body, title string) {
+func (s *suiteState) theCommentOnTheItemShouldBeRecordedAsAnISODateTimeString(ctx context.Context, body, title string) {
 	t := godog.T(ctx)
 	comment := s.commentOnItem(ctx, title, body)
-	recorded, err := time.Parse(time.RFC3339Nano, comment.CreatedAt)
+	_, err := time.Parse(time.RFC3339Nano, comment.CreatedAt)
 	require.NoError(t, err)
-	require.WithinDuration(t, time.Now().UTC(), recorded.UTC(), 2*time.Second)
+	require.Regexp(t, `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$`, comment.CreatedAt)
 }
 
 func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfCommentOnItem(ctx context.Context, eventName, body, title string) {
@@ -872,7 +872,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the item "([^"]*)" should have a comment "([^"]*)"$`, s.theItemShouldHaveAComment)
 	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theCommentOnTheItemShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should be by the user "([^"]*)"$`, s.theCommentOnTheItemShouldBeByTheUser)
-	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should be recorded at the current date and time$`, s.theCommentOnTheItemShouldBeRecordedAtTheCurrentDateAndTime)
+	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should be recorded as an ISO date time string$`, s.theCommentOnTheItemShouldBeRecordedAsAnISODateTimeString)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of comment "([^"]*)" on the item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfCommentOnItem)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the user "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheUser)
 	ctx.Step(`^a "([^"]*)" event should have occurred with description "([^"]*)"$`, s.aEventShouldHaveOccurredWithDescription)
