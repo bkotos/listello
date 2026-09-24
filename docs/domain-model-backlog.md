@@ -158,7 +158,7 @@ Child entity of Item. No `Comment` type exists yet.
 - [x] Bootstrap
 - [x] API handler
 - [x] CLI
-- [ ] API client
+- [x] API client
 - [ ] React Query hooks
 - [ ] UI
 
