@@ -39,8 +39,9 @@ func NewListService(workspace *sqlite.WorkspaceDB, eventLog *os.File) applicatio
 func NewItemService(workspace *sqlite.WorkspaceDB, eventLog *os.File) application.ItemService {
 	listRepo := adapter.NewSQLiteListRepository(workspace)
 	itemRepo := adapter.NewSQLiteItemRepository(workspace)
+	userRepo := adapter.NewSQLiteUserRepository(workspace)
 	events := adapter.NewLoggingEventPublisher(eventLog)
-	return application.NewItemService(listRepo, itemRepo, events)
+	return application.NewItemService(listRepo, itemRepo, userRepo, events)
 }
 
 // NewUserService wires user persistence and event publishing into UserService.

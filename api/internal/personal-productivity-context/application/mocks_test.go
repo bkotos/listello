@@ -792,6 +792,66 @@ func (_m *MockUserRepository) EXPECT() *MockUserRepository_Expecter {
 	return &MockUserRepository_Expecter{mock: &_m.Mock}
 }
 
+// GetByID provides a mock function for the type MockUserRepository
+func (_mock *MockUserRepository) GetByID(id string) (domain.User, error) {
+	ret := _mock.Called(id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByID")
+	}
+
+	var r0 domain.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (domain.User, error)); ok {
+		return returnFunc(id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) domain.User); ok {
+		r0 = returnFunc(id)
+	} else {
+		r0 = ret.Get(0).(domain.User)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserRepository_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
+type MockUserRepository_GetByID_Call struct {
+	*mock.Call
+}
+
+// GetByID is a helper method to define mock.On call
+//   - id string
+func (_e *MockUserRepository_Expecter) GetByID(id any) *MockUserRepository_GetByID_Call {
+	return &MockUserRepository_GetByID_Call{Call: _e.mock.On("GetByID", id)}
+}
+
+func (_c *MockUserRepository_GetByID_Call) Run(run func(id string)) *MockUserRepository_GetByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserRepository_GetByID_Call) Return(user domain.User, err error) *MockUserRepository_GetByID_Call {
+	_c.Call.Return(user, err)
+	return _c
+}
+
+func (_c *MockUserRepository_GetByID_Call) RunAndReturn(run func(id string) (domain.User, error)) *MockUserRepository_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Save provides a mock function for the type MockUserRepository
 func (_mock *MockUserRepository) Save(user domain.User) error {
 	ret := _mock.Called(user)

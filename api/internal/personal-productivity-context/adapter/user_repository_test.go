@@ -32,3 +32,33 @@ func TestSQLiteUserRepository_Save(t *testing.T) {
 	assert.Equal(t, user.ID, id)
 	assert.Equal(t, "Alex", name)
 }
+
+func TestSQLiteUserRepository_SaveAndGetByID(t *testing.T) {
+	// Arrange
+	workspace := openWorkspaceDB(t, "users.db")
+	repo := adapter.NewSQLiteUserRepository(workspace)
+	user, _, err := domain.CreateUser("Alex")
+	require.NoError(t, err)
+	require.NoError(t, repo.Save(user))
+
+	// Act
+	got, err := repo.GetByID(user.ID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, user.ID, got.ID)
+	assert.Equal(t, user.Name, got.Name)
+}
+
+func TestSQLiteUserRepository_GetByID_NotFound(t *testing.T) {
+	// Arrange
+	workspace := openWorkspaceDB(t, "users.db")
+	repo := adapter.NewSQLiteUserRepository(workspace)
+
+	// Act
+	_, err := repo.GetByID("US_missing")
+
+	// Assert
+	require.Error(t, err)
+	assert.ErrorContains(t, err, `user "US_missing" not found`)
+}
