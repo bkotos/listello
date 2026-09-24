@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/uptrace/bun"
+
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 	"github.com/bkotos/listello/internal/sqlite"
 )
@@ -43,6 +45,9 @@ func (r *SQLiteItemRepository) Save(item domain.Item) error {
 	if err != nil {
 		return fmt.Errorf("save item: %w", err)
 	}
+	if err := saveComments(db, item); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -60,11 +65,16 @@ func (r *SQLiteItemRepository) GetByID(id string) (domain.Item, error) {
 	if err != nil {
 		return domain.Item{}, fmt.Errorf("find item: %w", err)
 	}
+	comments, err := commentsForItem(db, row.ID)
+	if err != nil {
+		return domain.Item{}, err
+	}
 	return domain.Item{
-		ID:     row.ID,
-		ListID: row.ListID,
-		Title:  row.Title,
-		State:  domain.ItemState(row.State),
+		ID:       row.ID,
+		ListID:   row.ListID,
+		Title:    row.Title,
+		State:    domain.ItemState(row.State),
+		Comments: comments,
 	}, nil
 }
 
@@ -106,4 +116,48 @@ func (r *SQLiteItemRepository) Delete(id string) error {
 		return fmt.Errorf("delete item: %w", err)
 	}
 	return nil
+}
+
+func saveComments(db *bun.DB, item domain.Item) error {
+	for _, comment := range item.Comments {
+		_, err := db.NewInsert().
+			Model(&commentRow{
+				ID:        comment.ID,
+				ItemID:    item.ID,
+				UserID:    comment.UserID,
+				Body:      comment.Body,
+				CreatedAt: comment.CreatedAt,
+			}).
+			On("CONFLICT (id) DO UPDATE").
+			Set("item_id = EXCLUDED.item_id").
+			Set("user_id = EXCLUDED.user_id").
+			Set("body = EXCLUDED.body").
+			Exec(context.Background())
+		if err != nil {
+			return fmt.Errorf("save comment: %w", err)
+		}
+	}
+	return nil
+}
+
+func commentsForItem(db *bun.DB, itemID string) ([]domain.Comment, error) {
+	var rows []commentRow
+	err := db.NewSelect().
+		Model(&rows).
+		Where("item_id = ?", itemID).
+		Order("created_at ASC", "id ASC").
+		Scan(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("find comments: %w", err)
+	}
+	var comments []domain.Comment
+	for _, row := range rows {
+		comments = append(comments, domain.Comment{
+			ID:        row.ID,
+			UserID:    row.UserID,
+			Body:      row.Body,
+			CreatedAt: row.CreatedAt,
+		})
+	}
+	return comments, nil
 }

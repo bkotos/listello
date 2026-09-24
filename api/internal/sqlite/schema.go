@@ -44,5 +44,17 @@ CREATE TABLE IF NOT EXISTS spaces (
 	if _, err := db.Exec(spacesQ); err != nil {
 		return fmt.Errorf("migrate spaces: %w", err)
 	}
+	const commentsQ = `
+CREATE TABLE IF NOT EXISTS comments (
+	id TEXT PRIMARY KEY NOT NULL,
+	item_id TEXT NOT NULL,
+	user_id TEXT NOT NULL,
+	body TEXT NOT NULL,
+	created_at TEXT NOT NULL,
+	FOREIGN KEY (item_id) REFERENCES items(id)
+);`
+	if _, err := db.Exec(commentsQ); err != nil {
+		return fmt.Errorf("migrate comments: %w", err)
+	}
 	return nil
 }
