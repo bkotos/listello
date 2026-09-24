@@ -155,7 +155,7 @@ Child entity of Item. No `Comment` type exists yet.
 - [x] Domain
 - [x] Application service
 - [x] Adapter repository
-- [ ] Bootstrap
+- [x] Bootstrap
 - [ ] API handler
 - [ ] CLI
 - [ ] API client
