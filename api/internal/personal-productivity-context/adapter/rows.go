@@ -30,3 +30,12 @@ type spaceRow struct {
 	Name          string `bun:"name"`
 	UserID        string `bun:"user_id"`
 }
+
+type commentRow struct {
+	bun.BaseModel `bun:"table:comments"`
+	ID            string `bun:"id,pk"`
+	ItemID        string `bun:"item_id"`
+	UserID        string `bun:"user_id"`
+	Body          string `bun:"body"`
+	CreatedAt     string `bun:"created_at"`
+}

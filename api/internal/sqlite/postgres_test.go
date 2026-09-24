@@ -10,6 +10,29 @@ import (
 	"github.com/bkotos/listello/internal/sqlite"
 )
 
+func TestOpenPostgres_ConcurrentMigrate(t *testing.T) {
+	dsn := os.Getenv("LISTELLO_TEST_POSTGRES_DSN")
+	if dsn == "" {
+		t.Skip("LISTELLO_TEST_POSTGRES_DSN not set")
+	}
+
+	const n = 8
+	errs := make(chan error, n)
+	for i := 0; i < n; i++ {
+		go func() {
+			db, err := sqlite.OpenPostgres(dsn)
+			if err != nil {
+				errs <- err
+				return
+			}
+			errs <- db.Close()
+		}()
+	}
+	for i := 0; i < n; i++ {
+		require.NoError(t, <-errs)
+	}
+}
+
 func TestWorkspaceDB_Open_Postgres_RoundTrip(t *testing.T) {
 	dsn := os.Getenv("LISTELLO_TEST_POSTGRES_DSN")
 	if dsn == "" {
