@@ -27,16 +27,18 @@ type ItemService interface {
 type itemService struct {
 	listRepository ListRepository
 	itemRepository ItemRepository
+	userRepository UserRepository
 	eventPublisher EventPublisher
 }
 
 var _ ItemService = (*itemService)(nil)
 
 // NewItemService returns an ItemService backed by the given repositories and publisher.
-func NewItemService(listRepository ListRepository, itemRepository ItemRepository, eventPublisher EventPublisher) ItemService {
+func NewItemService(listRepository ListRepository, itemRepository ItemRepository, userRepository UserRepository, eventPublisher EventPublisher) ItemService {
 	return &itemService{
 		listRepository: listRepository,
 		itemRepository: itemRepository,
+		userRepository: userRepository,
 		eventPublisher: eventPublisher,
 	}
 }
@@ -167,7 +169,11 @@ func (s *itemService) CommentItem(itemID, userID, body string) (domain.Item, err
 	if err != nil {
 		return domain.Item{}, err
 	}
-	event, err := (&item).Comment(domain.User{ID: userID}, body)
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	event, err := (&item).Comment(user, body)
 	if err != nil {
 		return domain.Item{}, err
 	}

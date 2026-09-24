@@ -2,6 +2,8 @@ package adapter
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
@@ -33,4 +35,21 @@ func (r *SQLiteUserRepository) Save(user domain.User) error {
 		return fmt.Errorf("save user: %w", err)
 	}
 	return nil
+}
+
+// GetByID returns the user with the given ID.
+func (r *SQLiteUserRepository) GetByID(id string) (domain.User, error) {
+	db, err := openBun(r.workspace)
+	if err != nil {
+		return domain.User{}, fmt.Errorf("find user: %w", err)
+	}
+	row := new(userRow)
+	err = db.NewSelect().Model(row).Where("id = ?", id).Scan(context.Background())
+	if errors.Is(err, sql.ErrNoRows) {
+		return domain.User{}, fmt.Errorf("user %q not found", id)
+	}
+	if err != nil {
+		return domain.User{}, fmt.Errorf("find user: %w", err)
+	}
+	return domain.User{ID: row.ID, Name: row.Name}, nil
 }

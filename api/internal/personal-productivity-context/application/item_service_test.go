@@ -20,8 +20,9 @@ func TestItemService_DefineItem_PersistsItem(t *testing.T) {
 	list := domain.List{ID: listID, Name: "Next actions"}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	listRepo.EXPECT().
 		GetByID(listID).
@@ -52,8 +53,9 @@ func TestItemService_DefineItem_PublishesEvent(t *testing.T) {
 	list := domain.List{ID: listID, Name: "Next actions"}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	var published domain.Event
 	listRepo.EXPECT().
@@ -89,8 +91,9 @@ func TestItemService_GetAll_ReturnsItemsFromRepository(t *testing.T) {
 	}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	itemRepo.EXPECT().
 		GetAll(listID).
@@ -110,8 +113,9 @@ func TestItemService_CompleteItem_PersistsItem(t *testing.T) {
 	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	itemRepo.EXPECT().
 		GetByID(itemID).
@@ -139,8 +143,9 @@ func TestItemService_CompleteItem_PublishesEvent(t *testing.T) {
 	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	var published domain.Event
 	itemRepo.EXPECT().
@@ -174,8 +179,9 @@ func TestItemService_UncompleteItem_PersistsItem(t *testing.T) {
 	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemComplete}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	itemRepo.EXPECT().
 		GetByID(itemID).
@@ -203,8 +209,9 @@ func TestItemService_UncompleteItem_PublishesEvent(t *testing.T) {
 	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemComplete}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	var published domain.Event
 	itemRepo.EXPECT().
@@ -238,8 +245,9 @@ func TestItemService_DeleteItem_DeletesItem(t *testing.T) {
 	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	itemRepo.EXPECT().
 		GetByID(itemID).
@@ -264,8 +272,9 @@ func TestItemService_DeleteItem_PublishesEvent(t *testing.T) {
 	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	var published domain.Event
 	itemRepo.EXPECT().
@@ -302,8 +311,9 @@ func TestItemService_ModifyItemTitle_PersistsItem(t *testing.T) {
 	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "dentist", State: domain.ItemOutstanding}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	itemRepo.EXPECT().
 		GetByID(itemID).
@@ -334,8 +344,9 @@ func TestItemService_ModifyItemTitle_PublishesEvent(t *testing.T) {
 	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "dentist", State: domain.ItemOutstanding}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	var published domain.Event
 	itemRepo.EXPECT().
@@ -374,8 +385,9 @@ func TestItemService_MoveItem_PersistsItem(t *testing.T) {
 	list := domain.List{ID: listID, Name: "Next actions"}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	itemRepo.EXPECT().
 		GetByID(itemID).
@@ -410,8 +422,9 @@ func TestItemService_MoveItem_PublishesEvent(t *testing.T) {
 	list := domain.List{ID: listID, Name: "Next actions"}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	var published domain.Event
 	itemRepo.EXPECT().
@@ -451,14 +464,19 @@ func TestItemService_CommentItem_PersistsItem(t *testing.T) {
 		body   = "Need 2%"
 	)
 	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
+	user := domain.User{ID: userID, Name: "Alex"}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	itemRepo.EXPECT().
 		GetByID(itemID).
 		Return(item, nil)
+	userRepo.EXPECT().
+		GetByID(userID).
+		Return(user, nil)
 	itemRepo.EXPECT().
 		Save(mock.MatchedBy(func(saved domain.Item) bool {
 			return saved.ID == itemID && len(saved.Comments) == 1 && saved.Comments[0].Body == body && saved.Comments[0].UserID == userID
@@ -486,15 +504,20 @@ func TestItemService_CommentItem_PublishesEvent(t *testing.T) {
 		body   = "Need 2%"
 	)
 	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
+	user := domain.User{ID: userID, Name: "Alex"}
 	listRepo := NewMockListRepository(t)
 	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
 	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, publisher)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
 
 	var published domain.Event
 	itemRepo.EXPECT().
 		GetByID(itemID).
 		Return(item, nil)
+	userRepo.EXPECT().
+		GetByID(userID).
+		Return(user, nil)
 	itemRepo.EXPECT().
 		Save(mock.AnythingOfType("domain.Item")).
 		Return(nil)

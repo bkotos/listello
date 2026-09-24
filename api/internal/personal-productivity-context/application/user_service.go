@@ -7,6 +7,7 @@ import (
 // UserRepository persists users.
 type UserRepository interface {
 	Save(user domain.User) error
+	GetByID(id string) (domain.User, error)
 }
 
 // UserService defines user application operations.
