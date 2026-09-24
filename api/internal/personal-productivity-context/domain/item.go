@@ -177,5 +177,16 @@ func (i *Item) Move(list List) (Event, error) {
 
 // Comment adds a comment to the item and raises an ItemCommentedOn event.
 func (i *Item) Comment(user User, body string) (Event, error) {
-	return Event{}, fmt.Errorf("not implemented")
+	comment := Comment{
+		ID:        util.NewID("CM_"),
+		UserID:    user.ID,
+		Body:      body,
+		CreatedAt: time.Now().UTC().Format(time.RFC3339Nano),
+	}
+	i.Comments = append(i.Comments, comment)
+	return event.NewEvent(EventItemCommentedOn, EventMetadataItemCommentedOn{
+		ID:        i.ID,
+		CommentID: comment.ID,
+		UserID:    user.ID,
+	}, 1), nil
 }
