@@ -25,7 +25,6 @@ export interface MoveItemRequest {
  * CommentItemRequest is the HTTP request body for commenting on an item.
  */
 export interface CommentItemRequest {
-  userID: string;
   body: string;
 }
 /**
