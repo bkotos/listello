@@ -23,6 +23,7 @@ const (
 	EventItemPriorityChanged     EventName = "ItemPriorityChanged"
 	EventItemMovedToOtherList    EventName = "ItemMovedToOtherList"
 	EventItemLinkedAsChildOfItem EventName = "ItemLinkedAsChildOfItem"
+	EventItemCommentedOn         EventName = "ItemCommentedOn"
 	EventSpaceCreated            EventName = "SpaceCreated"
 	EventUserCreated             EventName = "UserCreated"
 	EventInboxCreated            EventName = "InboxCreated"
@@ -143,4 +144,11 @@ type EventMetadataItemMovedToOtherList struct {
 type EventMetadataItemLinkedAsChildOfItem struct {
 	ID       string
 	ParentID string
+}
+
+// EventMetadataItemCommentedOn is the payload for an ItemCommentedOn event.
+type EventMetadataItemCommentedOn struct {
+	ID        string
+	CommentID string
+	UserID    string
 }

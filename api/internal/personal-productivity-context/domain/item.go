@@ -36,8 +36,17 @@ type Item struct {
 	Description string
 	DueDate     string
 	Tags        []string
+	Comments    []Comment
 	Priority    ItemPriority
 	State       ItemState
+}
+
+// Comment is a note on an item.
+type Comment struct {
+	ID        string
+	UserID    string
+	Body      string
+	CreatedAt string
 }
 
 // IsOutstanding reports whether the item is outstanding.
@@ -164,4 +173,20 @@ func (i *Item) ChangePriority(priority ItemPriority) (Event, error) {
 func (i *Item) Move(list List) (Event, error) {
 	i.ListID = list.ID
 	return event.NewEvent(EventItemMovedToOtherList, EventMetadataItemMovedToOtherList{ID: i.ID, ListID: list.ID}, 1), nil
+}
+
+// Comment adds a comment to the item and raises an ItemCommentedOn event.
+func (i *Item) Comment(user User, body string) (Event, error) {
+	comment := Comment{
+		ID:        util.NewID("CM_"),
+		UserID:    user.ID,
+		Body:      body,
+		CreatedAt: time.Now().UTC().Format(time.RFC3339Nano),
+	}
+	i.Comments = append(i.Comments, comment)
+	return event.NewEvent(EventItemCommentedOn, EventMetadataItemCommentedOn{
+		ID:        i.ID,
+		CommentID: comment.ID,
+		UserID:    user.ID,
+	}, 1), nil
 }
