@@ -162,3 +162,30 @@ func TestSQLiteItemRepository_Delete_RemovesItem(t *testing.T) {
 	require.Error(t, err)
 	assert.ErrorContains(t, err, fmt.Sprintf("item %q not found", item.ID))
 }
+
+func TestSQLiteItemRepository_SaveAndGetByID_PersistsComments(t *testing.T) {
+	// Arrange
+	workspace := openWorkspaceDB(t, "items.db")
+	listRepo := adapter.NewSQLiteListRepository(workspace)
+	itemRepo := adapter.NewSQLiteItemRepository(workspace)
+
+	list, _, err := domain.CreateList("Next actions")
+	require.NoError(t, err)
+	require.NoError(t, listRepo.Save(list))
+
+	item, _, err := domain.DefineItem(list, "Buy milk")
+	require.NoError(t, err)
+	user, _, err := domain.CreateUser("Alex")
+	require.NoError(t, err)
+	_, err = item.Comment(user, "Need 2%")
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(item))
+
+	// Act
+	got, err := itemRepo.GetByID(item.ID)
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, got.Comments, 1)
+	assert.Equal(t, item.Comments[0], got.Comments[0])
+}
