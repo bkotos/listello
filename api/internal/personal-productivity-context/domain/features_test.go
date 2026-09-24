@@ -565,6 +565,51 @@ func (s *suiteState) aEventShouldHaveOccurredWithTitle(ctx context.Context, even
 	)
 }
 
+func (s *suiteState) theUserCommentsOnTheItem(ctx context.Context, body, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	event, err := s.items[title].Comment(body)
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theItemShouldHaveAComment(ctx context.Context, title, body string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	require.Truef(
+		t,
+		slices.ContainsFunc(s.items[title].Comments, func(c domain.Comment) bool {
+			return c.Body == body
+		}),
+		"expected item %q to have comment %q; got %+v", title, body, s.items[title].Comments,
+	)
+}
+
+func (s *suiteState) theCommentOnTheItemShouldHaveAnIDPrefixedWith(ctx context.Context, body, title, prefix string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	var found *domain.Comment
+	for i := range s.items[title].Comments {
+		if s.items[title].Comments[i].Body == body {
+			found = &s.items[title].Comments[i]
+			break
+		}
+	}
+	require.NotNilf(t, found, "expected item %q to have comment %q", title, body)
+	require.Truef(t, strings.HasPrefix(found.ID, prefix), "expected comment ID to start with %q; got %q", prefix, found.ID)
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithBody(ctx context.Context, eventName, body string) {
+	require.Truef(
+		godog.T(ctx),
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			meta, ok := e.Metadata.(domain.EventMetadataItemCommentedOn)
+			return e.Name == domain.EventName(eventName) && ok && meta.Body == body
+		}),
+		"expected event %q with body %q; got %v", eventName, body, eventSummaries(s.events),
+	)
+}
+
 func (s *suiteState) aEventShouldHaveOccurredWithDescription(ctx context.Context, eventName, description string) {
 	require.Truef(
 		godog.T(ctx),
@@ -672,7 +717,8 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataTagRemovedFromItem,
 		domain.EventMetadataItemPriorityChanged,
 		domain.EventMetadataItemMovedToOtherList,
-		domain.EventMetadataItemLinkedAsChildOfItem:
+		domain.EventMetadataItemLinkedAsChildOfItem,
+		domain.EventMetadataItemCommentedOn:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
 	default:
 		return ""
@@ -794,6 +840,10 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred with the list ID of list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheListIDOfList)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the parent ID of item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheParentIDOfItem)
 	ctx.Step(`^a "([^"]*)" event should have occurred with title "([^"]*)"$`, s.aEventShouldHaveOccurredWithTitle)
+	ctx.Step(`^the user comments "([^"]*)" on the item "([^"]*)"$`, s.theUserCommentsOnTheItem)
+	ctx.Step(`^the item "([^"]*)" should have a comment "([^"]*)"$`, s.theItemShouldHaveAComment)
+	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theCommentOnTheItemShouldHaveAnIDPrefixedWith)
+	ctx.Step(`^a "([^"]*)" event should have occurred with body "([^"]*)"$`, s.aEventShouldHaveOccurredWithBody)
 	ctx.Step(`^a "([^"]*)" event should have occurred with description "([^"]*)"$`, s.aEventShouldHaveOccurredWithDescription)
 	ctx.Step(`^a "([^"]*)" event should have occurred with due date "([^"]*)"$`, s.aEventShouldHaveOccurredWithDueDate)
 	ctx.Step(`^a "([^"]*)" event should have occurred with tag "([^"]*)"$`, s.aEventShouldHaveOccurredWithTag)
