@@ -612,14 +612,29 @@ func (s *suiteState) theCommentOnTheItemShouldBeRecordedAtTheCurrentDateAndTime(
 	require.WithinDuration(t, time.Now().UTC(), recorded.UTC(), 2*time.Second)
 }
 
-func (s *suiteState) aEventShouldHaveOccurredWithBody(ctx context.Context, eventName, body string) {
+func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfCommentOnItem(ctx context.Context, eventName, body, title string) {
+	comment := s.commentOnItem(ctx, title, body)
 	require.Truef(
 		godog.T(ctx),
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
 			meta, ok := e.Metadata.(domain.EventMetadataItemCommentedOn)
-			return e.Name == domain.EventName(eventName) && ok && meta.Body == body
+			return e.Name == domain.EventName(eventName) && ok && meta.CommentID == comment.ID
 		}),
-		"expected event %q with body %q; got %v", eventName, body, eventSummaries(s.events),
+		"expected event %q with comment ID %q; got %v", eventName, comment.ID, eventSummaries(s.events),
+	)
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithTheUser(ctx context.Context, eventName, userName string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.users, userName)
+	userID := s.users[userName].ID
+	require.Truef(
+		t,
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			meta, ok := e.Metadata.(domain.EventMetadataItemCommentedOn)
+			return e.Name == domain.EventName(eventName) && ok && meta.UserID == userID
+		}),
+		"expected event %q with user ID %q; got %v", eventName, userID, eventSummaries(s.events),
 	)
 }
 
@@ -858,7 +873,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theCommentOnTheItemShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should be by the user "([^"]*)"$`, s.theCommentOnTheItemShouldBeByTheUser)
 	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should be recorded at the current date and time$`, s.theCommentOnTheItemShouldBeRecordedAtTheCurrentDateAndTime)
-	ctx.Step(`^a "([^"]*)" event should have occurred with body "([^"]*)"$`, s.aEventShouldHaveOccurredWithBody)
+	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of comment "([^"]*)" on the item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfCommentOnItem)
+	ctx.Step(`^a "([^"]*)" event should have occurred with the user "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheUser)
 	ctx.Step(`^a "([^"]*)" event should have occurred with description "([^"]*)"$`, s.aEventShouldHaveOccurredWithDescription)
 	ctx.Step(`^a "([^"]*)" event should have occurred with due date "([^"]*)"$`, s.aEventShouldHaveOccurredWithDueDate)
 	ctx.Step(`^a "([^"]*)" event should have occurred with tag "([^"]*)"$`, s.aEventShouldHaveOccurredWithTag)

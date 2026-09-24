@@ -148,6 +148,7 @@ type EventMetadataItemLinkedAsChildOfItem struct {
 
 // EventMetadataItemCommentedOn is the payload for an ItemCommentedOn event.
 type EventMetadataItemCommentedOn struct {
-	ID   string
-	Body string
+	ID        string
+	CommentID string
+	UserID    string
 }

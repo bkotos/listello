@@ -10,7 +10,8 @@ Feature: Comment on an item
     When the user "Alex" comments "Need 2%" on the item "Buy milk"
     Then a "ItemCommentedOn" event should have occurred
     And a "ItemCommentedOn" event should have occurred with the ID of item "Buy milk"
-    And a "ItemCommentedOn" event should have occurred with body "Need 2%"
+    And a "ItemCommentedOn" event should have occurred with the ID of comment "Need 2%" on the item "Buy milk"
+    And a "ItemCommentedOn" event should have occurred with the user "Alex"
     And the item "Buy milk" should have a comment "Need 2%"
     And the comment "Need 2%" on the item "Buy milk" should have an ID prefixed with "CM_"
     And the comment "Need 2%" on the item "Buy milk" should be by the user "Alex"
