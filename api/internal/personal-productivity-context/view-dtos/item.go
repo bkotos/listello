@@ -17,6 +17,11 @@ type MoveItemRequest struct {
 	ListID string `json:"listID"`
 }
 
+// CommentItemRequest is the HTTP request body for commenting on an item.
+type CommentItemRequest struct {
+	Body string `json:"body"`
+}
+
 // ItemDto is the HTTP representation of an item.
 type ItemDto struct {
 	ID          string   `json:"ID"`

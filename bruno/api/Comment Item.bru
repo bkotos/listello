@@ -1,0 +1,20 @@
+meta {
+  name: Comment Item
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{apiBase}}/api/items/IT_1/comment
+  body: json
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "body": "Need 2%"
+  }
+}
