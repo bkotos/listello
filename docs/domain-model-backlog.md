@@ -153,7 +153,7 @@ Child entity of Item. No `Comment` type exists yet.
 ### Comment → Item Commented On
 
 - [x] Domain
-- [ ] Application service
+- [x] Application service
 - [ ] Adapter repository
 - [ ] Bootstrap
 - [ ] API handler

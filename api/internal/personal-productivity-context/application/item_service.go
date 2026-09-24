@@ -1,8 +1,6 @@
 package application
 
 import (
-	"fmt"
-
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
@@ -165,5 +163,19 @@ func (s *itemService) MoveItem(itemID, listID string) (domain.Item, error) {
 
 // CommentItem comments on an item via the domain and persists it.
 func (s *itemService) CommentItem(itemID, userID, body string) (domain.Item, error) {
-	return domain.Item{}, fmt.Errorf("not implemented")
+	item, err := s.itemRepository.GetByID(itemID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	event, err := (&item).Comment(domain.User{ID: userID}, body)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.itemRepository.Save(item); err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.Item{}, err
+	}
+	return item, nil
 }
