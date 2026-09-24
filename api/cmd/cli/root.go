@@ -6,6 +6,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bkotos/listello/internal/bootstrap"
+	instanceadapter "github.com/bkotos/listello/internal/listello-instance-context/adapter"
+	instanceapp "github.com/bkotos/listello/internal/listello-instance-context/application"
+	ppadapter "github.com/bkotos/listello/internal/personal-productivity-context/adapter"
 	"github.com/bkotos/listello/internal/personal-productivity-context/cli-commands"
 	"github.com/bkotos/listello/internal/sqlite"
 )
@@ -41,6 +44,23 @@ func newRoot() (*cobra.Command, func()) {
 		eventLog := bootstrap.MustOpenEventLog("domain_events.log")
 		c.list = bootstrap.NewListService(db, eventLog)
 		c.item = bootstrap.NewItemService(db, eventLog)
+		userService := bootstrap.NewUserService(db, eventLog)
+		spaceService := bootstrap.NewSpaceService(db, eventLog)
+		locatorPath, err := instanceadapter.ListelloInstanceLocatorPath()
+		if err != nil {
+			return err
+		}
+		repo, err := instanceadapter.NewListelloInstanceRepository(locatorPath)
+		if err != nil {
+			return err
+		}
+		c.instance = instanceapp.NewListelloInstanceService(
+			repo,
+			instanceadapter.NewFilesystemPersistenceAdapter(),
+			ppadapter.NewLoggingEventPublisher(eventLog),
+			spaceService,
+			userService,
+		)
 		cleanup = func() {
 			db.Close()
 			eventLog.Close()
@@ -50,6 +70,7 @@ func newRoot() (*cobra.Command, func()) {
 
 	root.AddCommand(commands.NewList(c))
 	root.AddCommand(commands.NewItem(c))
+	root.AddCommand(commands.NewComment(c))
 	return root, func() {
 		if cleanup != nil {
 			cleanup()

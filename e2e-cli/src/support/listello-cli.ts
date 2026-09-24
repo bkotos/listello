@@ -17,14 +17,39 @@ export function dbPathFor(workdir: string): string {
   return path.join(workdir, "test.db");
 }
 
+export function isolatedEnv(workdir: string): NodeJS.ProcessEnv {
+  return {
+    ...process.env,
+    HOME: workdir,
+    XDG_CONFIG_HOME: path.join(workdir, ".config"),
+  };
+}
+
+export async function seedPairedUser(
+  dbPath: string,
+  env: NodeJS.ProcessEnv,
+): Promise<void> {
+  const result = await $({
+    cwd: apiDir,
+    quiet: true,
+    nothrow: true,
+    env,
+  })`go run e2eseed.go ${dbPath}`;
+  if (result.exitCode !== 0) {
+    throw new Error(`seed paired user failed: ${result.stderr || result.stdout}`);
+  }
+}
+
 export async function runListello(
   dbPath: string,
   args: string[],
+  env: NodeJS.ProcessEnv = process.env,
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   const result = await $({
     cwd: apiDir,
     quiet: true,
     nothrow: true,
+    env,
   })`go run ./cmd/cli --db ${dbPath} ${args}`;
 
   return {

@@ -23,7 +23,7 @@ func newCommentTestRoot(itemService application.ItemService, instanceService ins
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.AddCommand(NewComment(testContainer{item: itemService}))
+	root.AddCommand(NewComment(testContainer{item: itemService, instance: instanceService}))
 	return root
 }
 
