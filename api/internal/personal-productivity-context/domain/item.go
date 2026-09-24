@@ -43,8 +43,10 @@ type Item struct {
 
 // Comment is a note on an item.
 type Comment struct {
-	ID   string
-	Body string
+	ID        string
+	UserID    string
+	Body      string
+	CreatedAt string
 }
 
 // IsOutstanding reports whether the item is outstanding.
@@ -174,6 +176,6 @@ func (i *Item) Move(list List) (Event, error) {
 }
 
 // Comment adds a comment to the item and raises an ItemCommentedOn event.
-func (i *Item) Comment(body string) (Event, error) {
+func (i *Item) Comment(user User, body string) (Event, error) {
 	return Event{}, fmt.Errorf("not implemented")
 }

@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/cucumber/godog"
 	"github.com/stretchr/testify/require"
@@ -565,38 +566,50 @@ func (s *suiteState) aEventShouldHaveOccurredWithTitle(ctx context.Context, even
 	)
 }
 
-func (s *suiteState) theUserCommentsOnTheItem(ctx context.Context, body, title string) {
+func (s *suiteState) theUserCommentsOnTheItem(ctx context.Context, userName, body, title string) {
 	t := godog.T(ctx)
+	require.Contains(t, s.users, userName)
 	require.Contains(t, s.items, title)
-	event, err := s.items[title].Comment(body)
+	event, err := s.items[title].Comment(s.users[userName], body)
 	require.NoError(t, err)
 	s.record(event)
 }
 
-func (s *suiteState) theItemShouldHaveAComment(ctx context.Context, title, body string) {
+func (s *suiteState) commentOnItem(ctx context.Context, title, body string) domain.Comment {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
-	require.Truef(
-		t,
-		slices.ContainsFunc(s.items[title].Comments, func(c domain.Comment) bool {
-			return c.Body == body
-		}),
-		"expected item %q to have comment %q; got %+v", title, body, s.items[title].Comments,
-	)
+	for _, comment := range s.items[title].Comments {
+		if comment.Body == body {
+			return comment
+		}
+	}
+	require.Failf(t, "comment not found", "expected item %q to have comment %q; got %+v", title, body, s.items[title].Comments)
+	return domain.Comment{}
+}
+
+func (s *suiteState) theItemShouldHaveAComment(ctx context.Context, title, body string) {
+	s.commentOnItem(ctx, title, body)
 }
 
 func (s *suiteState) theCommentOnTheItemShouldHaveAnIDPrefixedWith(ctx context.Context, body, title, prefix string) {
 	t := godog.T(ctx)
-	require.Contains(t, s.items, title)
-	var found *domain.Comment
-	for i := range s.items[title].Comments {
-		if s.items[title].Comments[i].Body == body {
-			found = &s.items[title].Comments[i]
-			break
-		}
-	}
-	require.NotNilf(t, found, "expected item %q to have comment %q", title, body)
-	require.Truef(t, strings.HasPrefix(found.ID, prefix), "expected comment ID to start with %q; got %q", prefix, found.ID)
+	comment := s.commentOnItem(ctx, title, body)
+	require.Truef(t, strings.HasPrefix(comment.ID, prefix), "expected comment ID to start with %q; got %q", prefix, comment.ID)
+}
+
+func (s *suiteState) theCommentOnTheItemShouldBeByTheUser(ctx context.Context, body, title, userName string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.users, userName)
+	comment := s.commentOnItem(ctx, title, body)
+	require.Equal(t, s.users[userName].ID, comment.UserID)
+}
+
+func (s *suiteState) theCommentOnTheItemShouldBeRecordedAtTheCurrentDateAndTime(ctx context.Context, body, title string) {
+	t := godog.T(ctx)
+	comment := s.commentOnItem(ctx, title, body)
+	recorded, err := time.Parse(time.RFC3339Nano, comment.CreatedAt)
+	require.NoError(t, err)
+	require.WithinDuration(t, time.Now().UTC(), recorded.UTC(), 2*time.Second)
 }
 
 func (s *suiteState) aEventShouldHaveOccurredWithBody(ctx context.Context, eventName, body string) {
@@ -840,9 +853,11 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred with the list ID of list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheListIDOfList)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the parent ID of item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheParentIDOfItem)
 	ctx.Step(`^a "([^"]*)" event should have occurred with title "([^"]*)"$`, s.aEventShouldHaveOccurredWithTitle)
-	ctx.Step(`^the user comments "([^"]*)" on the item "([^"]*)"$`, s.theUserCommentsOnTheItem)
+	ctx.Step(`^the user "([^"]*)" comments "([^"]*)" on the item "([^"]*)"$`, s.theUserCommentsOnTheItem)
 	ctx.Step(`^the item "([^"]*)" should have a comment "([^"]*)"$`, s.theItemShouldHaveAComment)
 	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theCommentOnTheItemShouldHaveAnIDPrefixedWith)
+	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should be by the user "([^"]*)"$`, s.theCommentOnTheItemShouldBeByTheUser)
+	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should be recorded at the current date and time$`, s.theCommentOnTheItemShouldBeRecordedAtTheCurrentDateAndTime)
 	ctx.Step(`^a "([^"]*)" event should have occurred with body "([^"]*)"$`, s.aEventShouldHaveOccurredWithBody)
 	ctx.Step(`^a "([^"]*)" event should have occurred with description "([^"]*)"$`, s.aEventShouldHaveOccurredWithDescription)
 	ctx.Step(`^a "([^"]*)" event should have occurred with due date "([^"]*)"$`, s.aEventShouldHaveOccurredWithDueDate)
