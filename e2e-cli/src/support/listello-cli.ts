@@ -20,7 +20,6 @@ export function dbPathFor(workdir: string): string {
 export function isolatedEnv(workdir: string): NodeJS.ProcessEnv {
   return {
     ...process.env,
-    HOME: workdir,
     XDG_CONFIG_HOME: path.join(workdir, ".config"),
   };
 }
