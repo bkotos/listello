@@ -4,10 +4,12 @@ import { $ } from "zx";
 import {
   createWorkdir,
   dbPathFor,
+  isolatedEnv,
   parseCreatedListId,
   parseDefinedItemId,
   removeWorkdir,
   runListello,
+  seedPairedUser,
 } from "./support/listello-cli";
 
 describe("listello cli", () => {
@@ -236,5 +238,41 @@ describe("listello cli", () => {
       expect(result.stderr).toBe("");
       expect(result.stdout).toMatch(/\[ \] IT_.+  Buy milk/);
     });
+  });
+
+  describe("comment add", () => {
+    it(
+      "comments on an item",
+      async () => {
+        // Arrange
+        const env = isolatedEnv(workdir);
+        const createResult = await runListello(
+          dbPath,
+          ["list", "create", "Groceries"],
+          env,
+        );
+        const listId = parseCreatedListId(createResult.stdout);
+        const defineResult = await runListello(
+          dbPath,
+          ["item", "define", listId, "Buy milk"],
+          env,
+        );
+        const itemId = parseDefinedItemId(defineResult.stdout);
+        await seedPairedUser(dbPath, env);
+
+        // Act
+        const result = await runListello(
+          dbPath,
+          ["comment", "add", itemId, "Need 2%"],
+          env,
+        );
+
+        // Assert
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toMatch(/Commented on "Buy milk" \(CM_/);
+      },
+      30_000,
+    );
   });
 });
