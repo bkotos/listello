@@ -22,6 +22,13 @@ export interface MoveItemRequest {
   listID: string;
 }
 /**
+ * CommentItemRequest is the HTTP request body for commenting on an item.
+ */
+export interface CommentItemRequest {
+  userID: string;
+  body: string;
+}
+/**
  * ItemDto is the HTTP representation of an item.
  */
 export interface ItemDto {
