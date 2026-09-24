@@ -442,3 +442,79 @@ func TestItemService_MoveItem_PublishesEvent(t *testing.T) {
 	assert.Equal(t, listID, metadata.ListID)
 	assert.NotEmpty(t, published.Timestamp)
 }
+
+func TestItemService_CommentItem_PersistsItem(t *testing.T) {
+	// Arrange
+	const (
+		itemID = "IT_1"
+		userID = "US_1"
+		body   = "Need 2%"
+	)
+	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, publisher)
+
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Save(mock.MatchedBy(func(saved domain.Item) bool {
+			return saved.ID == itemID && len(saved.Comments) == 1 && saved.Comments[0].Body == body && saved.Comments[0].UserID == userID
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil)
+
+	// Act
+	result, err := svc.CommentItem(itemID, userID, body)
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, result.Comments, 1)
+	assert.Equal(t, body, result.Comments[0].Body)
+	assert.Equal(t, userID, result.Comments[0].UserID)
+}
+
+func TestItemService_CommentItem_PublishesEvent(t *testing.T) {
+	// Arrange
+	const (
+		itemID = "IT_1"
+		userID = "US_1"
+		body   = "Need 2%"
+	)
+	item := domain.Item{ID: itemID, ListID: "LS_1", Title: "Buy milk", State: domain.ItemOutstanding}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, publisher)
+
+	var published domain.Event
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Save(mock.AnythingOfType("domain.Item")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			metadata, ok := event.Metadata.(domain.EventMetadataItemCommentedOn)
+			return event.Name == domain.EventItemCommentedOn && ok && metadata.ID == itemID && metadata.UserID == userID && metadata.CommentID != ""
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.CommentItem(itemID, userID, body)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataItemCommentedOn)
+	require.True(t, ok)
+	assert.Equal(t, itemID, metadata.ID)
+	assert.Equal(t, userID, metadata.UserID)
+	assert.NotEmpty(t, metadata.CommentID)
+	assert.NotEmpty(t, published.Timestamp)
+}

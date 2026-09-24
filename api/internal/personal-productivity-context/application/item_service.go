@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
@@ -20,6 +22,7 @@ type ItemService interface {
 	DeleteItem(itemID string) error
 	ModifyItemTitle(itemID, title string) (domain.Item, error)
 	MoveItem(itemID, listID string) (domain.Item, error)
+	CommentItem(itemID, userID, body string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
 }
 
@@ -158,4 +161,9 @@ func (s *itemService) MoveItem(itemID, listID string) (domain.Item, error) {
 		return domain.Item{}, err
 	}
 	return item, nil
+}
+
+// CommentItem comments on an item via the domain and persists it.
+func (s *itemService) CommentItem(itemID, userID, body string) (domain.Item, error) {
+	return domain.Item{}, fmt.Errorf("not implemented")
 }
