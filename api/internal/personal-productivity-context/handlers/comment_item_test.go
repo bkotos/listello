@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	instancemocks "github.com/bkotos/listello/internal/listello-instance-context/application/mocks"
+	instancedomain "github.com/bkotos/listello/internal/listello-instance-context/domain"
 	appmocks "github.com/bkotos/listello/internal/personal-productivity-context/application/mocks"
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 	viewdto "github.com/bkotos/listello/internal/personal-productivity-context/view-dtos"
@@ -28,15 +30,19 @@ func TestCommentItem(t *testing.T) {
 		Title:  "Buy milk",
 		State:  domain.ItemOutstanding,
 	}
+	instanceService := instancemocks.NewMockListelloInstanceService(t)
+	instanceService.EXPECT().GetInstance().Return(&instancedomain.ListelloInstance{
+		User: domain.User{ID: userID, Name: "Alex"},
+	}, nil)
 	itemService := appmocks.NewMockItemService(t)
 	itemService.EXPECT().CommentItem(itemID, userID, body).Return(expected, nil)
 
-	req := httptest.NewRequest(http.MethodPost, "/api/items/"+itemID+"/comment", bytes.NewBufferString(`{"userID":"US_1","body":"Need 2%"}`))
+	req := httptest.NewRequest(http.MethodPost, "/api/items/"+itemID+"/comment", bytes.NewBufferString(`{"body":"Need 2%"}`))
 	req.SetPathValue("id", itemID)
 	rec := httptest.NewRecorder()
 
 	// Act
-	CommentItem(itemService)(rec, req)
+	CommentItem(itemService, instanceService)(rec, req)
 
 	// Assert
 	assert.Equal(t, http.StatusCreated, rec.Code)
