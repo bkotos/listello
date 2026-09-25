@@ -782,4 +782,71 @@ describe("ListPage", () => {
       expect(getAllItems).toHaveBeenCalledTimes(2);
     });
   });
+
+  it("calls commentItem when Enter is pressed in the comment input", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(commentItem).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Write a comment…")).toBeInTheDocument();
+    });
+    const input = screen.getByPlaceholderText("Write a comment…");
+    fireEvent.change(input, { target: { value: "Need 2%" } });
+
+    // Act
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    expect(commentItem).toHaveBeenCalledWith("IT_1", { body: "Need 2%" });
+  });
+
+  it("clears the comment input after Send comment is clicked", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(commentItem).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Write a comment…")).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByPlaceholderText("Write a comment…"), {
+      target: { value: "Need 2%" },
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Send comment" }));
+
+    // Assert
+    expect(screen.getByPlaceholderText("Write a comment…")).toHaveValue("");
+  });
+
+  it("clears the comment input after Enter is pressed", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(commentItem).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Write a comment…")).toBeInTheDocument();
+    });
+    const input = screen.getByPlaceholderText("Write a comment…");
+    fireEvent.change(input, { target: { value: "Need 2%" } });
+
+    // Act
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    expect(input).toHaveValue("");
+  });
 });
