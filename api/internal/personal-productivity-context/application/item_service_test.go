@@ -107,6 +107,37 @@ func TestItemService_GetAll_ReturnsItemsFromRepository(t *testing.T) {
 	assert.Equal(t, expected, received)
 }
 
+func TestItemService_GetComments_ReturnsCommentsFromRepository(t *testing.T) {
+	// Arrange
+	const listID = "LS_1"
+	expected := []domain.ItemComment{
+		{
+			ID:        "CM_1",
+			ItemID:    "IT_1",
+			UserID:    "US_1",
+			UserName:  "Alex",
+			Body:      "Need 2%",
+			CreatedAt: "2026-09-25T00:18:13Z",
+		},
+	}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
+
+	itemRepo.EXPECT().
+		GetComments(listID).
+		Return(expected, nil)
+
+	// Act
+	received, err := svc.GetComments(listID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, expected, received)
+}
+
 func TestItemService_CompleteItem_PersistsItem(t *testing.T) {
 	// Arrange
 	const itemID = "IT_1"

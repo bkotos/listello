@@ -305,6 +305,68 @@ func (_c *MockItemRepository_GetByID_Call) RunAndReturn(run func(id string) (dom
 	return _c
 }
 
+// GetComments provides a mock function for the type MockItemRepository
+func (_mock *MockItemRepository) GetComments(listID string) ([]domain.ItemComment, error) {
+	ret := _mock.Called(listID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetComments")
+	}
+
+	var r0 []domain.ItemComment
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) ([]domain.ItemComment, error)); ok {
+		return returnFunc(listID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) []domain.ItemComment); ok {
+		r0 = returnFunc(listID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.ItemComment)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(listID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemRepository_GetComments_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetComments'
+type MockItemRepository_GetComments_Call struct {
+	*mock.Call
+}
+
+// GetComments is a helper method to define mock.On call
+//   - listID string
+func (_e *MockItemRepository_Expecter) GetComments(listID any) *MockItemRepository_GetComments_Call {
+	return &MockItemRepository_GetComments_Call{Call: _e.mock.On("GetComments", listID)}
+}
+
+func (_c *MockItemRepository_GetComments_Call) Run(run func(listID string)) *MockItemRepository_GetComments_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemRepository_GetComments_Call) Return(itemComments []domain.ItemComment, err error) *MockItemRepository_GetComments_Call {
+	_c.Call.Return(itemComments, err)
+	return _c
+}
+
+func (_c *MockItemRepository_GetComments_Call) RunAndReturn(run func(listID string) ([]domain.ItemComment, error)) *MockItemRepository_GetComments_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Save provides a mock function for the type MockItemRepository
 func (_mock *MockItemRepository) Save(item domain.Item) error {
 	ret := _mock.Called(item)

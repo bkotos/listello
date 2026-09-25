@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
@@ -10,6 +12,7 @@ type ItemRepository interface {
 	Delete(id string) error
 	GetByID(id string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
+	GetComments(listID string) ([]domain.ItemComment, error)
 }
 
 // ItemService defines item application operations.
@@ -22,6 +25,7 @@ type ItemService interface {
 	MoveItem(itemID, listID string) (domain.Item, error)
 	CommentItem(itemID, userID, body string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
+	GetComments(listID string) ([]domain.ItemComment, error)
 }
 
 type itemService struct {
@@ -103,6 +107,11 @@ func (s *itemService) UncompleteItem(itemID string) (domain.Item, error) {
 // GetAll returns all items for the given list from persistence.
 func (s *itemService) GetAll(listID string) ([]domain.Item, error) {
 	return s.itemRepository.GetAll(listID)
+}
+
+// GetComments returns comments for items on the given list from persistence.
+func (s *itemService) GetComments(listID string) ([]domain.ItemComment, error) {
+	return nil, fmt.Errorf("not implemented")
 }
 
 // DeleteItem deletes an item via the domain and removes it from persistence.
