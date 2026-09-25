@@ -15,9 +15,10 @@ vi.mock("../lib/api/item-client", () => ({
   uncompleteItem: vi.fn(),
   deleteItem: vi.fn(),
   modifyItemTitle: vi.fn(),
+  commentItem: vi.fn(),
 }));
 
-import { completeItem, defineItem, deleteItem, getAllItems, modifyItemTitle, uncompleteItem } from "../lib/api/item-client";
+import { commentItem, completeItem, defineItem, deleteItem, getAllItems, modifyItemTitle, uncompleteItem } from "../lib/api/item-client";
 import { getList } from "../lib/api/list-client";
 
 const sampleItems = [
@@ -726,6 +727,59 @@ describe("ListPage", () => {
       // Assert
       const row = screen.getAllByText("Buy windshield wipers for truck")[0].closest(".task-row");
       expect(row).toHaveClass("is-active");
+    });
+  });
+
+  it("calls commentItem when Send comment is clicked", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(commentItem).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Write a comment…")).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByPlaceholderText("Write a comment…"), {
+      target: { value: "Need 2%" },
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Send comment" }));
+
+    // Assert
+    expect(commentItem).toHaveBeenCalledWith("IT_1", { body: "Need 2%" });
+  });
+
+  it("reloads items after commentItem is called", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(sampleItems)
+      .mockResolvedValueOnce(sampleItems);
+    vi.mocked(commentItem).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Write a comment…")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+    fireEvent.change(screen.getByPlaceholderText("Write a comment…"), {
+      target: { value: "Need 2%" },
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Send comment" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
     });
   });
 });

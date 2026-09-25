@@ -159,8 +159,8 @@ Child entity of Item. No `Comment` type exists yet.
 - [x] API handler
 - [x] CLI
 - [x] API client
-- [ ] React Query hooks
-- [ ] UI
+- [x] React Query hooks
+- [x] UI
 
 ### Delete Comment → Item Comment Deleted
 
