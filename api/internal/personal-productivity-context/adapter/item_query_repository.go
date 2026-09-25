@@ -4,17 +4,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/uptrace/bun"
+
 	viewmodel "github.com/bkotos/listello/internal/personal-productivity-context/view-models"
 	"github.com/bkotos/listello/internal/sqlite"
 )
 
 type itemCommentViewRow struct {
-	ID        string `bun:"id"`
-	ItemID    string `bun:"item_id"`
-	UserID    string `bun:"user_id"`
-	UserName  string `bun:"user_name"`
-	Body      string `bun:"body"`
-	CreatedAt string `bun:"created_at"`
+	bun.BaseModel `bun:"table:comments"`
+	ID            string   `bun:"id,pk"`
+	ItemID        string   `bun:"item_id"`
+	UserID        string   `bun:"user_id"`
+	Body          string   `bun:"body"`
+	CreatedAt     string   `bun:"created_at"`
+	User          *userRow `bun:"rel:belongs-to,join:user_id=id"`
 }
 
 // SQLiteItemQueryRepository loads item query views from SQLite.
@@ -34,23 +37,27 @@ func (r *SQLiteItemQueryRepository) GetComments(itemID string) ([]viewmodel.Item
 		return nil, fmt.Errorf("find comments: %w", err)
 	}
 	var rows []itemCommentViewRow
-	err = db.NewRaw(`
-SELECT c.id, c.item_id, c.user_id, u.name AS user_name, c.body, c.created_at
-FROM comments AS c
-JOIN users AS u ON u.id = c.user_id
-WHERE c.item_id = ?
-ORDER BY c.created_at ASC, c.id ASC
-`, itemID).Scan(context.Background(), &rows)
+	err = db.NewSelect().
+		Model(&rows).
+		Relation("User").
+		Where("?TableAlias.item_id = ?", itemID).
+		OrderExpr("?TableAlias.created_at ASC").
+		OrderExpr("?TableAlias.id ASC").
+		Scan(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("find comments: %w", err)
 	}
 	comments := make([]viewmodel.ItemComment, 0, len(rows))
 	for _, row := range rows {
+		userName := ""
+		if row.User != nil {
+			userName = row.User.Name
+		}
 		comments = append(comments, viewmodel.ItemComment{
 			ID:        row.ID,
 			ItemID:    row.ItemID,
 			UserID:    row.UserID,
-			UserName:  row.UserName,
+			UserName:  userName,
 			Body:      row.Body,
 			CreatedAt: row.CreatedAt,
 		})
