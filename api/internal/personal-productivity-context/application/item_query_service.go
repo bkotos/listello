@@ -1,8 +1,6 @@
 package application
 
 import (
-	"fmt"
-
 	viewmodel "github.com/bkotos/listello/internal/personal-productivity-context/view-models"
 )
 
@@ -31,5 +29,5 @@ func NewItemQueryService(itemQueryRepository ItemQueryRepository) ItemQueryServi
 
 // GetComments returns comments for the given item from persistence.
 func (s *itemQueryService) GetComments(itemID string) ([]viewmodel.ItemComment, error) {
-	return nil, fmt.Errorf("not implemented")
+	return s.itemQueryRepository.GetComments(itemID)
 }
