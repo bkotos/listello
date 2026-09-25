@@ -9,6 +9,7 @@ import (
 
 	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
+	viewmodel "github.com/bkotos/listello/internal/personal-productivity-context/view-models"
 )
 
 func TestItemService_DefineItem_PersistsItem(t *testing.T) {
@@ -110,7 +111,7 @@ func TestItemService_GetAll_ReturnsItemsFromRepository(t *testing.T) {
 func TestItemService_GetComments_ReturnsCommentsFromRepository(t *testing.T) {
 	// Arrange
 	const listID = "LS_1"
-	expected := []domain.ItemComment{
+	expected := []viewmodel.ItemComment{
 		{
 			ID:        "CM_1",
 			ItemID:    "IT_1",

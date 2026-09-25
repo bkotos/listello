@@ -6,6 +6,7 @@ package mocks
 
 import (
 	"github.com/bkotos/listello/internal/personal-productivity-context/domain"
+	"github.com/bkotos/listello/internal/personal-productivity-context/view-models"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -357,23 +358,23 @@ func (_c *MockItemService_GetAll_Call) RunAndReturn(run func(listID string) ([]d
 }
 
 // GetComments provides a mock function for the type MockItemService
-func (_mock *MockItemService) GetComments(listID string) ([]domain.ItemComment, error) {
+func (_mock *MockItemService) GetComments(listID string) ([]viewmodel.ItemComment, error) {
 	ret := _mock.Called(listID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetComments")
 	}
 
-	var r0 []domain.ItemComment
+	var r0 []viewmodel.ItemComment
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string) ([]domain.ItemComment, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(string) ([]viewmodel.ItemComment, error)); ok {
 		return returnFunc(listID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string) []domain.ItemComment); ok {
+	if returnFunc, ok := ret.Get(0).(func(string) []viewmodel.ItemComment); ok {
 		r0 = returnFunc(listID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]domain.ItemComment)
+			r0 = ret.Get(0).([]viewmodel.ItemComment)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
@@ -408,12 +409,12 @@ func (_c *MockItemService_GetComments_Call) Run(run func(listID string)) *MockIt
 	return _c
 }
 
-func (_c *MockItemService_GetComments_Call) Return(itemComments []domain.ItemComment, err error) *MockItemService_GetComments_Call {
+func (_c *MockItemService_GetComments_Call) Return(itemComments []viewmodel.ItemComment, err error) *MockItemService_GetComments_Call {
 	_c.Call.Return(itemComments, err)
 	return _c
 }
 
-func (_c *MockItemService_GetComments_Call) RunAndReturn(run func(listID string) ([]domain.ItemComment, error)) *MockItemService_GetComments_Call {
+func (_c *MockItemService_GetComments_Call) RunAndReturn(run func(listID string) ([]viewmodel.ItemComment, error)) *MockItemService_GetComments_Call {
 	_c.Call.Return(run)
 	return _c
 }

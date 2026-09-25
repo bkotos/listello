@@ -49,16 +49,6 @@ type Comment struct {
 	CreatedAt string
 }
 
-// ItemComment is a comment on a list item for read queries.
-type ItemComment struct {
-	ID        string
-	ItemID    string
-	UserID    string
-	UserName  string
-	Body      string
-	CreatedAt string
-}
-
 // IsOutstanding reports whether the item is outstanding.
 func (i Item) IsOutstanding() bool {
 	return i.State == ItemOutstanding

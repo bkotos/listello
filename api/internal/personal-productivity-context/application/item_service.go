@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
+	viewmodel "github.com/bkotos/listello/internal/personal-productivity-context/view-models"
 )
 
 // ItemRepository persists items and their list membership.
@@ -12,7 +13,7 @@ type ItemRepository interface {
 	Delete(id string) error
 	GetByID(id string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
-	GetComments(listID string) ([]domain.ItemComment, error)
+	GetComments(listID string) ([]viewmodel.ItemComment, error)
 }
 
 // ItemService defines item application operations.
@@ -25,7 +26,7 @@ type ItemService interface {
 	MoveItem(itemID, listID string) (domain.Item, error)
 	CommentItem(itemID, userID, body string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
-	GetComments(listID string) ([]domain.ItemComment, error)
+	GetComments(listID string) ([]viewmodel.ItemComment, error)
 }
 
 type itemService struct {
@@ -110,7 +111,7 @@ func (s *itemService) GetAll(listID string) ([]domain.Item, error) {
 }
 
 // GetComments returns comments for items on the given list from persistence.
-func (s *itemService) GetComments(listID string) ([]domain.ItemComment, error) {
+func (s *itemService) GetComments(listID string) ([]viewmodel.ItemComment, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
