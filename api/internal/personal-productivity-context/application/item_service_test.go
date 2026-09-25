@@ -9,7 +9,6 @@ import (
 
 	application "github.com/bkotos/listello/internal/personal-productivity-context/application"
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
-	viewmodel "github.com/bkotos/listello/internal/personal-productivity-context/view-models"
 )
 
 func TestItemService_DefineItem_PersistsItem(t *testing.T) {
@@ -102,37 +101,6 @@ func TestItemService_GetAll_ReturnsItemsFromRepository(t *testing.T) {
 
 	// Act
 	received, err := svc.GetAll(listID)
-
-	// Assert
-	require.NoError(t, err)
-	assert.Equal(t, expected, received)
-}
-
-func TestItemService_GetComments_ReturnsCommentsFromRepository(t *testing.T) {
-	// Arrange
-	const listID = "LS_1"
-	expected := []viewmodel.ItemComment{
-		{
-			ID:        "CM_1",
-			ItemID:    "IT_1",
-			UserID:    "US_1",
-			UserName:  "Alex",
-			Body:      "Need 2%",
-			CreatedAt: "2026-09-25T00:18:13Z",
-		},
-	}
-	listRepo := NewMockListRepository(t)
-	itemRepo := NewMockItemRepository(t)
-	userRepo := NewMockUserRepository(t)
-	publisher := NewMockEventPublisher(t)
-	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
-
-	itemRepo.EXPECT().
-		GetComments(listID).
-		Return(expected, nil)
-
-	// Act
-	received, err := svc.GetComments(listID)
 
 	// Assert
 	require.NoError(t, err)

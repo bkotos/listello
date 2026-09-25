@@ -1,0 +1,35 @@
+package application
+
+import (
+	"fmt"
+
+	viewmodel "github.com/bkotos/listello/internal/personal-productivity-context/view-models"
+)
+
+// ItemQueryRepository loads item query views.
+type ItemQueryRepository interface {
+	GetComments(listID string) ([]viewmodel.ItemComment, error)
+}
+
+// ItemQueryService defines item query operations.
+type ItemQueryService interface {
+	GetComments(listID string) ([]viewmodel.ItemComment, error)
+}
+
+type itemQueryService struct {
+	itemQueryRepository ItemQueryRepository
+}
+
+var _ ItemQueryService = (*itemQueryService)(nil)
+
+// NewItemQueryService returns an ItemQueryService backed by the given query repository.
+func NewItemQueryService(itemQueryRepository ItemQueryRepository) ItemQueryService {
+	return &itemQueryService{
+		itemQueryRepository: itemQueryRepository,
+	}
+}
+
+// GetComments returns comments for items on the given list from persistence.
+func (s *itemQueryService) GetComments(listID string) ([]viewmodel.ItemComment, error) {
+	return nil, fmt.Errorf("not implemented")
+}
