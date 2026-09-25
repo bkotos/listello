@@ -12,11 +12,11 @@ import (
 
 func TestItemQueryService_GetComments_ReturnsCommentsFromRepository(t *testing.T) {
 	// Arrange
-	const listID = "LS_1"
+	const itemID = "IT_1"
 	expected := []viewmodel.ItemComment{
 		{
 			ID:        "CM_1",
-			ItemID:    "IT_1",
+			ItemID:    itemID,
 			UserID:    "US_1",
 			UserName:  "Alex",
 			Body:      "Need 2%",
@@ -27,11 +27,11 @@ func TestItemQueryService_GetComments_ReturnsCommentsFromRepository(t *testing.T
 	svc := application.NewItemQueryService(repo)
 
 	repo.EXPECT().
-		GetComments(listID).
+		GetComments(itemID).
 		Return(expected, nil)
 
 	// Act
-	received, err := svc.GetComments(listID)
+	received, err := svc.GetComments(itemID)
 
 	// Assert
 	require.NoError(t, err)

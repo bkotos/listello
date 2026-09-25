@@ -8,12 +8,12 @@ import (
 
 // ItemQueryRepository loads item query views.
 type ItemQueryRepository interface {
-	GetComments(listID string) ([]viewmodel.ItemComment, error)
+	GetComments(itemID string) ([]viewmodel.ItemComment, error)
 }
 
 // ItemQueryService defines item query operations.
 type ItemQueryService interface {
-	GetComments(listID string) ([]viewmodel.ItemComment, error)
+	GetComments(itemID string) ([]viewmodel.ItemComment, error)
 }
 
 type itemQueryService struct {
@@ -29,7 +29,7 @@ func NewItemQueryService(itemQueryRepository ItemQueryRepository) ItemQueryServi
 	}
 }
 
-// GetComments returns comments for items on the given list from persistence.
-func (s *itemQueryService) GetComments(listID string) ([]viewmodel.ItemComment, error) {
+// GetComments returns comments for the given item from persistence.
+func (s *itemQueryService) GetComments(itemID string) ([]viewmodel.ItemComment, error) {
 	return nil, fmt.Errorf("not implemented")
 }

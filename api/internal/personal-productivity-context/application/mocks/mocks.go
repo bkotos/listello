@@ -47,8 +47,8 @@ func (_m *MockItemQueryService) EXPECT() *MockItemQueryService_Expecter {
 }
 
 // GetComments provides a mock function for the type MockItemQueryService
-func (_mock *MockItemQueryService) GetComments(listID string) ([]viewmodel.ItemComment, error) {
-	ret := _mock.Called(listID)
+func (_mock *MockItemQueryService) GetComments(itemID string) ([]viewmodel.ItemComment, error) {
+	ret := _mock.Called(itemID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetComments")
@@ -57,17 +57,17 @@ func (_mock *MockItemQueryService) GetComments(listID string) ([]viewmodel.ItemC
 	var r0 []viewmodel.ItemComment
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(string) ([]viewmodel.ItemComment, error)); ok {
-		return returnFunc(listID)
+		return returnFunc(itemID)
 	}
 	if returnFunc, ok := ret.Get(0).(func(string) []viewmodel.ItemComment); ok {
-		r0 = returnFunc(listID)
+		r0 = returnFunc(itemID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]viewmodel.ItemComment)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
-		r1 = returnFunc(listID)
+		r1 = returnFunc(itemID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -80,12 +80,12 @@ type MockItemQueryService_GetComments_Call struct {
 }
 
 // GetComments is a helper method to define mock.On call
-//   - listID string
-func (_e *MockItemQueryService_Expecter) GetComments(listID any) *MockItemQueryService_GetComments_Call {
-	return &MockItemQueryService_GetComments_Call{Call: _e.mock.On("GetComments", listID)}
+//   - itemID string
+func (_e *MockItemQueryService_Expecter) GetComments(itemID any) *MockItemQueryService_GetComments_Call {
+	return &MockItemQueryService_GetComments_Call{Call: _e.mock.On("GetComments", itemID)}
 }
 
-func (_c *MockItemQueryService_GetComments_Call) Run(run func(listID string)) *MockItemQueryService_GetComments_Call {
+func (_c *MockItemQueryService_GetComments_Call) Run(run func(itemID string)) *MockItemQueryService_GetComments_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 string
 		if args[0] != nil {
@@ -103,7 +103,7 @@ func (_c *MockItemQueryService_GetComments_Call) Return(itemComments []viewmodel
 	return _c
 }
 
-func (_c *MockItemQueryService_GetComments_Call) RunAndReturn(run func(listID string) ([]viewmodel.ItemComment, error)) *MockItemQueryService_GetComments_Call {
+func (_c *MockItemQueryService_GetComments_Call) RunAndReturn(run func(itemID string) ([]viewmodel.ItemComment, error)) *MockItemQueryService_GetComments_Call {
 	_c.Call.Return(run)
 	return _c
 }
