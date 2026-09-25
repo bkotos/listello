@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe("ItemDetail", () => {
   beforeEach(() => {
-    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn(), onModifyTitle: vi.fn() }));
+    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn(), onModifyTitle: vi.fn(), onComment: vi.fn() }));
   });
 
   it("renders a right-hand detail aside", () => {
