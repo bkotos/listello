@@ -37,7 +37,7 @@ func NewListService(workspace *sqlite.WorkspaceDB, eventLog *os.File) applicatio
 
 // NewItemQueryService wires item query persistence into ItemQueryService.
 func NewItemQueryService(workspace *sqlite.WorkspaceDB) application.ItemQueryService {
-	panic("not implemented")
+	return application.NewItemQueryService(adapter.NewSQLiteItemQueryRepository(workspace))
 }
 
 // NewItemService wires list and item persistence and event publishing into ItemService.
