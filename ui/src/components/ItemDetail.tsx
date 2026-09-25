@@ -23,6 +23,12 @@ export type ItemDetailProps = {
 
 export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment }: ItemDetailProps) {
   const [commentBody, setCommentBody] = useState("");
+
+  function submitComment() {
+    onComment(item.ID, commentBody);
+    setCommentBody("");
+  }
+
   return (
     <aside className="app-detail is-hidden-touch">
       <div
@@ -197,6 +203,11 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment }
                       placeholder="Write a comment…"
                       value={commentBody}
                       onChange={(e) => setCommentBody(e.currentTarget.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          submitComment();
+                        }
+                      }}
                     />
                   </div>
                   <div className="control">
@@ -205,7 +216,7 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment }
                       aria-label="Send comment"
                       disabled={!commentBody}
                       className="button is-small is-primary"
-                      onClick={() => onComment(item.ID, commentBody)}
+                      onClick={submitComment}
                     >
                       <Send size={16} />
                     </button>
