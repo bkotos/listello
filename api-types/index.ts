@@ -28,6 +28,12 @@ export interface CommentItemRequest {
   body: string;
 }
 /**
+ * AddSubtaskRequest is the HTTP request body for adding a subtask to an item.
+ */
+export interface AddSubtaskRequest {
+  title: string;
+}
+/**
  * ItemDto is the HTTP representation of an item.
  */
 export interface ItemDto {

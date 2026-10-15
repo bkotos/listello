@@ -22,6 +22,11 @@ type CommentItemRequest struct {
 	Body string `json:"body"`
 }
 
+// AddSubtaskRequest is the HTTP request body for adding a subtask to an item.
+type AddSubtaskRequest struct {
+	Title string `json:"title"`
+}
+
 // ItemDto is the HTTP representation of an item.
 type ItemDto struct {
 	ID          string   `json:"ID"`
