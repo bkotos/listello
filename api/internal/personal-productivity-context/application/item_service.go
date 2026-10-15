@@ -21,6 +21,7 @@ type ItemService interface {
 	ModifyItemTitle(itemID, title string) (domain.Item, error)
 	MoveItem(itemID, listID string) (domain.Item, error)
 	CommentItem(itemID, userID, body string) (domain.Item, error)
+	AddSubtask(itemID, title string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
 }
 
@@ -151,6 +152,25 @@ func (s *itemService) MoveItem(itemID, listID string) (domain.Item, error) {
 		return domain.Item{}, err
 	}
 	event, err := (&item).Move(list)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.itemRepository.Save(item); err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.Item{}, err
+	}
+	return item, nil
+}
+
+// AddSubtask adds a subtask to an item via the domain and persists it.
+func (s *itemService) AddSubtask(itemID, title string) (domain.Item, error) {
+	item, err := s.itemRepository.GetByID(itemID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	event, err := (&item).AddSubtask(title)
 	if err != nil {
 		return domain.Item{}, err
 	}
