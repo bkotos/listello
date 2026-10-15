@@ -71,6 +71,7 @@ func newRoot() (*cobra.Command, func()) {
 	root.AddCommand(commands.NewList(c))
 	root.AddCommand(commands.NewItem(c))
 	root.AddCommand(commands.NewComment(c))
+	root.AddCommand(commands.NewSubtask(c))
 	return root, func() {
 		if cleanup != nil {
 			cleanup()

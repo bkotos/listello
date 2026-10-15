@@ -275,4 +275,42 @@ describe("listello cli", () => {
       30_000,
     );
   });
+
+  describe("subtask add", () => {
+    it(
+      "adds a subtask to an item",
+      async () => {
+        // Arrange
+        const createResult = await runListello(dbPath, [
+          "list",
+          "create",
+          "Groceries",
+        ]);
+        const listId = parseCreatedListId(createResult.stdout);
+        const defineResult = await runListello(dbPath, [
+          "item",
+          "define",
+          listId,
+          "Buy milk",
+        ]);
+        const itemId = parseDefinedItemId(defineResult.stdout);
+
+        // Act
+        const result = await runListello(dbPath, [
+          "subtask",
+          "add",
+          itemId,
+          "Get 2%",
+        ]);
+
+        // Assert
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toMatch(
+          /Added subtask "Get 2%" \(ST_.+\) to "Buy milk"/,
+        );
+      },
+      30_000,
+    );
+  });
 });

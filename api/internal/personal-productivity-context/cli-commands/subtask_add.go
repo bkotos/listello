@@ -12,7 +12,17 @@ func NewSubtaskAdd(container Container) *cobra.Command {
 		Short: "Add a subtask to an item",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return fmt.Errorf("not implemented")
+			itemID := args[0]
+			title := args[1]
+
+			item, err := container.ItemService().AddSubtask(itemID, title)
+			if err != nil {
+				return err
+			}
+
+			subtaskID := item.Subtasks[len(item.Subtasks)-1].ID
+			fmt.Fprintf(cmd.OutOrStdout(), "Added subtask %q (%s) to %q\n", title, subtaskID, item.Title)
+			return nil
 		},
 	}
 }
