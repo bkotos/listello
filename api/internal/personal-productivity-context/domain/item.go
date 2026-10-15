@@ -185,7 +185,16 @@ func (i *Item) Move(list List) (Event, error) {
 
 // AddSubtask adds a subtask to the item and raises a SubtaskAddedToItem event.
 func (i *Item) AddSubtask(title string) (Event, error) {
-	return Event{}, fmt.Errorf("not implemented")
+	subtask := Subtask{
+		ID:        util.NewID("ST_"),
+		Title:     title,
+		Completed: false,
+	}
+	i.Subtasks = append(i.Subtasks, subtask)
+	return event.NewEvent(EventSubtaskAddedToItem, EventMetadataSubtaskAddedToItem{
+		ID:        i.ID,
+		SubtaskID: subtask.ID,
+	}, 1), nil
 }
 
 // Comment adds a comment to the item and raises an ItemCommentedOn event.
