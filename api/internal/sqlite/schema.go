@@ -63,6 +63,18 @@ CREATE TABLE IF NOT EXISTS comments (
 	if err := execCreateTable(db, "comments", commentsQ); err != nil {
 		return err
 	}
+	const subtasksQ = `
+CREATE TABLE IF NOT EXISTS subtasks (
+	id TEXT PRIMARY KEY NOT NULL,
+	item_id TEXT NOT NULL,
+	title TEXT NOT NULL,
+	completed BOOLEAN NOT NULL,
+	created_at TEXT NOT NULL,
+	FOREIGN KEY (item_id) REFERENCES items(id)
+);`
+	if err := execCreateTable(db, "subtasks", subtasksQ); err != nil {
+		return err
+	}
 	return nil
 }
 

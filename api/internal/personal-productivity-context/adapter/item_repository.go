@@ -48,6 +48,9 @@ func (r *SQLiteItemRepository) Save(item domain.Item) error {
 	if err := saveComments(db, item); err != nil {
 		return err
 	}
+	if err := saveSubtasks(db, item); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -69,12 +72,17 @@ func (r *SQLiteItemRepository) GetByID(id string) (domain.Item, error) {
 	if err != nil {
 		return domain.Item{}, err
 	}
+	subtasks, err := subtasksForItem(db, row.ID)
+	if err != nil {
+		return domain.Item{}, err
+	}
 	return domain.Item{
 		ID:       row.ID,
 		ListID:   row.ListID,
 		Title:    row.Title,
 		State:    domain.ItemState(row.State),
 		Comments: comments,
+		Subtasks: subtasks,
 	}, nil
 }
 
@@ -138,6 +146,49 @@ func saveComments(db *bun.DB, item domain.Item) error {
 		}
 	}
 	return nil
+}
+
+func saveSubtasks(db *bun.DB, item domain.Item) error {
+	for _, subtask := range item.Subtasks {
+		_, err := db.NewInsert().
+			Model(&subtaskRow{
+				ID:        subtask.ID,
+				ItemID:    item.ID,
+				Title:     subtask.Title,
+				Completed: subtask.Completed,
+				CreatedAt: newCreatedAt(),
+			}).
+			On("CONFLICT (id) DO UPDATE").
+			Set("item_id = EXCLUDED.item_id").
+			Set("title = EXCLUDED.title").
+			Set("completed = EXCLUDED.completed").
+			Exec(context.Background())
+		if err != nil {
+			return fmt.Errorf("save subtask: %w", err)
+		}
+	}
+	return nil
+}
+
+func subtasksForItem(db *bun.DB, itemID string) ([]domain.Subtask, error) {
+	var rows []subtaskRow
+	err := db.NewSelect().
+		Model(&rows).
+		Where("item_id = ?", itemID).
+		Order("created_at ASC", "id ASC").
+		Scan(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("find subtasks: %w", err)
+	}
+	var subtasks []domain.Subtask
+	for _, row := range rows {
+		subtasks = append(subtasks, domain.Subtask{
+			ID:        row.ID,
+			Title:     row.Title,
+			Completed: row.Completed,
+		})
+	}
+	return subtasks, nil
 }
 
 func commentsForItem(db *bun.DB, itemID string) ([]domain.Comment, error) {

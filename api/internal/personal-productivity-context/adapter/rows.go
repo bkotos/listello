@@ -39,3 +39,12 @@ type commentRow struct {
 	Body          string `bun:"body"`
 	CreatedAt     string `bun:"created_at"`
 }
+
+type subtaskRow struct {
+	bun.BaseModel `bun:"table:subtasks"`
+	ID            string `bun:"id,pk"`
+	ItemID        string `bun:"item_id"`
+	Title         string `bun:"title"`
+	Completed     bool   `bun:"completed"`
+	CreatedAt     string `bun:"created_at"`
+}
