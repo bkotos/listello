@@ -87,7 +87,7 @@ Child entity of Item in the domain model. No `Subtask` type exists yet. (`Item.C
 - [x] Domain
 - [x] Application service
 - [x] Adapter repository
-- [ ] Bootstrap
+- [x] Bootstrap
 - [ ] API handler
 - [ ] CLI
 - [ ] API client
