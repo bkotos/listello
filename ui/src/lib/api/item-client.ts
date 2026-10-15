@@ -1,4 +1,4 @@
-import type { CommentItemRequest, DefineItemRequest, ItemDto, ModifyItemTitleRequest, MoveItemRequest } from "api-types";
+import type { AddSubtaskRequest, CommentItemRequest, DefineItemRequest, ItemDto, ModifyItemTitleRequest, MoveItemRequest } from "api-types";
 import { request } from "./util";
 
 export async function getAllItems(
@@ -61,6 +61,16 @@ export async function commentItem(
   body: CommentItemRequest,
 ): Promise<ItemDto> {
   return request<ItemDto>(`/api/items/${itemId}/comment`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function addSubtask(
+  itemId: string,
+  body: AddSubtaskRequest,
+): Promise<ItemDto> {
+  return request<ItemDto>(`/api/items/${itemId}/subtask`, {
     method: "POST",
     body: JSON.stringify(body),
   });
