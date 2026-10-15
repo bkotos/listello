@@ -37,6 +37,7 @@ type Item struct {
 	DueDate     string
 	Tags        []string
 	Comments    []Comment
+	Subtasks    []Subtask
 	Priority    ItemPriority
 	State       ItemState
 }
@@ -47,6 +48,13 @@ type Comment struct {
 	UserID    string
 	Body      string
 	CreatedAt string
+}
+
+// Subtask is a child step on an item.
+type Subtask struct {
+	ID        string
+	Title     string
+	Completed bool
 }
 
 // IsOutstanding reports whether the item is outstanding.
@@ -173,6 +181,11 @@ func (i *Item) ChangePriority(priority ItemPriority) (Event, error) {
 func (i *Item) Move(list List) (Event, error) {
 	i.ListID = list.ID
 	return event.NewEvent(EventItemMovedToOtherList, EventMetadataItemMovedToOtherList{ID: i.ID, ListID: list.ID}, 1), nil
+}
+
+// AddSubtask adds a subtask to the item and raises a SubtaskAddedToItem event.
+func (i *Item) AddSubtask(title string) (Event, error) {
+	return Event{}, fmt.Errorf("not implemented")
 }
 
 // Comment adds a comment to the item and raises an ItemCommentedOn event.
