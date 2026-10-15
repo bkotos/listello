@@ -144,6 +144,72 @@ func (_m *MockItemService) EXPECT() *MockItemService_Expecter {
 	return &MockItemService_Expecter{mock: &_m.Mock}
 }
 
+// AddSubtask provides a mock function for the type MockItemService
+func (_mock *MockItemService) AddSubtask(itemID string, title string) (domain.Item, error) {
+	ret := _mock.Called(itemID, title)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AddSubtask")
+	}
+
+	var r0 domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, string) (domain.Item, error)); ok {
+		return returnFunc(itemID, title)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, string) domain.Item); ok {
+		r0 = returnFunc(itemID, title)
+	} else {
+		r0 = ret.Get(0).(domain.Item)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = returnFunc(itemID, title)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemService_AddSubtask_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddSubtask'
+type MockItemService_AddSubtask_Call struct {
+	*mock.Call
+}
+
+// AddSubtask is a helper method to define mock.On call
+//   - itemID string
+//   - title string
+func (_e *MockItemService_Expecter) AddSubtask(itemID any, title any) *MockItemService_AddSubtask_Call {
+	return &MockItemService_AddSubtask_Call{Call: _e.mock.On("AddSubtask", itemID, title)}
+}
+
+func (_c *MockItemService_AddSubtask_Call) Run(run func(itemID string, title string)) *MockItemService_AddSubtask_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_AddSubtask_Call) Return(item domain.Item, err error) *MockItemService_AddSubtask_Call {
+	_c.Call.Return(item, err)
+	return _c
+}
+
+func (_c *MockItemService_AddSubtask_Call) RunAndReturn(run func(itemID string, title string) (domain.Item, error)) *MockItemService_AddSubtask_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CommentItem provides a mock function for the type MockItemService
 func (_mock *MockItemService) CommentItem(itemID string, userID string, body string) (domain.Item, error) {
 	ret := _mock.Called(itemID, userID, body)
