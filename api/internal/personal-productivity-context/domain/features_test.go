@@ -566,6 +566,54 @@ func (s *suiteState) aEventShouldHaveOccurredWithTitle(ctx context.Context, even
 	)
 }
 
+func (s *suiteState) theOwnerAddsASubtaskToTheItem(ctx context.Context, subtaskTitle, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	event, err := s.items[title].AddSubtask(subtaskTitle)
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) subtaskOnItem(ctx context.Context, title, subtaskTitle string) domain.Subtask {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	for _, subtask := range s.items[title].Subtasks {
+		if subtask.Title == subtaskTitle {
+			return subtask
+		}
+	}
+	require.Failf(t, "subtask not found", "expected item %q to have subtask %q; got %+v", title, subtaskTitle, s.items[title].Subtasks)
+	return domain.Subtask{}
+}
+
+func (s *suiteState) theItemShouldHaveASubtask(ctx context.Context, title, subtaskTitle string) {
+	s.subtaskOnItem(ctx, title, subtaskTitle)
+}
+
+func (s *suiteState) theSubtaskOnTheItemShouldHaveAnIDPrefixedWith(ctx context.Context, subtaskTitle, title, prefix string) {
+	t := godog.T(ctx)
+	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	require.Truef(t, strings.HasPrefix(subtask.ID, prefix), "expected subtask ID to start with %q; got %q", prefix, subtask.ID)
+}
+
+func (s *suiteState) theSubtaskOnTheItemShouldNotBeCompleted(ctx context.Context, subtaskTitle, title string) {
+	t := godog.T(ctx)
+	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	require.Falsef(t, subtask.Completed, "expected subtask %q on item %q not to be completed", subtaskTitle, title)
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfSubtaskOnItem(ctx context.Context, eventName, subtaskTitle, title string) {
+	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	require.Truef(
+		godog.T(ctx),
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			meta, ok := e.Metadata.(domain.EventMetadataSubtaskAddedToItem)
+			return e.Name == domain.EventName(eventName) && ok && meta.SubtaskID == subtask.ID
+		}),
+		"expected event %q with subtask ID %q; got %v", eventName, subtask.ID, eventSummaries(s.events),
+	)
+}
+
 func (s *suiteState) theUserCommentsOnTheItem(ctx context.Context, userName, body, title string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.users, userName)
@@ -746,7 +794,8 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataItemPriorityChanged,
 		domain.EventMetadataItemMovedToOtherList,
 		domain.EventMetadataItemLinkedAsChildOfItem,
-		domain.EventMetadataItemCommentedOn:
+		domain.EventMetadataItemCommentedOn,
+		domain.EventMetadataSubtaskAddedToItem:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
 	default:
 		return ""
@@ -868,6 +917,11 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred with the list ID of list "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheListIDOfList)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the parent ID of item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheParentIDOfItem)
 	ctx.Step(`^a "([^"]*)" event should have occurred with title "([^"]*)"$`, s.aEventShouldHaveOccurredWithTitle)
+	ctx.Step(`^the owner adds a subtask "([^"]*)" to the item "([^"]*)"$`, s.theOwnerAddsASubtaskToTheItem)
+	ctx.Step(`^the item "([^"]*)" should have a subtask "([^"]*)"$`, s.theItemShouldHaveASubtask)
+	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theSubtaskOnTheItemShouldHaveAnIDPrefixedWith)
+	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should not be completed$`, s.theSubtaskOnTheItemShouldNotBeCompleted)
+	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of subtask "([^"]*)" on the item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfSubtaskOnItem)
 	ctx.Step(`^the user "([^"]*)" comments "([^"]*)" on the item "([^"]*)"$`, s.theUserCommentsOnTheItem)
 	ctx.Step(`^the item "([^"]*)" should have a comment "([^"]*)"$`, s.theItemShouldHaveAComment)
 	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theCommentOnTheItemShouldHaveAnIDPrefixedWith)
