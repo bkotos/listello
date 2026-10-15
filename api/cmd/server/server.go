@@ -13,6 +13,7 @@ import (
 func newAPIServer(
 	listService application.ListService,
 	itemService application.ItemService,
+	itemQueryService application.ItemQueryService,
 	userService application.UserService,
 	instanceService instanceapp.ListelloInstanceService,
 	spaceService application.SpaceService,
@@ -31,6 +32,7 @@ func newAPIServer(
 	mux.HandleFunc("PATCH /api/items/{id}/title", handlers.ModifyItemTitle(itemService))
 	mux.HandleFunc("POST /api/items/{id}/move", handlers.MoveItem(itemService))
 	mux.HandleFunc("POST /api/items/{id}/comment", handlers.CommentItem(itemService, instanceService))
+	mux.HandleFunc("GET /api/items/{id}/comments", handlers.GetItemComments(itemQueryService))
 	mux.HandleFunc("DELETE /api/items/{id}", handlers.DeleteItem(itemService))
 	mux.HandleFunc("POST /api/users", handlers.CreateUser(userService))
 	mux.HandleFunc("POST /api/spaces", handlers.CreateSpace(spaceService))

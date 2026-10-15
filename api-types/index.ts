@@ -43,6 +43,21 @@ export interface ItemDto {
 }
 
 //////////
+// source: item_comment.go
+
+/**
+ * ItemCommentDto is the HTTP representation of a comment on an item.
+ */
+export interface ItemCommentDto {
+  ID: string;
+  ItemID: string;
+  UserID: string;
+  UserName: string;
+  Body: string;
+  CreatedAt: string;
+}
+
+//////////
 // source: list.go
 
 /**
