@@ -11,5 +11,6 @@ func NewSubtask(container Container) *cobra.Command {
 	}
 	cmd.AddCommand(NewSubtaskAdd(container))
 	cmd.AddCommand(NewSubtaskComplete(container))
+	cmd.AddCommand(NewSubtaskUncomplete(container))
 	return cmd
 }
