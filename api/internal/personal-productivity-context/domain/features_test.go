@@ -622,8 +622,7 @@ func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfSubtaskOnItem(ctx contex
 	require.Truef(
 		godog.T(ctx),
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			meta, ok := e.Metadata.(domain.EventMetadataSubtaskAddedToItem)
-			return e.Name == domain.EventName(eventName) && ok && meta.SubtaskID == subtask.ID
+			return e.Name == domain.EventName(eventName) && eventSubtaskID(e) == subtask.ID
 		}),
 		"expected event %q with subtask ID %q; got %v", eventName, subtask.ID, eventSummaries(s.events),
 	)
@@ -810,8 +809,20 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataItemMovedToOtherList,
 		domain.EventMetadataItemLinkedAsChildOfItem,
 		domain.EventMetadataItemCommentedOn,
-		domain.EventMetadataSubtaskAddedToItem:
+		domain.EventMetadataSubtaskAddedToItem,
+		domain.EventMetadataSubtaskCompletedOnItem:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
+	default:
+		return ""
+	}
+}
+
+func eventSubtaskID(e domain.Event) string {
+	switch meta := e.Metadata.(type) {
+	case domain.EventMetadataSubtaskAddedToItem:
+		return meta.SubtaskID
+	case domain.EventMetadataSubtaskCompletedOnItem:
+		return meta.SubtaskID
 	default:
 		return ""
 	}
