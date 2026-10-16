@@ -24,9 +24,17 @@ export type ItemDetailProps = {
   onCompleteSubtask: (itemId: string, subtaskId: string) => void;
   onUncompleteSubtask: (itemId: string, subtaskId: string) => void;
   onDeleteSubtask: (itemId: string, subtaskId: string) => void;
+  onPrioritizeSubtask: (itemId: string, subtaskId: string, priority: string) => void;
 };
 
-export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask, onUncompleteSubtask, onDeleteSubtask }: ItemDetailProps) {
+const SUBTASK_PRIORITIES = [
+  { value: "no priority", label: "No priority", aria: "Set subtask priority to No priority", dot: "hsl(0deg 0% 60%)" },
+  { value: "low", label: "Low", aria: "Set subtask priority to Low", dot: "hsl(0deg 0% 45%)" },
+  { value: "medium", label: "Medium", aria: "Set subtask priority to Medium", dot: "hsl(38deg 92% 50%)" },
+  { value: "high", label: "High", aria: "Set subtask priority to High", dot: "hsl(348deg 86% 55%)" },
+] as const;
+
+export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask, onUncompleteSubtask, onDeleteSubtask, onPrioritizeSubtask }: ItemDetailProps) {
   const [commentBody, setCommentBody] = useState("");
   const [subtaskTitle, setSubtaskTitle] = useState("");
 
@@ -221,6 +229,32 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, 
                     >
                       {subtask.Title}
                     </span>
+                    <div className="is-flex is-flex-wrap-wrap is-align-items-center" style={{ gap: "0.25rem" }}>
+                      {SUBTASK_PRIORITIES.map((priority) => {
+                        const current = subtask.Priority || "no priority";
+                        const active = current === priority.value;
+                        return (
+                          <button
+                            key={priority.value}
+                            type="button"
+                            aria-label={priority.aria}
+                            className={`button is-small ${active ? "is-primary is-light" : "is-white"}`}
+                            style={{ gap: "0.375rem" }}
+                            onClick={() => onPrioritizeSubtask(item.ID, subtask.ID, priority.value)}
+                          >
+                            <span
+                              style={{
+                                height: "0.5rem",
+                                width: "0.5rem",
+                                borderRadius: "9999px",
+                                backgroundColor: priority.dot,
+                              }}
+                            />
+                            {priority.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                     <button
                       type="button"
                       aria-label="Delete subtask"
