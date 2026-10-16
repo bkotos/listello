@@ -12,7 +12,23 @@ func NewSubtaskDelete(container Container) *cobra.Command {
 		Short: "Delete a subtask on an item",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return fmt.Errorf("not implemented")
+			itemID := args[0]
+			subtaskID := args[1]
+
+			item, err := container.ItemService().DeleteSubtask(itemID, subtaskID)
+			if err != nil {
+				return err
+			}
+
+			title := subtaskID
+			for _, subtask := range item.Subtasks {
+				if subtask.ID == subtaskID {
+					title = subtask.Title
+					break
+				}
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "Deleted subtask %q (%s) from %q\n", title, subtaskID, item.Title)
+			return nil
 		},
 	}
 }
