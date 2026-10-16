@@ -37,7 +37,7 @@ type SubtaskDto struct {
 	ID        string `json:"ID"`
 	Title     string `json:"Title"`
 	Completed bool   `json:"Completed"`
-	Priority  string `json:"Priority"`
+	Priority  string `json:"Priority,omitempty"`
 }
 
 // ItemDto is the HTTP representation of an item.

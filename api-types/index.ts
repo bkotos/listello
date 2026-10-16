@@ -46,7 +46,7 @@ export interface SubtaskDto {
   ID: string;
   Title: string;
   Completed: boolean;
-  Priority: string;
+  Priority?: string;
 }
 /**
  * ItemDto is the HTTP representation of an item.
