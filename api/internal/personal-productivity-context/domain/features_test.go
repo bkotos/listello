@@ -34,16 +34,16 @@ func init() {
 }
 
 type suiteState struct {
-	placeholder  *domain.Placeholder
+	placeholder      *domain.Placeholder
 	lists            map[string]domain.List
 	deletedLists     map[string]domain.List
 	items            map[string]*domain.Item
 	deletedItems     map[string]domain.Item
 	deletedSubtaskID string
-	spaces       map[string]domain.Space
-	users        map[string]domain.User
-	events       []domain.Event
-	lastErr      error
+	spaces           map[string]domain.Space
+	users            map[string]domain.User
+	events           []domain.Event
+	lastErr          error
 }
 
 func (s *suiteState) reset() {
@@ -789,12 +789,23 @@ func (s *suiteState) aEventShouldHaveOccurredWithTag(ctx context.Context, eventN
 	)
 }
 
+func eventPriority(e domain.Event) (domain.ItemPriority, bool) {
+	switch meta := e.Metadata.(type) {
+	case domain.EventMetadataItemPriorityChanged:
+		return meta.Priority, true
+	case domain.EventMetadataSubtaskPriorityChanged:
+		return meta.Priority, true
+	default:
+		return "", false
+	}
+}
+
 func (s *suiteState) aEventShouldHaveOccurredWithPriority(ctx context.Context, eventName, priority string) {
 	require.Truef(
 		godog.T(ctx),
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			meta, ok := e.Metadata.(domain.EventMetadataItemPriorityChanged)
-			return e.Name == domain.EventName(eventName) && ok && meta.Priority == domain.ItemPriority(priority)
+			got, ok := eventPriority(e)
+			return e.Name == domain.EventName(eventName) && ok && got == domain.ItemPriority(priority)
 		}),
 		"expected event %q with priority %q; got %v", eventName, priority, eventSummaries(s.events),
 	)
@@ -868,7 +879,8 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataSubtaskAddedToItem,
 		domain.EventMetadataSubtaskCompletedOnItem,
 		domain.EventMetadataSubtaskUncompleted,
-		domain.EventMetadataSubtaskDeletedOnItem:
+		domain.EventMetadataSubtaskDeletedOnItem,
+		domain.EventMetadataSubtaskPriorityChanged:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
 	default:
 		return ""
@@ -884,6 +896,8 @@ func eventSubtaskID(e domain.Event) string {
 	case domain.EventMetadataSubtaskUncompleted:
 		return meta.SubtaskID
 	case domain.EventMetadataSubtaskDeletedOnItem:
+		return meta.SubtaskID
+	case domain.EventMetadataSubtaskPriorityChanged:
 		return meta.SubtaskID
 	default:
 		return ""

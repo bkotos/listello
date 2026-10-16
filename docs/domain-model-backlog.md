@@ -134,7 +134,7 @@ Child entity of Item in the domain model. No `Subtask` type exists yet. (`Item.C
 
 Subtask-entity priority, not item-level `ChangePriority` / `ItemPriorityChanged`.
 
-- [ ] Domain
+- [x] Domain
 - [ ] Application service
 - [ ] Adapter repository
 - [ ] Bootstrap

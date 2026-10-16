@@ -28,6 +28,7 @@ const (
 	EventSubtaskCompletedOnItem  EventName = "SubtaskCompletedOnItem"
 	EventSubtaskUncompleted      EventName = "SubtaskUncompleted"
 	EventSubtaskDeletedOnItem    EventName = "SubtaskDeletedOnItem"
+	EventSubtaskPriorityChanged  EventName = "SubtaskPriorityChanged"
 	EventSpaceCreated            EventName = "SpaceCreated"
 	EventUserCreated             EventName = "UserCreated"
 	EventInboxCreated            EventName = "InboxCreated"
@@ -179,4 +180,11 @@ type EventMetadataSubtaskUncompleted struct {
 type EventMetadataSubtaskDeletedOnItem struct {
 	ID        string
 	SubtaskID string
+}
+
+// EventMetadataSubtaskPriorityChanged is the payload for a SubtaskPriorityChanged event.
+type EventMetadataSubtaskPriorityChanged struct {
+	ID        string
+	SubtaskID string
+	Priority  ItemPriority
 }

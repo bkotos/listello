@@ -228,7 +228,17 @@ func (i *Item) UncompleteSubtask(subtaskID string) (Event, error) {
 
 // PrioritizeSubtask changes a subtask's priority on the item and raises a SubtaskPriorityChanged event.
 func (i *Item) PrioritizeSubtask(subtaskID string, priority ItemPriority) (Event, error) {
-	return Event{}, fmt.Errorf("not implemented")
+	for n := range i.Subtasks {
+		if i.Subtasks[n].ID == subtaskID {
+			i.Subtasks[n].Priority = priority
+			break
+		}
+	}
+	return event.NewEvent(EventSubtaskPriorityChanged, EventMetadataSubtaskPriorityChanged{
+		ID:        i.ID,
+		SubtaskID: subtaskID,
+		Priority:  priority,
+	}, 1), nil
 }
 
 // DeleteSubtask deletes a subtask on the item and raises a SubtaskDeletedOnItem event.
