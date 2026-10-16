@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { addSubtask, commentItem, completeItem, defineItem, deleteItem, getAllItems, modifyItemTitle, moveItem, uncompleteItem } from "./item-client";
+import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, getAllItems, modifyItemTitle, moveItem, uncompleteItem } from "./item-client";
 import { request } from "./util";
 
 vi.mock(import("./util"), () => ({
@@ -254,6 +254,33 @@ describe("addSubtask", () => {
     expect(request).toHaveBeenCalledWith("/api/items/IT_1/subtask", {
       method: "POST",
       body: JSON.stringify({ title: "Get 2%" }),
+    });
+    expect(result).toEqual(item);
+  });
+});
+
+describe("completeSubtask", () => {
+  it("posts a complete action for a subtask to the API", async () => {
+    // Arrange
+    const item = {
+      ID: "IT_1",
+      ListID: "LS_1",
+      ParentID: "",
+      Title: "Buy milk",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    vi.mocked(request).mockResolvedValue(item);
+
+    // Act
+    const result = await completeSubtask("IT_1", "ST_1");
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/items/IT_1/subtask/ST_1/complete", {
+      method: "POST",
     });
     expect(result).toEqual(item);
   });
