@@ -86,7 +86,7 @@ LinkAsChild is Item↔Item via `ParentID`, not the Subtask child entity.
 
 Child stays an Item with `ParentID`. Many children per parent. One level of nesting (no grandchildren).
 
-- [ ] Domain
+- [x] Domain
 - [ ] Application service
 - [ ] Adapter repository
 - [ ] Bootstrap
@@ -162,7 +162,7 @@ Subtask-entity priority, not item-level `ChangePriority` / `ItemPriorityChanged`
 - [x] CLI
 - [x] API client
 - [x] React Query hooks
-- [ ] UI
+- [ ] UI — PR #118 closed unmerged (does not match mockup); do not implement unless asked
 
 ---
 
