@@ -225,6 +225,11 @@ func (i *Item) UncompleteSubtask(subtaskID string) (Event, error) {
 	}, 1), nil
 }
 
+// DeleteSubtask deletes a subtask on the item and raises a SubtaskDeletedOnItem event.
+func (i *Item) DeleteSubtask(subtaskID string) (Event, error) {
+	return Event{}, fmt.Errorf("not implemented")
+}
+
 // Comment adds a comment to the item and raises an ItemCommentedOn event.
 func (i *Item) Comment(user User, body string) (Event, error) {
 	comment := Comment{
