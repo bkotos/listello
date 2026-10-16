@@ -1,8 +1,6 @@
 package application
 
 import (
-	"fmt"
-
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
@@ -248,7 +246,21 @@ func (s *itemService) DeleteSubtask(itemID, subtaskID string) (domain.Item, erro
 
 // PrioritizeSubtask changes a subtask's priority on an item via the domain and persists it.
 func (s *itemService) PrioritizeSubtask(itemID, subtaskID string, priority domain.ItemPriority) (domain.Item, error) {
-	return domain.Item{}, fmt.Errorf("not implemented")
+	item, err := s.itemRepository.GetByID(itemID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	event, err := (&item).PrioritizeSubtask(subtaskID, priority)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.itemRepository.Save(item); err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.Item{}, err
+	}
+	return item, nil
 }
 
 // CommentItem comments on an item via the domain and persists it.
