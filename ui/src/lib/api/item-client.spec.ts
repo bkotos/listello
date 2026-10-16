@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, modifyItemTitle, moveItem, uncompleteItem, uncompleteSubtask } from "./item-client";
+import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, modifyItemTitle, moveItem, prioritizeSubtask, uncompleteItem, uncompleteSubtask } from "./item-client";
 import { request } from "./util";
 
 vi.mock(import("./util"), () => ({
@@ -335,6 +335,34 @@ describe("deleteSubtask", () => {
     // Assert
     expect(request).toHaveBeenCalledWith("/api/items/IT_1/subtask/ST_1", {
       method: "DELETE",
+    });
+    expect(result).toEqual(item);
+  });
+});
+
+describe("prioritizeSubtask", () => {
+  it("posts a prioritize action for a subtask to the API", async () => {
+    // Arrange
+    const item = {
+      ID: "IT_1",
+      ListID: "LS_1",
+      ParentID: "",
+      Title: "Buy milk",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    vi.mocked(request).mockResolvedValue(item);
+
+    // Act
+    const result = await prioritizeSubtask("IT_1", "ST_1", { priority: "high" });
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/items/IT_1/subtask/ST_1/prioritize", {
+      method: "POST",
+      body: JSON.stringify({ priority: "high" }),
     });
     expect(result).toEqual(item);
   });
