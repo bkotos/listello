@@ -137,7 +137,7 @@ Subtask-entity priority, not item-level `ChangePriority` / `ItemPriorityChanged`
 - [x] Domain
 - [x] Application service
 - [x] Adapter repository
-- [ ] Bootstrap
+- [x] Bootstrap
 - [ ] API handler
 - [ ] CLI
 - [ ] API client
