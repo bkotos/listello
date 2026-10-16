@@ -40,6 +40,12 @@ export interface PrioritizeSubtaskRequest {
   priority: string;
 }
 /**
+ * LinkAsChildRequest is the HTTP request body for linking an item as a child of another item.
+ */
+export interface LinkAsChildRequest {
+  parentID: string;
+}
+/**
  * SubtaskDto is the HTTP representation of a subtask on an item.
  */
 export interface SubtaskDto {
