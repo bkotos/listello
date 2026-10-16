@@ -139,7 +139,7 @@ Subtask-entity priority, not item-level `ChangePriority` / `ItemPriorityChanged`
 - [x] Adapter repository
 - [x] Bootstrap
 - [x] API handler
-- [ ] CLI
+- [x] CLI
 - [ ] API client
 - [ ] React Query hooks
 - [ ] UI
