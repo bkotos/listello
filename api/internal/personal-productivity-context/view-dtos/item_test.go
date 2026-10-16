@@ -18,6 +18,11 @@ func TestItemFromDomain(t *testing.T) {
 		Title:    "Buy milk",
 		Priority: domain.PriorityNone,
 		State:    domain.ItemOutstanding,
+		Subtasks: []domain.Subtask{{
+			ID:        "ST_1",
+			Title:     "Get 2%",
+			Completed: false,
+		}},
 	}
 
 	// Act
@@ -29,6 +34,10 @@ func TestItemFromDomain(t *testing.T) {
 	assert.Equal(t, item.Title, received.Title)
 	assert.Equal(t, string(item.Priority), received.Priority)
 	assert.Equal(t, string(item.State), received.State)
+	require.Len(t, received.Subtasks, 1)
+	assert.Equal(t, "ST_1", received.Subtasks[0].ID)
+	assert.Equal(t, "Get 2%", received.Subtasks[0].Title)
+	assert.False(t, received.Subtasks[0].Completed)
 }
 
 func TestItemsFromDomain(t *testing.T) {

@@ -27,21 +27,37 @@ type AddSubtaskRequest struct {
 	Title string `json:"title"`
 }
 
+// SubtaskDto is the HTTP representation of a subtask on an item.
+type SubtaskDto struct {
+	ID        string `json:"ID"`
+	Title     string `json:"Title"`
+	Completed bool   `json:"Completed"`
+}
+
 // ItemDto is the HTTP representation of an item.
 type ItemDto struct {
-	ID          string   `json:"ID"`
-	ListID      string   `json:"ListID"`
-	ParentID    string   `json:"ParentID"`
-	Title       string   `json:"Title"`
-	Description string   `json:"Description"`
-	DueDate     string   `json:"DueDate"`
-	Tags        []string `json:"Tags"`
-	Priority    string   `json:"Priority"`
-	State       string   `json:"State"`
+	ID          string       `json:"ID"`
+	ListID      string       `json:"ListID"`
+	ParentID    string       `json:"ParentID"`
+	Title       string       `json:"Title"`
+	Description string       `json:"Description"`
+	DueDate     string       `json:"DueDate"`
+	Tags        []string     `json:"Tags"`
+	Priority    string       `json:"Priority"`
+	State       string       `json:"State"`
+	Subtasks    []SubtaskDto `json:"Subtasks,omitempty"`
 }
 
 // ItemFromDomain maps a domain item to its response DTO.
 func ItemFromDomain(item domain.Item) ItemDto {
+	subtasks := make([]SubtaskDto, len(item.Subtasks))
+	for i, subtask := range item.Subtasks {
+		subtasks[i] = SubtaskDto{
+			ID:        subtask.ID,
+			Title:     subtask.Title,
+			Completed: subtask.Completed,
+		}
+	}
 	return ItemDto{
 		ID:          item.ID,
 		ListID:      item.ListID,
@@ -52,6 +68,7 @@ func ItemFromDomain(item domain.Item) ItemDto {
 		Tags:        item.Tags,
 		Priority:    string(item.Priority),
 		State:       string(item.State),
+		Subtasks:    subtasks,
 	}
 }
 
