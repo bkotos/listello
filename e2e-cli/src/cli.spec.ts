@@ -457,4 +457,94 @@ describe("listello cli", () => {
       30_000,
     );
   });
+
+  describe("subtask prioritize", () => {
+    it(
+      "changes a subtask's priority on an item",
+      async () => {
+        // Arrange
+        const createResult = await runListello(dbPath, [
+          "list",
+          "create",
+          "Groceries",
+        ]);
+        const listId = parseCreatedListId(createResult.stdout);
+        const defineResult = await runListello(dbPath, [
+          "item",
+          "define",
+          listId,
+          "Buy milk",
+        ]);
+        const itemId = parseDefinedItemId(defineResult.stdout);
+        const addResult = await runListello(dbPath, [
+          "subtask",
+          "add",
+          itemId,
+          "Get 2%",
+        ]);
+        const subtaskId = parseAddedSubtaskId(addResult.stdout);
+
+        // Act
+        const result = await runListello(dbPath, [
+          "subtask",
+          "prioritize",
+          itemId,
+          subtaskId,
+          "high",
+        ]);
+
+        // Assert
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toMatch(
+          /Priority of subtask "Get 2%" \(ST_.+\) on "Buy milk" changed to high/,
+        );
+      },
+      30_000,
+    );
+
+    it(
+      "accepts none as no priority",
+      async () => {
+        // Arrange
+        const createResult = await runListello(dbPath, [
+          "list",
+          "create",
+          "Groceries",
+        ]);
+        const listId = parseCreatedListId(createResult.stdout);
+        const defineResult = await runListello(dbPath, [
+          "item",
+          "define",
+          listId,
+          "Buy milk",
+        ]);
+        const itemId = parseDefinedItemId(defineResult.stdout);
+        const addResult = await runListello(dbPath, [
+          "subtask",
+          "add",
+          itemId,
+          "Get 2%",
+        ]);
+        const subtaskId = parseAddedSubtaskId(addResult.stdout);
+
+        // Act
+        const result = await runListello(dbPath, [
+          "subtask",
+          "prioritize",
+          itemId,
+          subtaskId,
+          "none",
+        ]);
+
+        // Assert
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toMatch(
+          /Priority of subtask "Get 2%" \(ST_.+\) on "Buy milk" changed to none/,
+        );
+      },
+      30_000,
+    );
+  });
 });
