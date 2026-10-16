@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe("ItemDetail", () => {
   beforeEach(() => {
-    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn(), onModifyTitle: vi.fn(), onComment: vi.fn(), onAddSubtask: vi.fn(), onCompleteSubtask: vi.fn(), onUncompleteSubtask: vi.fn(), onDeleteSubtask: vi.fn() }));
+    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn(), onModifyTitle: vi.fn(), onComment: vi.fn(), onAddSubtask: vi.fn(), onCompleteSubtask: vi.fn(), onUncompleteSubtask: vi.fn(), onDeleteSubtask: vi.fn(), onPrioritizeSubtask: vi.fn() }));
   });
 
   it("renders a right-hand detail aside", () => {
@@ -155,10 +155,12 @@ describe("ItemDetail", () => {
 describe("ItemDetail subtasks", () => {
   const onCompleteSubtask = vi.fn();
   const onDeleteSubtask = vi.fn();
+  const onPrioritizeSubtask = vi.fn();
 
   beforeEach(() => {
     onCompleteSubtask.mockReset();
     onDeleteSubtask.mockReset();
+    onPrioritizeSubtask.mockReset();
     render(
       createElement(ItemDetail, {
         item: {
@@ -173,6 +175,7 @@ describe("ItemDetail subtasks", () => {
         onCompleteSubtask,
         onUncompleteSubtask: vi.fn(),
         onDeleteSubtask,
+        onPrioritizeSubtask,
       }),
     );
   });
@@ -201,6 +204,21 @@ describe("ItemDetail subtasks", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete subtask" }));
     expect(onDeleteSubtask).toHaveBeenCalledWith("IT_1", "ST_1");
   });
+
+  it("renders Set subtask priority to High", () => {
+    const high = screen.getByRole("button", { name: "Set subtask priority to High" });
+    expect(high).toHaveClass("button", "is-small");
+  });
+
+  it("calls onPrioritizeSubtask with high when Set subtask priority to High is clicked", () => {
+    fireEvent.click(screen.getByRole("button", { name: "Set subtask priority to High" }));
+    expect(onPrioritizeSubtask).toHaveBeenCalledWith("IT_1", "ST_1", "high");
+  });
+
+  it("calls onPrioritizeSubtask with no priority when Set subtask priority to No priority is clicked", () => {
+    fireEvent.click(screen.getByRole("button", { name: "Set subtask priority to No priority" }));
+    expect(onPrioritizeSubtask).toHaveBeenCalledWith("IT_1", "ST_1", "no priority");
+  });
 });
 
 describe("ItemDetail completed subtask", () => {
@@ -222,6 +240,7 @@ describe("ItemDetail completed subtask", () => {
         onCompleteSubtask: vi.fn(),
         onUncompleteSubtask,
         onDeleteSubtask: vi.fn(),
+        onPrioritizeSubtask: vi.fn(),
       }),
     );
   });

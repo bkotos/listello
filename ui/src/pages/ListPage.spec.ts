@@ -20,9 +20,10 @@ vi.mock("../lib/api/item-client", () => ({
   completeSubtask: vi.fn(),
   uncompleteSubtask: vi.fn(),
   deleteSubtask: vi.fn(),
+  prioritizeSubtask: vi.fn(),
 }));
 
-import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, modifyItemTitle, uncompleteItem, uncompleteSubtask } from "../lib/api/item-client";
+import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, modifyItemTitle, prioritizeSubtask, uncompleteItem, uncompleteSubtask } from "../lib/api/item-client";
 import { getList } from "../lib/api/list-client";
 
 const sampleItems = [
@@ -1115,6 +1116,71 @@ describe("ListPage", () => {
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Delete subtask" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("calls prioritizeSubtask when Set subtask priority to High is clicked", async () => {
+    // Arrange
+    const itemsWithSubtask = [
+      {
+        ...sampleItems[0],
+        Subtasks: [{ ID: "ST_1", Title: "Get 2%", Completed: false }],
+      },
+    ];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(itemsWithSubtask);
+    vi.mocked(prioritizeSubtask).mockResolvedValue(itemsWithSubtask[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Set subtask priority to High" })).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Set subtask priority to High" }));
+
+    // Assert
+    expect(prioritizeSubtask).toHaveBeenCalledWith("IT_1", "ST_1", { priority: "high" });
+  });
+
+  it("reloads items after prioritizeSubtask is called", async () => {
+    // Arrange
+    const itemsWithSubtask = [
+      {
+        ...sampleItems[0],
+        Subtasks: [{ ID: "ST_1", Title: "Get 2%", Completed: false }],
+      },
+    ];
+    const itemsAfterPrioritize = [
+      {
+        ...sampleItems[0],
+        Subtasks: [{ ID: "ST_1", Title: "Get 2%", Completed: false, Priority: "high" }],
+      },
+    ];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(itemsWithSubtask)
+      .mockResolvedValueOnce(itemsAfterPrioritize);
+    vi.mocked(prioritizeSubtask).mockResolvedValue(itemsAfterPrioritize[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Set subtask priority to High" })).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Set subtask priority to High" }));
 
     // Assert
     await waitFor(() => {
