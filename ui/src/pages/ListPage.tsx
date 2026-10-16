@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ContentArea } from "../components/ContentArea";
 import { ItemDetail } from "../components/ItemDetail";
 import { ItemRow } from "../components/ItemRow";
-import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle, commentItem, addSubtask, completeSubtask, uncompleteSubtask } from "../lib/api/item-client";
+import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle, commentItem, addSubtask, completeSubtask, uncompleteSubtask, deleteSubtask } from "../lib/api/item-client";
 import { itemQueryKeys, useAllItemsQuery } from "../lib/api/item-queries";
 import { useListQuery } from "../lib/api/list-queries";
 import { useShellContext } from "../lib/useShellContext";
@@ -83,6 +83,13 @@ function ListPage() {
     }
   }
 
+  async function handleDeleteSubtask(itemId: string, subtaskId: string) {
+    await deleteSubtask(itemId, subtaskId);
+    if (listId) {
+      await queryClient.invalidateQueries({ queryKey: itemQueryKeys.byList(listId) });
+    }
+  }
+
   return (
     <div className="is-flex" style={{ height: "100%", minWidth: 0 }}>
       <div className="is-flex is-flex-direction-column" style={{ flex: "1 1 0", minWidth: 0 }}>
@@ -129,6 +136,7 @@ function ListPage() {
           onAddSubtask={handleAddSubtask}
           onCompleteSubtask={handleCompleteSubtask}
           onUncompleteSubtask={handleUncompleteSubtask}
+          onDeleteSubtask={handleDeleteSubtask}
         />
       ) : null}
     </div>

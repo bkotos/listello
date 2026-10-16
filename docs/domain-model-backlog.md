@@ -128,7 +128,7 @@ Child entity of Item in the domain model. No `Subtask` type exists yet. (`Item.C
 - [x] CLI
 - [x] API client
 - [x] React Query hooks
-- [ ] UI
+- [x] UI
 
 ### Prioritize → Subtask Priority Changed
 

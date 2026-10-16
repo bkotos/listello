@@ -23,9 +23,10 @@ export type ItemDetailProps = {
   onAddSubtask: (itemId: string, title: string) => void;
   onCompleteSubtask: (itemId: string, subtaskId: string) => void;
   onUncompleteSubtask: (itemId: string, subtaskId: string) => void;
+  onDeleteSubtask: (itemId: string, subtaskId: string) => void;
 };
 
-export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask, onUncompleteSubtask }: ItemDetailProps) {
+export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask, onUncompleteSubtask, onDeleteSubtask }: ItemDetailProps) {
   const [commentBody, setCommentBody] = useState("");
   const [subtaskTitle, setSubtaskTitle] = useState("");
 
@@ -220,6 +221,15 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, 
                     >
                       {subtask.Title}
                     </span>
+                    <button
+                      type="button"
+                      aria-label="Delete subtask"
+                      className="icon-btn is-danger-hover hover-reveal"
+                      style={{ height: "1.5rem", width: "1.5rem" }}
+                      onClick={() => onDeleteSubtask(item.ID, subtask.ID)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 ))}
                 <div className="is-flex is-align-items-center px-1 py-1 muted" style={{ gap: "0.5rem" }}>
