@@ -13,6 +13,7 @@ type itemRow struct {
 	bun.BaseModel `bun:"table:items"`
 	ID            string `bun:"id,pk"`
 	ListID        string `bun:"list_id"`
+	ParentID      string `bun:"parent_id"`
 	Title         string `bun:"title"`
 	State         string `bun:"state"`
 	CreatedAt     string `bun:"created_at"`

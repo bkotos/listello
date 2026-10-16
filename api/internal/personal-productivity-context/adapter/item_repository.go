@@ -31,6 +31,7 @@ func (r *SQLiteItemRepository) Save(item domain.Item) error {
 	row := &itemRow{
 		ID:        item.ID,
 		ListID:    item.ListID,
+		ParentID:  item.ParentID,
 		Title:     item.Title,
 		State:     string(item.State),
 		CreatedAt: newCreatedAt(),
@@ -39,6 +40,7 @@ func (r *SQLiteItemRepository) Save(item domain.Item) error {
 		Model(row).
 		On("CONFLICT (id) DO UPDATE").
 		Set("list_id = EXCLUDED.list_id").
+		Set("parent_id = EXCLUDED.parent_id").
 		Set("title = EXCLUDED.title").
 		Set("state = EXCLUDED.state").
 		Exec(context.Background())
@@ -79,6 +81,7 @@ func (r *SQLiteItemRepository) GetByID(id string) (domain.Item, error) {
 	return domain.Item{
 		ID:       row.ID,
 		ListID:   row.ListID,
+		ParentID: row.ParentID,
 		Title:    row.Title,
 		State:    domain.ItemState(row.State),
 		Comments: comments,
@@ -110,6 +113,7 @@ func (r *SQLiteItemRepository) GetAll(listID string) ([]domain.Item, error) {
 		items = append(items, domain.Item{
 			ID:       row.ID,
 			ListID:   row.ListID,
+			ParentID: row.ParentID,
 			Title:    row.Title,
 			State:    domain.ItemState(row.State),
 			Subtasks: subtasks,
