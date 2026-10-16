@@ -103,7 +103,7 @@ Child entity of Item in the domain model. No `Subtask` type exists yet. (`Item.C
 - [x] API handler
 - [x] CLI
 - [x] API client
-- [ ] React Query hooks
+- [x] React Query hooks
 - [ ] UI
 
 ### Uncomplete Subtask → Subtask Uncompleted
