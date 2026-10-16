@@ -77,3 +77,11 @@ export function parseDefinedItemId(output: string): string {
   }
   return match[1];
 }
+
+export function parseAddedSubtaskId(output: string): string {
+  const match = output.match(/Added subtask ".+" \((ST_[^)]+)\)/);
+  if (!match) {
+    throw new Error(`could not parse subtask id from output: ${output}`);
+  }
+  return match[1];
+}

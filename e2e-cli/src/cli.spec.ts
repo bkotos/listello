@@ -5,6 +5,7 @@ import {
   createWorkdir,
   dbPathFor,
   isolatedEnv,
+  parseAddedSubtaskId,
   parseCreatedListId,
   parseDefinedItemId,
   removeWorkdir,
@@ -308,6 +309,51 @@ describe("listello cli", () => {
         expect(result.stderr).toBe("");
         expect(result.stdout).toMatch(
           /Added subtask "Get 2%" \(ST_.+\) to "Buy milk"/,
+        );
+      },
+      30_000,
+    );
+  });
+
+  describe("subtask complete", () => {
+    it(
+      "completes a subtask on an item",
+      async () => {
+        // Arrange
+        const createResult = await runListello(dbPath, [
+          "list",
+          "create",
+          "Groceries",
+        ]);
+        const listId = parseCreatedListId(createResult.stdout);
+        const defineResult = await runListello(dbPath, [
+          "item",
+          "define",
+          listId,
+          "Buy milk",
+        ]);
+        const itemId = parseDefinedItemId(defineResult.stdout);
+        const addResult = await runListello(dbPath, [
+          "subtask",
+          "add",
+          itemId,
+          "Get 2%",
+        ]);
+        const subtaskId = parseAddedSubtaskId(addResult.stdout);
+
+        // Act
+        const result = await runListello(dbPath, [
+          "subtask",
+          "complete",
+          itemId,
+          subtaskId,
+        ]);
+
+        // Assert
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toMatch(
+          /Completed subtask "Get 2%" \(ST_.+\) on "Buy milk"/,
         );
       },
       30_000,
