@@ -711,6 +711,95 @@ func TestItemService_UncompleteSubtask_PublishesEvent(t *testing.T) {
 	assert.NotEmpty(t, published.Timestamp)
 }
 
+func TestItemService_DeleteSubtask_PersistsItem(t *testing.T) {
+	// Arrange
+	const (
+		itemID    = "IT_1"
+		subtaskID = "ST_1"
+	)
+	item := domain.Item{
+		ID:     itemID,
+		ListID: "LS_1",
+		Title:  "Buy milk",
+		State:  domain.ItemOutstanding,
+		Subtasks: []domain.Subtask{
+			{ID: subtaskID, Title: "Get 2%", Completed: false},
+		},
+	}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
+
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Save(mock.MatchedBy(func(saved domain.Item) bool {
+			return saved.ID == itemID && len(saved.Subtasks) == 0
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil)
+
+	// Act
+	result, err := svc.DeleteSubtask(itemID, subtaskID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Empty(t, result.Subtasks)
+}
+
+func TestItemService_DeleteSubtask_PublishesEvent(t *testing.T) {
+	// Arrange
+	const (
+		itemID    = "IT_1"
+		subtaskID = "ST_1"
+	)
+	item := domain.Item{
+		ID:     itemID,
+		ListID: "LS_1",
+		Title:  "Buy milk",
+		State:  domain.ItemOutstanding,
+		Subtasks: []domain.Subtask{
+			{ID: subtaskID, Title: "Get 2%", Completed: false},
+		},
+	}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
+
+	var published domain.Event
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Save(mock.AnythingOfType("domain.Item")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			metadata, ok := event.Metadata.(domain.EventMetadataSubtaskDeletedOnItem)
+			return event.Name == domain.EventSubtaskDeletedOnItem && ok && metadata.ID == itemID && metadata.SubtaskID == subtaskID
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.DeleteSubtask(itemID, subtaskID)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataSubtaskDeletedOnItem)
+	require.True(t, ok)
+	assert.Equal(t, itemID, metadata.ID)
+	assert.Equal(t, subtaskID, metadata.SubtaskID)
+	assert.NotEmpty(t, published.Timestamp)
+}
+
 func TestItemService_CommentItem_PersistsItem(t *testing.T) {
 	// Arrange
 	const (

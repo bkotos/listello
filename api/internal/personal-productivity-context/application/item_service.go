@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	domain "github.com/bkotos/listello/internal/personal-productivity-context/domain"
 )
 
@@ -24,6 +26,7 @@ type ItemService interface {
 	AddSubtask(itemID, title string) (domain.Item, error)
 	CompleteSubtask(itemID, subtaskID string) (domain.Item, error)
 	UncompleteSubtask(itemID, subtaskID string) (domain.Item, error)
+	DeleteSubtask(itemID, subtaskID string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
 }
 
@@ -221,6 +224,11 @@ func (s *itemService) UncompleteSubtask(itemID, subtaskID string) (domain.Item, 
 		return domain.Item{}, err
 	}
 	return item, nil
+}
+
+// DeleteSubtask deletes a subtask on an item via the domain and persists it.
+func (s *itemService) DeleteSubtask(itemID, subtaskID string) (domain.Item, error) {
+	return domain.Item{}, fmt.Errorf("not implemented")
 }
 
 // CommentItem comments on an item via the domain and persists it.
