@@ -22,9 +22,10 @@ export type ItemDetailProps = {
   onComment: (itemId: string, body: string) => void;
   onAddSubtask: (itemId: string, title: string) => void;
   onCompleteSubtask: (itemId: string, subtaskId: string) => void;
+  onUncompleteSubtask: (itemId: string, subtaskId: string) => void;
 };
 
-export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask }: ItemDetailProps) {
+export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask, onUncompleteSubtask }: ItemDetailProps) {
   const [commentBody, setCommentBody] = useState("");
   const [subtaskTitle, setSubtaskTitle] = useState("");
 
@@ -204,7 +205,9 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, 
                       className={`check-toggle${subtask.Completed ? " is-checked" : ""}`}
                       style={{ height: "1.125rem", width: "1.125rem", borderRadius: "0.25rem" }}
                       onClick={() => {
-                        if (!subtask.Completed) {
+                        if (subtask.Completed) {
+                          onUncompleteSubtask(item.ID, subtask.ID);
+                        } else {
                           onCompleteSubtask(item.ID, subtask.ID);
                         }
                       }}
