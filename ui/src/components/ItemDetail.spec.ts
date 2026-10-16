@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe("ItemDetail", () => {
   beforeEach(() => {
-    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn(), onModifyTitle: vi.fn(), onComment: vi.fn(), onAddSubtask: vi.fn() }));
+    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn(), onModifyTitle: vi.fn(), onComment: vi.fn(), onAddSubtask: vi.fn(), onCompleteSubtask: vi.fn() }));
   });
 
   it("renders a right-hand detail aside", () => {
@@ -149,5 +149,70 @@ describe("ItemDetail", () => {
     expect(send).toBeDisabled();
     expect(send).toHaveClass("button", "is-small", "is-primary");
     expect(send.querySelector("svg.lucide-send")).toBeInTheDocument();
+  });
+});
+
+describe("ItemDetail subtasks", () => {
+  const onCompleteSubtask = vi.fn();
+
+  beforeEach(() => {
+    onCompleteSubtask.mockReset();
+    render(
+      createElement(ItemDetail, {
+        item: {
+          ...baseItem,
+          Subtasks: [{ ID: "ST_1", Title: "Get 2%", Completed: false }],
+        },
+        listName: "Work",
+        onClose: vi.fn(),
+        onModifyTitle: vi.fn(),
+        onComment: vi.fn(),
+        onAddSubtask: vi.fn(),
+        onCompleteSubtask,
+      }),
+    );
+  });
+
+  it("renders a Mark subtask complete toggle", () => {
+    const toggle = screen.getByRole("button", { name: "Mark subtask complete" });
+    expect(toggle).toHaveClass("check-toggle");
+  });
+
+  it("renders the subtask title", () => {
+    expect(screen.getByText("Get 2%")).toHaveClass("is-size-6");
+  });
+
+  it("calls onCompleteSubtask when the toggle is clicked", () => {
+    fireEvent.click(screen.getByRole("button", { name: "Mark subtask complete" }));
+    expect(onCompleteSubtask).toHaveBeenCalledWith("IT_1", "ST_1");
+  });
+});
+
+describe("ItemDetail completed subtask", () => {
+  beforeEach(() => {
+    render(
+      createElement(ItemDetail, {
+        item: {
+          ...baseItem,
+          Subtasks: [{ ID: "ST_1", Title: "Get 2%", Completed: true }],
+        },
+        listName: "Work",
+        onClose: vi.fn(),
+        onModifyTitle: vi.fn(),
+        onComment: vi.fn(),
+        onAddSubtask: vi.fn(),
+        onCompleteSubtask: vi.fn(),
+      }),
+    );
+  });
+
+  it("renders the completed subtask as checked", () => {
+    const toggle = screen.getByRole("button", { name: "Mark subtask incomplete" });
+    expect(toggle).toHaveClass("check-toggle", "is-checked");
+    expect(toggle.querySelector("svg.lucide-check")).toBeInTheDocument();
+  });
+
+  it("renders the completed subtask title with strikethrough", () => {
+    expect(screen.getByText("Get 2%")).toHaveClass("is-size-6", "muted", "line-through");
   });
 });
