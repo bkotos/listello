@@ -42,7 +42,7 @@ func (s *SQLite) migrate() error {
 	if err := s.ensureCreatedAtColumn("items"); err != nil {
 		return err
 	}
-	return nil
+	return s.ensureSubtaskPriorityColumn()
 }
 
 func (s *SQLite) ensureCreatedAtColumn(table string) error {
@@ -68,6 +68,24 @@ func (s *SQLite) ensureCreatedAtColumn(table string) error {
 	}
 
 	return s.backfillCreatedAt(table)
+}
+
+func (s *SQLite) ensureSubtaskPriorityColumn() error {
+	var count int
+	err := s.db.QueryRow(
+		`SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?`,
+		"subtasks", "priority",
+	).Scan(&count)
+	if err != nil {
+		return fmt.Errorf("migrate subtasks priority: %w", err)
+	}
+	if count == 0 {
+		_, err = s.db.Exec(`ALTER TABLE subtasks ADD COLUMN priority TEXT NOT NULL DEFAULT ''`)
+		if err != nil {
+			return fmt.Errorf("migrate subtasks priority: %w", err)
+		}
+	}
+	return nil
 }
 
 func (s *SQLite) backfillCreatedAt(table string) error {

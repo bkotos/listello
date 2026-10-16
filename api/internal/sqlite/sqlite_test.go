@@ -14,6 +14,45 @@ import (
 	"github.com/bkotos/listello/internal/sqlite"
 )
 
+func TestOpenSQLite_AddsPriorityToExistingSubtasks(t *testing.T) {
+	// Arrange
+	path := filepath.Join(t.TempDir(), "legacy.db")
+	legacy, err := sql.Open("sqlite3", path)
+	require.NoError(t, err)
+	_, err = legacy.Exec(`
+CREATE TABLE lists (
+	id TEXT PRIMARY KEY NOT NULL,
+	name TEXT NOT NULL,
+	created_at TEXT NOT NULL
+);
+CREATE TABLE items (
+	id TEXT PRIMARY KEY NOT NULL,
+	list_id TEXT NOT NULL,
+	title TEXT NOT NULL,
+	state TEXT NOT NULL,
+	created_at TEXT NOT NULL,
+	FOREIGN KEY (list_id) REFERENCES lists(id)
+);
+CREATE TABLE subtasks (
+	id TEXT PRIMARY KEY NOT NULL,
+	item_id TEXT NOT NULL,
+	title TEXT NOT NULL,
+	completed BOOLEAN NOT NULL,
+	created_at TEXT NOT NULL,
+	FOREIGN KEY (item_id) REFERENCES items(id)
+);`)
+	require.NoError(t, err)
+	require.NoError(t, legacy.Close())
+
+	// Act
+	opened, err := sqlite.OpenSQLite(path)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = opened.Close() })
+
+	// Assert
+	assert.True(t, hasColumn(t, opened.DB(), "subtasks", "priority"))
+}
+
 func TestOpenSQLite_AddsCreatedAtToListsAndItems(t *testing.T) {
 	// Arrange / Act
 	opened, err := sqlite.OpenSQLite(filepath.Join(t.TempDir(), "listello.db"))
