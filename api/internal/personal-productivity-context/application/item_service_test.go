@@ -800,6 +800,97 @@ func TestItemService_DeleteSubtask_PublishesEvent(t *testing.T) {
 	assert.NotEmpty(t, published.Timestamp)
 }
 
+func TestItemService_PrioritizeSubtask_PersistsItem(t *testing.T) {
+	// Arrange
+	const (
+		itemID    = "IT_1"
+		subtaskID = "ST_1"
+	)
+	item := domain.Item{
+		ID:     itemID,
+		ListID: "LS_1",
+		Title:  "Buy milk",
+		State:  domain.ItemOutstanding,
+		Subtasks: []domain.Subtask{
+			{ID: subtaskID, Title: "Get 2%", Completed: false},
+		},
+	}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
+
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Save(mock.MatchedBy(func(saved domain.Item) bool {
+			return saved.ID == itemID && len(saved.Subtasks) == 1 && saved.Subtasks[0].ID == subtaskID && saved.Subtasks[0].Priority == domain.PriorityHigh
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil)
+
+	// Act
+	result, err := svc.PrioritizeSubtask(itemID, subtaskID, domain.PriorityHigh)
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, result.Subtasks, 1)
+	assert.Equal(t, domain.PriorityHigh, result.Subtasks[0].Priority)
+}
+
+func TestItemService_PrioritizeSubtask_PublishesEvent(t *testing.T) {
+	// Arrange
+	const (
+		itemID    = "IT_1"
+		subtaskID = "ST_1"
+	)
+	item := domain.Item{
+		ID:     itemID,
+		ListID: "LS_1",
+		Title:  "Buy milk",
+		State:  domain.ItemOutstanding,
+		Subtasks: []domain.Subtask{
+			{ID: subtaskID, Title: "Get 2%", Completed: false},
+		},
+	}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
+
+	var published domain.Event
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	itemRepo.EXPECT().
+		Save(mock.AnythingOfType("domain.Item")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			metadata, ok := event.Metadata.(domain.EventMetadataSubtaskPriorityChanged)
+			return event.Name == domain.EventSubtaskPriorityChanged && ok && metadata.ID == itemID && metadata.SubtaskID == subtaskID && metadata.Priority == domain.PriorityHigh
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.PrioritizeSubtask(itemID, subtaskID, domain.PriorityHigh)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataSubtaskPriorityChanged)
+	require.True(t, ok)
+	assert.Equal(t, itemID, metadata.ID)
+	assert.Equal(t, subtaskID, metadata.SubtaskID)
+	assert.Equal(t, domain.PriorityHigh, metadata.Priority)
+	assert.NotEmpty(t, published.Timestamp)
+}
+
 func TestItemService_CommentItem_PersistsItem(t *testing.T) {
 	// Arrange
 	const (
