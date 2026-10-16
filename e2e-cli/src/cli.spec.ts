@@ -547,4 +547,50 @@ describe("listello cli", () => {
       30_000,
     );
   });
+
+  describe("subtask link", () => {
+    it(
+      "links an item as a child of another item",
+      async () => {
+        // Arrange
+        const createResult = await runListello(dbPath, [
+          "list",
+          "create",
+          "Travel",
+        ]);
+        const listId = parseCreatedListId(createResult.stdout);
+        const parentResult = await runListello(dbPath, [
+          "item",
+          "define",
+          listId,
+          "Plan trip",
+        ]);
+        const parentId = parseDefinedItemId(parentResult.stdout);
+        const childResult = await runListello(dbPath, [
+          "item",
+          "define",
+          listId,
+          "Book flights",
+        ]);
+        const childId = parseDefinedItemId(childResult.stdout);
+
+        // Act
+        const result = await runListello(dbPath, [
+          "subtask",
+          "link",
+          childId,
+          "--parent",
+          parentId,
+        ]);
+
+        // Assert
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toBe(
+          `Linked "Book flights" as a child of ${parentId}`,
+        );
+      },
+      30_000,
+    );
+  });
 });
