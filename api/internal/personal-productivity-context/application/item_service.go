@@ -25,6 +25,7 @@ type ItemService interface {
 	CompleteSubtask(itemID, subtaskID string) (domain.Item, error)
 	UncompleteSubtask(itemID, subtaskID string) (domain.Item, error)
 	DeleteSubtask(itemID, subtaskID string) (domain.Item, error)
+	PrioritizeSubtask(itemID, subtaskID string, priority domain.ItemPriority) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
 }
 
@@ -231,6 +232,25 @@ func (s *itemService) DeleteSubtask(itemID, subtaskID string) (domain.Item, erro
 		return domain.Item{}, err
 	}
 	event, err := (&item).DeleteSubtask(subtaskID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.itemRepository.Save(item); err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.Item{}, err
+	}
+	return item, nil
+}
+
+// PrioritizeSubtask changes a subtask's priority on an item via the domain and persists it.
+func (s *itemService) PrioritizeSubtask(itemID, subtaskID string, priority domain.ItemPriority) (domain.Item, error) {
+	item, err := s.itemRepository.GetByID(itemID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	event, err := (&item).PrioritizeSubtask(subtaskID, priority)
 	if err != nil {
 		return domain.Item{}, err
 	}

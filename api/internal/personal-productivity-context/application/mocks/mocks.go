@@ -785,6 +785,78 @@ func (_c *MockItemService_MoveItem_Call) RunAndReturn(run func(itemID string, li
 	return _c
 }
 
+// PrioritizeSubtask provides a mock function for the type MockItemService
+func (_mock *MockItemService) PrioritizeSubtask(itemID string, subtaskID string, priority domain.ItemPriority) (domain.Item, error) {
+	ret := _mock.Called(itemID, subtaskID, priority)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PrioritizeSubtask")
+	}
+
+	var r0 domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, string, domain.ItemPriority) (domain.Item, error)); ok {
+		return returnFunc(itemID, subtaskID, priority)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, string, domain.ItemPriority) domain.Item); ok {
+		r0 = returnFunc(itemID, subtaskID, priority)
+	} else {
+		r0 = ret.Get(0).(domain.Item)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, string, domain.ItemPriority) error); ok {
+		r1 = returnFunc(itemID, subtaskID, priority)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemService_PrioritizeSubtask_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PrioritizeSubtask'
+type MockItemService_PrioritizeSubtask_Call struct {
+	*mock.Call
+}
+
+// PrioritizeSubtask is a helper method to define mock.On call
+//   - itemID string
+//   - subtaskID string
+//   - priority domain.ItemPriority
+func (_e *MockItemService_Expecter) PrioritizeSubtask(itemID any, subtaskID any, priority any) *MockItemService_PrioritizeSubtask_Call {
+	return &MockItemService_PrioritizeSubtask_Call{Call: _e.mock.On("PrioritizeSubtask", itemID, subtaskID, priority)}
+}
+
+func (_c *MockItemService_PrioritizeSubtask_Call) Run(run func(itemID string, subtaskID string, priority domain.ItemPriority)) *MockItemService_PrioritizeSubtask_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 domain.ItemPriority
+		if args[2] != nil {
+			arg2 = args[2].(domain.ItemPriority)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_PrioritizeSubtask_Call) Return(item domain.Item, err error) *MockItemService_PrioritizeSubtask_Call {
+	_c.Call.Return(item, err)
+	return _c
+}
+
+func (_c *MockItemService_PrioritizeSubtask_Call) RunAndReturn(run func(itemID string, subtaskID string, priority domain.ItemPriority) (domain.Item, error)) *MockItemService_PrioritizeSubtask_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UncompleteItem provides a mock function for the type MockItemService
 func (_mock *MockItemService) UncompleteItem(itemID string) (domain.Item, error) {
 	ret := _mock.Called(itemID)
