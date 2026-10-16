@@ -211,6 +211,20 @@ func (i *Item) CompleteSubtask(subtaskID string) (Event, error) {
 	}, 1), nil
 }
 
+// UncompleteSubtask uncompletes a subtask on the item and raises a SubtaskUncompleted event.
+func (i *Item) UncompleteSubtask(subtaskID string) (Event, error) {
+	for n := range i.Subtasks {
+		if i.Subtasks[n].ID == subtaskID {
+			i.Subtasks[n].Completed = false
+			break
+		}
+	}
+	return event.NewEvent(EventSubtaskUncompleted, EventMetadataSubtaskUncompleted{
+		ID:        i.ID,
+		SubtaskID: subtaskID,
+	}, 1), nil
+}
+
 // Comment adds a comment to the item and raises an ItemCommentedOn event.
 func (i *Item) Comment(user User, body string) (Event, error) {
 	comment := Comment{

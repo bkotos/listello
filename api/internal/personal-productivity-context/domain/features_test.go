@@ -617,6 +617,15 @@ func (s *suiteState) theSubtaskOnTheItemShouldBeCompleted(ctx context.Context, s
 	require.Truef(t, subtask.Completed, "expected subtask %q on item %q to be completed", subtaskTitle, title)
 }
 
+func (s *suiteState) theOwnerUncompletesTheSubtaskOnTheItem(ctx context.Context, subtaskTitle, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	event, err := s.items[title].UncompleteSubtask(subtask.ID)
+	require.NoError(t, err)
+	s.record(event)
+}
+
 func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfSubtaskOnItem(ctx context.Context, eventName, subtaskTitle, title string) {
 	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
 	require.Truef(
@@ -810,7 +819,8 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataItemLinkedAsChildOfItem,
 		domain.EventMetadataItemCommentedOn,
 		domain.EventMetadataSubtaskAddedToItem,
-		domain.EventMetadataSubtaskCompletedOnItem:
+		domain.EventMetadataSubtaskCompletedOnItem,
+		domain.EventMetadataSubtaskUncompleted:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
 	default:
 		return ""
@@ -822,6 +832,8 @@ func eventSubtaskID(e domain.Event) string {
 	case domain.EventMetadataSubtaskAddedToItem:
 		return meta.SubtaskID
 	case domain.EventMetadataSubtaskCompletedOnItem:
+		return meta.SubtaskID
+	case domain.EventMetadataSubtaskUncompleted:
 		return meta.SubtaskID
 	default:
 		return ""
@@ -945,6 +957,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred with title "([^"]*)"$`, s.aEventShouldHaveOccurredWithTitle)
 	ctx.Step(`^the owner adds a subtask "([^"]*)" to the item "([^"]*)"$`, s.theOwnerAddsASubtaskToTheItem)
 	ctx.Step(`^the owner completes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerCompletesTheSubtaskOnTheItem)
+	ctx.Step(`^the owner uncompletes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerUncompletesTheSubtaskOnTheItem)
 	ctx.Step(`^the item "([^"]*)" should have a subtask "([^"]*)"$`, s.theItemShouldHaveASubtask)
 	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theSubtaskOnTheItemShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should not be completed$`, s.theSubtaskOnTheItemShouldNotBeCompleted)
