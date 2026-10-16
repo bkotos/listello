@@ -779,6 +779,72 @@ func (_c *MockItemService_UncompleteItem_Call) RunAndReturn(run func(itemID stri
 	return _c
 }
 
+// UncompleteSubtask provides a mock function for the type MockItemService
+func (_mock *MockItemService) UncompleteSubtask(itemID string, subtaskID string) (domain.Item, error) {
+	ret := _mock.Called(itemID, subtaskID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UncompleteSubtask")
+	}
+
+	var r0 domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, string) (domain.Item, error)); ok {
+		return returnFunc(itemID, subtaskID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, string) domain.Item); ok {
+		r0 = returnFunc(itemID, subtaskID)
+	} else {
+		r0 = ret.Get(0).(domain.Item)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = returnFunc(itemID, subtaskID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemService_UncompleteSubtask_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UncompleteSubtask'
+type MockItemService_UncompleteSubtask_Call struct {
+	*mock.Call
+}
+
+// UncompleteSubtask is a helper method to define mock.On call
+//   - itemID string
+//   - subtaskID string
+func (_e *MockItemService_Expecter) UncompleteSubtask(itemID any, subtaskID any) *MockItemService_UncompleteSubtask_Call {
+	return &MockItemService_UncompleteSubtask_Call{Call: _e.mock.On("UncompleteSubtask", itemID, subtaskID)}
+}
+
+func (_c *MockItemService_UncompleteSubtask_Call) Run(run func(itemID string, subtaskID string)) *MockItemService_UncompleteSubtask_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_UncompleteSubtask_Call) Return(item domain.Item, err error) *MockItemService_UncompleteSubtask_Call {
+	_c.Call.Return(item, err)
+	return _c
+}
+
+func (_c *MockItemService_UncompleteSubtask_Call) RunAndReturn(run func(itemID string, subtaskID string) (domain.Item, error)) *MockItemService_UncompleteSubtask_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockListService creates a new instance of MockListService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockListService(t interface {
