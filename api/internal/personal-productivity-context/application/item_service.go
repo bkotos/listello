@@ -23,6 +23,7 @@ type ItemService interface {
 	CommentItem(itemID, userID, body string) (domain.Item, error)
 	AddSubtask(itemID, title string) (domain.Item, error)
 	CompleteSubtask(itemID, subtaskID string) (domain.Item, error)
+	UncompleteSubtask(itemID, subtaskID string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
 }
 
@@ -191,6 +192,25 @@ func (s *itemService) CompleteSubtask(itemID, subtaskID string) (domain.Item, er
 		return domain.Item{}, err
 	}
 	event, err := (&item).CompleteSubtask(subtaskID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.itemRepository.Save(item); err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.Item{}, err
+	}
+	return item, nil
+}
+
+// UncompleteSubtask uncompletes a subtask on an item via the domain and persists it.
+func (s *itemService) UncompleteSubtask(itemID, subtaskID string) (domain.Item, error) {
+	item, err := s.itemRepository.GetByID(itemID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	event, err := (&item).UncompleteSubtask(subtaskID)
 	if err != nil {
 		return domain.Item{}, err
 	}
