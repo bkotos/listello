@@ -87,7 +87,7 @@ LinkAsChild is Item↔Item via `ParentID`, not the Subtask child entity.
 Child stays an Item with `ParentID`. Many children per parent. One level of nesting (no grandchildren).
 
 - [x] Domain
-- [ ] Application service
+- [x] Application service
 - [ ] Adapter repository
 - [ ] Bootstrap
 - [ ] API handler

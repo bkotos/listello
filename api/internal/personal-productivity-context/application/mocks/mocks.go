@@ -653,6 +653,72 @@ func (_c *MockItemService_GetAll_Call) RunAndReturn(run func(listID string) ([]d
 	return _c
 }
 
+// LinkAsChild provides a mock function for the type MockItemService
+func (_mock *MockItemService) LinkAsChild(itemID string, parentID string) (domain.Item, error) {
+	ret := _mock.Called(itemID, parentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LinkAsChild")
+	}
+
+	var r0 domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, string) (domain.Item, error)); ok {
+		return returnFunc(itemID, parentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, string) domain.Item); ok {
+		r0 = returnFunc(itemID, parentID)
+	} else {
+		r0 = ret.Get(0).(domain.Item)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = returnFunc(itemID, parentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemService_LinkAsChild_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LinkAsChild'
+type MockItemService_LinkAsChild_Call struct {
+	*mock.Call
+}
+
+// LinkAsChild is a helper method to define mock.On call
+//   - itemID string
+//   - parentID string
+func (_e *MockItemService_Expecter) LinkAsChild(itemID any, parentID any) *MockItemService_LinkAsChild_Call {
+	return &MockItemService_LinkAsChild_Call{Call: _e.mock.On("LinkAsChild", itemID, parentID)}
+}
+
+func (_c *MockItemService_LinkAsChild_Call) Run(run func(itemID string, parentID string)) *MockItemService_LinkAsChild_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_LinkAsChild_Call) Return(item domain.Item, err error) *MockItemService_LinkAsChild_Call {
+	_c.Call.Return(item, err)
+	return _c
+}
+
+func (_c *MockItemService_LinkAsChild_Call) RunAndReturn(run func(itemID string, parentID string) (domain.Item, error)) *MockItemService_LinkAsChild_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ModifyItemTitle provides a mock function for the type MockItemService
 func (_mock *MockItemService) ModifyItemTitle(itemID string, title string) (domain.Item, error) {
 	ret := _mock.Called(itemID, title)
