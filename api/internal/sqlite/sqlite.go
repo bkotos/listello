@@ -42,6 +42,9 @@ func (s *SQLite) migrate() error {
 	if err := s.ensureCreatedAtColumn("items"); err != nil {
 		return err
 	}
+	if err := s.ensureItemParentIDColumn(); err != nil {
+		return err
+	}
 	return s.ensureSubtaskPriorityColumn()
 }
 
@@ -68,6 +71,24 @@ func (s *SQLite) ensureCreatedAtColumn(table string) error {
 	}
 
 	return s.backfillCreatedAt(table)
+}
+
+func (s *SQLite) ensureItemParentIDColumn() error {
+	var count int
+	err := s.db.QueryRow(
+		`SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?`,
+		"items", "parent_id",
+	).Scan(&count)
+	if err != nil {
+		return fmt.Errorf("migrate items parent_id: %w", err)
+	}
+	if count == 0 {
+		_, err = s.db.Exec(`ALTER TABLE items ADD COLUMN parent_id TEXT NOT NULL DEFAULT ''`)
+		if err != nil {
+			return fmt.Errorf("migrate items parent_id: %w", err)
+		}
+	}
+	return nil
 }
 
 func (s *SQLite) ensureSubtaskPriorityColumn() error {

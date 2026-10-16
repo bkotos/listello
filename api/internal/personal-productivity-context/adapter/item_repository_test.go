@@ -336,6 +336,70 @@ func TestSQLiteItemRepository_SaveAndGetByID_RemovesDeletedSubtask(t *testing.T)
 	assert.Empty(t, got.Subtasks)
 }
 
+func TestSQLiteItemRepository_SaveAndGetByID_PersistsParentID(t *testing.T) {
+	// Arrange
+	workspace := openWorkspaceDB(t, "items.db")
+	listRepo := adapter.NewSQLiteListRepository(workspace)
+	itemRepo := adapter.NewSQLiteItemRepository(workspace)
+
+	list, _, err := domain.CreateList("Next actions")
+	require.NoError(t, err)
+	require.NoError(t, listRepo.Save(list))
+
+	parent, _, err := domain.DefineItem(list, "Plan trip")
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(parent))
+
+	child, _, err := domain.DefineItem(list, "Book flights")
+	require.NoError(t, err)
+	_, err = child.LinkAsChild(parent)
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(child))
+
+	// Act
+	got, err := itemRepo.GetByID(child.ID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, parent.ID, got.ParentID)
+}
+
+func TestSQLiteItemRepository_GetAll_IncludesParentID(t *testing.T) {
+	// Arrange
+	workspace := openWorkspaceDB(t, "items.db")
+	listRepo := adapter.NewSQLiteListRepository(workspace)
+	itemRepo := adapter.NewSQLiteItemRepository(workspace)
+
+	list, _, err := domain.CreateList("Next actions")
+	require.NoError(t, err)
+	require.NoError(t, listRepo.Save(list))
+
+	parent, _, err := domain.DefineItem(list, "Plan trip")
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(parent))
+
+	child, _, err := domain.DefineItem(list, "Book flights")
+	require.NoError(t, err)
+	_, err = child.LinkAsChild(parent)
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(child))
+
+	// Act
+	got, err := itemRepo.GetAll(list.ID)
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, got, 2)
+	var loaded domain.Item
+	for _, item := range got {
+		if item.ID == child.ID {
+			loaded = item
+			break
+		}
+	}
+	assert.Equal(t, parent.ID, loaded.ParentID)
+}
+
 func TestSQLiteItemRepository_SaveAndGetByID_PersistsComments(t *testing.T) {
 	// Arrange
 	workspace := openWorkspaceDB(t, "items.db")

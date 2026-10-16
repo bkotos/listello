@@ -42,6 +42,9 @@ func migratePostgres(db *sql.DB) error {
 	if err := migrateSchema(tx); err != nil {
 		return err
 	}
+	if _, err := tx.Exec(`ALTER TABLE items ADD COLUMN IF NOT EXISTS parent_id TEXT NOT NULL DEFAULT ''`); err != nil {
+		return fmt.Errorf("migrate items parent_id: %w", err)
+	}
 	if _, err := tx.Exec(`ALTER TABLE subtasks ADD COLUMN IF NOT EXISTS priority TEXT NOT NULL DEFAULT ''`); err != nil {
 		return fmt.Errorf("migrate subtasks priority: %w", err)
 	}
