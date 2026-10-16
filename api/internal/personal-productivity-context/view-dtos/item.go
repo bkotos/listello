@@ -27,11 +27,17 @@ type AddSubtaskRequest struct {
 	Title string `json:"title"`
 }
 
+// PrioritizeSubtaskRequest is the HTTP request body for changing a subtask's priority.
+type PrioritizeSubtaskRequest struct {
+	Priority string `json:"priority"`
+}
+
 // SubtaskDto is the HTTP representation of a subtask on an item.
 type SubtaskDto struct {
 	ID        string `json:"ID"`
 	Title     string `json:"Title"`
 	Completed bool   `json:"Completed"`
+	Priority  string `json:"Priority,omitempty"`
 }
 
 // ItemDto is the HTTP representation of an item.
@@ -56,6 +62,7 @@ func ItemFromDomain(item domain.Item) ItemDto {
 			ID:        subtask.ID,
 			Title:     subtask.Title,
 			Completed: subtask.Completed,
+			Priority:  string(subtask.Priority),
 		}
 	}
 	return ItemDto{

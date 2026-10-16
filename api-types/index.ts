@@ -34,12 +34,19 @@ export interface AddSubtaskRequest {
   title: string;
 }
 /**
+ * PrioritizeSubtaskRequest is the HTTP request body for changing a subtask's priority.
+ */
+export interface PrioritizeSubtaskRequest {
+  priority: string;
+}
+/**
  * SubtaskDto is the HTTP representation of a subtask on an item.
  */
 export interface SubtaskDto {
   ID: string;
   Title: string;
   Completed: boolean;
+  Priority?: string;
 }
 /**
  * ItemDto is the HTTP representation of an item.

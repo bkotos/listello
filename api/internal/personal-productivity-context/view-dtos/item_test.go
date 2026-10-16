@@ -22,6 +22,7 @@ func TestItemFromDomain(t *testing.T) {
 			ID:        "ST_1",
 			Title:     "Get 2%",
 			Completed: false,
+			Priority:  domain.PriorityHigh,
 		}},
 	}
 
@@ -38,6 +39,7 @@ func TestItemFromDomain(t *testing.T) {
 	assert.Equal(t, "ST_1", received.Subtasks[0].ID)
 	assert.Equal(t, "Get 2%", received.Subtasks[0].Title)
 	assert.False(t, received.Subtasks[0].Completed)
+	assert.Equal(t, string(domain.PriorityHigh), received.Subtasks[0].Priority)
 }
 
 func TestItemsFromDomain(t *testing.T) {

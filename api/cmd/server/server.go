@@ -36,6 +36,7 @@ func newAPIServer(
 	mux.HandleFunc("POST /api/items/{id}/subtask/{subtaskId}/complete", handlers.CompleteSubtask(itemService))
 	mux.HandleFunc("POST /api/items/{id}/subtask/{subtaskId}/uncomplete", handlers.UncompleteSubtask(itemService))
 	mux.HandleFunc("DELETE /api/items/{id}/subtask/{subtaskId}", handlers.DeleteSubtask(itemService))
+	mux.HandleFunc("POST /api/items/{id}/subtask/{subtaskId}/prioritize", handlers.PrioritizeSubtask(itemService))
 	mux.HandleFunc("GET /api/items/{id}/comments", handlers.GetItemComments(itemQueryService))
 	mux.HandleFunc("DELETE /api/items/{id}", handlers.DeleteItem(itemService))
 	mux.HandleFunc("POST /api/users", handlers.CreateUser(userService))

@@ -1,0 +1,20 @@
+meta {
+  name: Prioritize Subtask
+  type: http
+  seq: 30
+}
+
+post {
+  url: {{apiBase}}/api/items/IT_1/subtask/ST_1/prioritize
+  body: json
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "priority": "high"
+  }
+}
