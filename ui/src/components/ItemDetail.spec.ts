@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe("ItemDetail", () => {
   beforeEach(() => {
-    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn(), onModifyTitle: vi.fn(), onComment: vi.fn(), onAddSubtask: vi.fn(), onCompleteSubtask: vi.fn(), onUncompleteSubtask: vi.fn() }));
+    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn(), onModifyTitle: vi.fn(), onComment: vi.fn(), onAddSubtask: vi.fn(), onCompleteSubtask: vi.fn(), onUncompleteSubtask: vi.fn(), onDeleteSubtask: vi.fn() }));
   });
 
   it("renders a right-hand detail aside", () => {
@@ -154,9 +154,11 @@ describe("ItemDetail", () => {
 
 describe("ItemDetail subtasks", () => {
   const onCompleteSubtask = vi.fn();
+  const onDeleteSubtask = vi.fn();
 
   beforeEach(() => {
     onCompleteSubtask.mockReset();
+    onDeleteSubtask.mockReset();
     render(
       createElement(ItemDetail, {
         item: {
@@ -170,6 +172,7 @@ describe("ItemDetail subtasks", () => {
         onAddSubtask: vi.fn(),
         onCompleteSubtask,
         onUncompleteSubtask: vi.fn(),
+        onDeleteSubtask,
       }),
     );
   });
@@ -183,9 +186,20 @@ describe("ItemDetail subtasks", () => {
     expect(screen.getByText("Get 2%")).toHaveClass("is-size-6");
   });
 
+  it("renders a Delete subtask button", () => {
+    const remove = screen.getByRole("button", { name: "Delete subtask" });
+    expect(remove).toHaveClass("icon-btn", "is-danger-hover", "hover-reveal");
+    expect(remove.querySelector("svg.lucide-trash-2")).toBeInTheDocument();
+  });
+
   it("calls onCompleteSubtask when the toggle is clicked", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mark subtask complete" }));
     expect(onCompleteSubtask).toHaveBeenCalledWith("IT_1", "ST_1");
+  });
+
+  it("calls onDeleteSubtask when Delete subtask is clicked", () => {
+    fireEvent.click(screen.getByRole("button", { name: "Delete subtask" }));
+    expect(onDeleteSubtask).toHaveBeenCalledWith("IT_1", "ST_1");
   });
 });
 
@@ -207,6 +221,7 @@ describe("ItemDetail completed subtask", () => {
         onAddSubtask: vi.fn(),
         onCompleteSubtask: vi.fn(),
         onUncompleteSubtask,
+        onDeleteSubtask: vi.fn(),
       }),
     );
   });
