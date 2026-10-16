@@ -819,7 +819,8 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataItemLinkedAsChildOfItem,
 		domain.EventMetadataItemCommentedOn,
 		domain.EventMetadataSubtaskAddedToItem,
-		domain.EventMetadataSubtaskCompletedOnItem:
+		domain.EventMetadataSubtaskCompletedOnItem,
+		domain.EventMetadataSubtaskUncompleted:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
 	default:
 		return ""
@@ -831,6 +832,8 @@ func eventSubtaskID(e domain.Event) string {
 	case domain.EventMetadataSubtaskAddedToItem:
 		return meta.SubtaskID
 	case domain.EventMetadataSubtaskCompletedOnItem:
+		return meta.SubtaskID
+	case domain.EventMetadataSubtaskUncompleted:
 		return meta.SubtaskID
 	default:
 		return ""
