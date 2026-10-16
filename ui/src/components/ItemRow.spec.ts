@@ -375,6 +375,121 @@ describe("ItemRow", () => {
       expect(trigger.closest(".dropdown")).not.toHaveClass("is-active");
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
+
+    it("does not render a Link as child menuitem", () => {
+      // Assert
+      expect(screen.queryByRole("menuitem", { name: "Link as child" })).not.toBeInTheDocument();
+    });
+  });
+
+  describe("when linkable parents are provided and Task options is clicked", () => {
+    const onLinkAsChild = vi.fn();
+
+    beforeEach(() => {
+      onLinkAsChild.mockClear();
+      render(
+        createElement(ItemRow, {
+          item: { ...baseItem, Title: "Book flights" },
+          selected: false,
+          onSelect: vi.fn(),
+          onComplete: vi.fn(),
+          onUncomplete: vi.fn(),
+          onDelete: vi.fn(),
+          onModifyTitle: vi.fn(),
+          onLinkAsChild,
+          linkableParents: [{ ID: "IT_parent", Title: "Plan trip" }],
+        }),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Task options" }));
+    });
+
+    it("renders a Link as child menuitem", () => {
+      // Assert
+      const linkAsChild = screen.getByRole("menuitem", { name: "Link as child" });
+      expect(linkAsChild).toHaveClass("dropdown-item", "is-flex", "is-align-items-center");
+      expect(linkAsChild.querySelector("svg.lucide-corner-down-right")).toBeInTheDocument();
+    });
+
+    it("places Link as child between Rename and the divider", () => {
+      // Assert
+      const content = screen.getByRole("menu").querySelector(".dropdown-content");
+      const children = [...(content?.children ?? [])];
+      expect(children[0]).toHaveTextContent("Rename");
+      expect(children[1]).toHaveTextContent("Link as child");
+      expect(children[2]).toHaveClass("dropdown-divider");
+      expect(children[3]).toHaveTextContent("Delete");
+    });
+  });
+
+  describe("when Link as child is clicked", () => {
+    const onLinkAsChild = vi.fn();
+
+    beforeEach(() => {
+      onLinkAsChild.mockClear();
+      render(
+        createElement(ItemRow, {
+          item: { ...baseItem, Title: "Book flights" },
+          selected: false,
+          onSelect: vi.fn(),
+          onComplete: vi.fn(),
+          onUncomplete: vi.fn(),
+          onDelete: vi.fn(),
+          onModifyTitle: vi.fn(),
+          onLinkAsChild,
+          linkableParents: [
+            { ID: "IT_parent", Title: "Plan trip" },
+            { ID: "IT_other", Title: "Pack bags" },
+          ],
+        }),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Task options" }));
+      fireEvent.click(screen.getByRole("menuitem", { name: "Link as child" }));
+    });
+
+    it("renders parent titles as menuitems", () => {
+      // Assert
+      expect(screen.getByRole("menuitem", { name: "Plan trip" })).toHaveClass(
+        "dropdown-item",
+        "is-flex",
+        "is-align-items-center",
+      );
+      expect(screen.getByRole("menuitem", { name: "Pack bags" })).toBeInTheDocument();
+    });
+
+    it("hides Rename, Link as child, and Delete", () => {
+      // Assert
+      expect(screen.queryByRole("menuitem", { name: "Rename" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("menuitem", { name: "Link as child" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("menuitem", { name: "Delete" })).not.toBeInTheDocument();
+    });
+
+    it("calls onLinkAsChild when a parent is chosen", () => {
+      // Act
+      fireEvent.click(screen.getByRole("menuitem", { name: "Plan trip" }));
+
+      // Assert
+      expect(onLinkAsChild).toHaveBeenCalledWith("IT_1", "IT_parent");
+    });
+  });
+
+  describe("when the item has a parent", () => {
+    it("indents the row", () => {
+      // Arrange
+      render(
+        createElement(ItemRow, {
+          item: { ...baseItem, ParentID: "IT_parent", Title: "Book flights" },
+          selected: false,
+          onSelect: vi.fn(),
+          onComplete: vi.fn(),
+          onUncomplete: vi.fn(),
+          onDelete: vi.fn(),
+          onModifyTitle: vi.fn(),
+        }),
+      );
+
+      // Assert
+      expect(screen.getByText("Book flights").closest(".task-row")).toHaveClass("is-child");
+    });
   });
 
   describe("when Rename is clicked", () => {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Calendar, Check, Ellipsis, MessageSquare, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Check, CornerDownRight, Ellipsis, MessageSquare, Pencil, Trash2 } from "lucide-react";
 import type { ItemDto } from "api-types";
 
 export type ItemRowProps = {
@@ -10,13 +10,15 @@ export type ItemRowProps = {
   onUncomplete: (itemId: string) => void;
   onDelete: (itemId: string) => void;
   onModifyTitle: (itemId: string, title: string) => void;
+  onLinkAsChild?: (itemId: string, parentId: string) => void;
+  linkableParents?: { ID: string; Title: string }[];
 };
 
 function isComplete(item: ItemDto): boolean {
   return item.State === "complete";
 }
 
-export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, onDelete, onModifyTitle }: ItemRowProps) {
+export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, onDelete, onModifyTitle, onLinkAsChild, linkableParents }: ItemRowProps) {
   const [optimisticallyComplete, setOptimisticallyComplete] = useState(false);
   const [optimisticallyDeleted, setOptimisticallyDeleted] = useState(false);
   const [optimisticTitle, setOptimisticTitle] = useState<string | null>(null);
@@ -43,6 +45,7 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
       <RenamingItemRow
         title={title}
         selected={selected}
+        indented={Boolean(item.ParentID)}
         onSelect={() => onSelect(item.ID)}
         completed={completed}
         onToggle={handleToggle}
@@ -57,7 +60,7 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
   }
 
   return (
-    <ItemRowShell selected={selected} onSelect={() => onSelect(item.ID)}>
+    <ItemRowShell selected={selected} indented={Boolean(item.ParentID)} onSelect={() => onSelect(item.ID)}>
       <CompleteToggle completed={completed} onToggle={handleToggle} />
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
@@ -74,6 +77,8 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
           setOptimisticallyDeleted(true);
           onDelete(itemId);
         }}
+        onLinkAsChild={onLinkAsChild}
+        linkableParents={linkableParents}
       />
     </ItemRowShell>
   );
@@ -82,15 +87,16 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
 type ItemRowShellProps = {
   children: ReactNode;
   selected: boolean;
+  indented?: boolean;
   onSelect: () => void;
 };
 
-function ItemRowShell({ children, selected, onSelect }: ItemRowShellProps) {
+function ItemRowShell({ children, selected, indented, onSelect }: ItemRowShellProps) {
   return (
     <div
       role="button"
       tabIndex={0}
-      className={`task-row hover-parent is-flex p-3${selected ? " is-active" : ""}`}
+      className={`task-row hover-parent is-flex p-3${selected ? " is-active" : ""}${indented ? " is-child" : ""}`}
       style={{ gap: "0.75rem", alignItems: "flex-start" }}
       onClick={onSelect}
     >
@@ -124,6 +130,7 @@ function CompleteToggle({ completed, onToggle }: CompleteToggleProps) {
 type RenamingItemRowProps = {
   title: string;
   selected: boolean;
+  indented?: boolean;
   onSelect: () => void;
   completed: boolean;
   onToggle: () => void;
@@ -131,11 +138,11 @@ type RenamingItemRowProps = {
   onCancel: () => void;
 };
 
-function RenamingItemRow({ title, selected, onSelect, completed, onToggle, onCommit, onCancel }: RenamingItemRowProps) {
+function RenamingItemRow({ title, selected, indented, onSelect, completed, onToggle, onCommit, onCancel }: RenamingItemRowProps) {
   const [draft, setDraft] = useState(title);
 
   return (
-    <ItemRowShell selected={selected} onSelect={onSelect}>
+    <ItemRowShell selected={selected} indented={indented} onSelect={onSelect}>
       <CompleteToggle completed={completed} onToggle={onToggle} />
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
@@ -196,17 +203,22 @@ type TaskOptionsProps = {
   itemId: string;
   onRename: () => void;
   onDelete: (itemId: string) => void;
+  onLinkAsChild?: (itemId: string, parentId: string) => void;
+  linkableParents?: { ID: string; Title: string }[];
 };
 
-function TaskOptions({ itemId, onRename, onDelete }: TaskOptionsProps) {
+function TaskOptions({ itemId, onRename, onDelete, onLinkAsChild, linkableParents = [] }: TaskOptionsProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pickingParent, setPickingParent] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const canLinkAsChild = Boolean(onLinkAsChild) && linkableParents.length > 0;
 
   useEffect(() => {
     if (!menuOpen) return;
     const onClick = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
+        setPickingParent(false);
       }
     };
     document.addEventListener("mousedown", onClick);
@@ -230,7 +242,12 @@ function TaskOptions({ itemId, onRename, onDelete }: TaskOptionsProps) {
           style={{ height: "1.75rem", width: "1.75rem" }}
           onClick={(event) => {
             event.stopPropagation();
-            setMenuOpen((open) => !open);
+            setMenuOpen((open) => {
+              if (open) {
+                setPickingParent(false);
+              }
+              return !open;
+            });
           }}
         >
           <Ellipsis size={16} />
@@ -239,29 +256,62 @@ function TaskOptions({ itemId, onRename, onDelete }: TaskOptionsProps) {
       {menuOpen ? (
         <div className="dropdown-menu" role="menu" onClick={(event) => event.stopPropagation()}>
           <div className="dropdown-content">
-            <a
-              role="menuitem"
-              className="dropdown-item is-flex is-align-items-center"
-              style={{ gap: "0.625rem" }}
-              onClick={onRename}
-            >
-              <span style={{ display: "inline-flex", color: "hsl(0deg 0% 45%)" }}>
-                <Pencil size={16} />
-              </span>
-              <span>Rename</span>
-            </a>
-            <hr className="dropdown-divider" />
-            <a
-              role="menuitem"
-              className="dropdown-item is-flex is-align-items-center"
-              style={{ gap: "0.625rem", color: "hsl(348deg 86% 43%)" }}
-              onClick={() => onDelete(itemId)}
-            >
-              <span style={{ display: "inline-flex", color: "hsl(348deg 86% 43%)" }}>
-                <Trash2 size={16} />
-              </span>
-              <span>Delete</span>
-            </a>
+            {pickingParent
+              ? linkableParents.map((parent) => (
+                  <a
+                    key={parent.ID}
+                    role="menuitem"
+                    className="dropdown-item is-flex is-align-items-center"
+                    style={{ gap: "0.625rem" }}
+                    onClick={() => {
+                      onLinkAsChild?.(itemId, parent.ID);
+                      setMenuOpen(false);
+                      setPickingParent(false);
+                    }}
+                  >
+                    <span>{parent.Title}</span>
+                  </a>
+                ))
+              : (
+                <>
+                  <a
+                    role="menuitem"
+                    className="dropdown-item is-flex is-align-items-center"
+                    style={{ gap: "0.625rem" }}
+                    onClick={onRename}
+                  >
+                    <span style={{ display: "inline-flex", color: "hsl(0deg 0% 45%)" }}>
+                      <Pencil size={16} />
+                    </span>
+                    <span>Rename</span>
+                  </a>
+                  {canLinkAsChild ? (
+                    <a
+                      role="menuitem"
+                      className="dropdown-item is-flex is-align-items-center"
+                      style={{ gap: "0.625rem" }}
+                      onClick={() => setPickingParent(true)}
+                    >
+                      <span style={{ display: "inline-flex", color: "hsl(0deg 0% 45%)" }}>
+                        <CornerDownRight size={16} />
+                      </span>
+                      <span>Link as child</span>
+                    </a>
+                  ) : null}
+                  <hr className="dropdown-divider" />
+                  <a
+                    role="menuitem"
+                    className="dropdown-item is-flex is-align-items-center"
+                    style={{ gap: "0.625rem", color: "hsl(348deg 86% 43%)" }}
+                    onClick={() => onDelete(itemId)}
+                  >
+                    <span style={{ display: "inline-flex", color: "hsl(348deg 86% 43%)" }}>
+                      <Trash2 size={16} />
+                    </span>
+                    <span>Delete</span>
+                  </a>
+                </>
+              )}
           </div>
         </div>
       ) : null}

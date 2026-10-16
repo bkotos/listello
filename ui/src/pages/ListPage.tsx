@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ContentArea } from "../components/ContentArea";
 import { ItemDetail } from "../components/ItemDetail";
 import { ItemRow } from "../components/ItemRow";
-import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle, commentItem, addSubtask, completeSubtask, uncompleteSubtask, deleteSubtask } from "../lib/api/item-client";
+import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle, commentItem, addSubtask, completeSubtask, uncompleteSubtask, deleteSubtask, linkAsChild } from "../lib/api/item-client";
 import { itemQueryKeys, useAllItemsQuery } from "../lib/api/item-queries";
 import { useListQuery } from "../lib/api/list-queries";
 import { useShellContext } from "../lib/useShellContext";
@@ -90,6 +90,13 @@ function ListPage() {
     }
   }
 
+  async function handleLinkAsChild(itemId: string, parentId: string) {
+    await linkAsChild(itemId, { parentID: parentId });
+    if (listId) {
+      await queryClient.invalidateQueries({ queryKey: itemQueryKeys.byList(listId) });
+    }
+  }
+
   return (
     <div className="is-flex" style={{ height: "100%", minWidth: 0 }}>
       <div className="is-flex is-flex-direction-column" style={{ flex: "1 1 0", minWidth: 0 }}>
@@ -116,6 +123,10 @@ function ListPage() {
                     onUncomplete={handleUncomplete}
                     onDelete={handleDelete}
                     onModifyTitle={handleModifyTitle}
+                    onLinkAsChild={handleLinkAsChild}
+                    linkableParents={items
+                      .filter((candidate) => candidate.ID !== item.ID && !candidate.ParentID)
+                      .map((candidate) => ({ ID: candidate.ID, Title: candidate.Title }))}
                   />
                 ))}
               </div>
