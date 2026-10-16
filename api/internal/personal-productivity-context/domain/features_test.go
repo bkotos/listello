@@ -34,16 +34,16 @@ func init() {
 }
 
 type suiteState struct {
-	placeholder  *domain.Placeholder
+	placeholder      *domain.Placeholder
 	lists            map[string]domain.List
 	deletedLists     map[string]domain.List
 	items            map[string]*domain.Item
 	deletedItems     map[string]domain.Item
 	deletedSubtaskID string
-	spaces       map[string]domain.Space
-	users        map[string]domain.User
-	events       []domain.Event
-	lastErr      error
+	spaces           map[string]domain.Space
+	users            map[string]domain.User
+	events           []domain.Event
+	lastErr          error
 }
 
 func (s *suiteState) reset() {
@@ -628,6 +628,21 @@ func (s *suiteState) theOwnerUncompletesTheSubtaskOnTheItem(ctx context.Context,
 	s.record(event)
 }
 
+func (s *suiteState) theOwnerChangesThePriorityOfTheSubtaskOnTheItemTo(ctx context.Context, subtaskTitle, title, priority string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	event, err := s.items[title].PrioritizeSubtask(subtask.ID, domain.ItemPriority(priority))
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theSubtaskOnTheItemShouldHavePriority(ctx context.Context, subtaskTitle, title, priority string) {
+	t := godog.T(ctx)
+	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	require.Equal(t, domain.ItemPriority(priority), subtask.Priority)
+}
+
 func (s *suiteState) theOwnerDeletesTheSubtaskOnTheItem(ctx context.Context, subtaskTitle, title string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
@@ -774,12 +789,23 @@ func (s *suiteState) aEventShouldHaveOccurredWithTag(ctx context.Context, eventN
 	)
 }
 
+func eventPriority(e domain.Event) (domain.ItemPriority, bool) {
+	switch meta := e.Metadata.(type) {
+	case domain.EventMetadataItemPriorityChanged:
+		return meta.Priority, true
+	case domain.EventMetadataSubtaskPriorityChanged:
+		return meta.Priority, true
+	default:
+		return "", false
+	}
+}
+
 func (s *suiteState) aEventShouldHaveOccurredWithPriority(ctx context.Context, eventName, priority string) {
 	require.Truef(
 		godog.T(ctx),
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			meta, ok := e.Metadata.(domain.EventMetadataItemPriorityChanged)
-			return e.Name == domain.EventName(eventName) && ok && meta.Priority == domain.ItemPriority(priority)
+			got, ok := eventPriority(e)
+			return e.Name == domain.EventName(eventName) && ok && got == domain.ItemPriority(priority)
 		}),
 		"expected event %q with priority %q; got %v", eventName, priority, eventSummaries(s.events),
 	)
@@ -853,7 +879,8 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataSubtaskAddedToItem,
 		domain.EventMetadataSubtaskCompletedOnItem,
 		domain.EventMetadataSubtaskUncompleted,
-		domain.EventMetadataSubtaskDeletedOnItem:
+		domain.EventMetadataSubtaskDeletedOnItem,
+		domain.EventMetadataSubtaskPriorityChanged:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
 	default:
 		return ""
@@ -869,6 +896,8 @@ func eventSubtaskID(e domain.Event) string {
 	case domain.EventMetadataSubtaskUncompleted:
 		return meta.SubtaskID
 	case domain.EventMetadataSubtaskDeletedOnItem:
+		return meta.SubtaskID
+	case domain.EventMetadataSubtaskPriorityChanged:
 		return meta.SubtaskID
 	default:
 		return ""
@@ -993,6 +1022,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the owner adds a subtask "([^"]*)" to the item "([^"]*)"$`, s.theOwnerAddsASubtaskToTheItem)
 	ctx.Step(`^the owner completes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerCompletesTheSubtaskOnTheItem)
 	ctx.Step(`^the owner uncompletes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerUncompletesTheSubtaskOnTheItem)
+	ctx.Step(`^the owner changes the priority of the subtask "([^"]*)" on the item "([^"]*)" to "([^"]*)"$`, s.theOwnerChangesThePriorityOfTheSubtaskOnTheItemTo)
+	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should have priority "([^"]*)"$`, s.theSubtaskOnTheItemShouldHavePriority)
 	ctx.Step(`^the owner deletes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerDeletesTheSubtaskOnTheItem)
 	ctx.Step(`^the item "([^"]*)" should have a subtask "([^"]*)"$`, s.theItemShouldHaveASubtask)
 	ctx.Step(`^the item "([^"]*)" should not have a subtask "([^"]*)"$`, s.theItemShouldNotHaveASubtask)
