@@ -75,3 +75,12 @@ export async function addSubtask(
     body: JSON.stringify(body),
   });
 }
+
+export async function completeSubtask(
+  itemId: string,
+  subtaskId: string,
+): Promise<ItemDto> {
+  return request<ItemDto>(`/api/items/${itemId}/subtask/${subtaskId}/complete`, {
+    method: "POST",
+  });
+}
