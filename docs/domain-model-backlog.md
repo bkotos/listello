@@ -92,7 +92,7 @@ Child stays an Item with `ParentID`. Many children per parent. One level of nest
 - [x] Bootstrap
 - [x] API handler
 - [x] CLI
-- [ ] API client
+- [x] API client
 - [ ] React Query hooks
 - [ ] UI
 
