@@ -602,6 +602,21 @@ func (s *suiteState) theSubtaskOnTheItemShouldNotBeCompleted(ctx context.Context
 	require.Falsef(t, subtask.Completed, "expected subtask %q on item %q not to be completed", subtaskTitle, title)
 }
 
+func (s *suiteState) theOwnerCompletesTheSubtaskOnTheItem(ctx context.Context, subtaskTitle, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	event, err := s.items[title].CompleteSubtask(subtask.ID)
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theSubtaskOnTheItemShouldBeCompleted(ctx context.Context, subtaskTitle, title string) {
+	t := godog.T(ctx)
+	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	require.Truef(t, subtask.Completed, "expected subtask %q on item %q to be completed", subtaskTitle, title)
+}
+
 func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfSubtaskOnItem(ctx context.Context, eventName, subtaskTitle, title string) {
 	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
 	require.Truef(
@@ -918,9 +933,11 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a "([^"]*)" event should have occurred with the parent ID of item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheParentIDOfItem)
 	ctx.Step(`^a "([^"]*)" event should have occurred with title "([^"]*)"$`, s.aEventShouldHaveOccurredWithTitle)
 	ctx.Step(`^the owner adds a subtask "([^"]*)" to the item "([^"]*)"$`, s.theOwnerAddsASubtaskToTheItem)
+	ctx.Step(`^the owner completes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerCompletesTheSubtaskOnTheItem)
 	ctx.Step(`^the item "([^"]*)" should have a subtask "([^"]*)"$`, s.theItemShouldHaveASubtask)
 	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theSubtaskOnTheItemShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should not be completed$`, s.theSubtaskOnTheItemShouldNotBeCompleted)
+	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should be completed$`, s.theSubtaskOnTheItemShouldBeCompleted)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of subtask "([^"]*)" on the item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfSubtaskOnItem)
 	ctx.Step(`^the user "([^"]*)" comments "([^"]*)" on the item "([^"]*)"$`, s.theUserCommentsOnTheItem)
 	ctx.Step(`^the item "([^"]*)" should have a comment "([^"]*)"$`, s.theItemShouldHaveAComment)
