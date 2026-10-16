@@ -46,5 +46,6 @@ type subtaskRow struct {
 	ItemID        string `bun:"item_id"`
 	Title         string `bun:"title"`
 	Completed     bool   `bun:"completed"`
+	Priority      string `bun:"priority"`
 	CreatedAt     string `bun:"created_at"`
 }

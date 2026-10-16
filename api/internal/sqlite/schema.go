@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS subtasks (
 	item_id TEXT NOT NULL,
 	title TEXT NOT NULL,
 	completed BOOLEAN NOT NULL,
+	priority TEXT NOT NULL DEFAULT '',
 	created_at TEXT NOT NULL,
 	FOREIGN KEY (item_id) REFERENCES items(id)
 );`

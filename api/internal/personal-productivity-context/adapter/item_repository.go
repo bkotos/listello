@@ -162,12 +162,14 @@ func saveSubtasks(db *bun.DB, item domain.Item) error {
 				ItemID:    item.ID,
 				Title:     subtask.Title,
 				Completed: subtask.Completed,
+				Priority:  string(subtask.Priority),
 				CreatedAt: newCreatedAt(),
 			}).
 			On("CONFLICT (id) DO UPDATE").
 			Set("item_id = EXCLUDED.item_id").
 			Set("title = EXCLUDED.title").
 			Set("completed = EXCLUDED.completed").
+			Set("priority = EXCLUDED.priority").
 			Exec(context.Background())
 		if err != nil {
 			return fmt.Errorf("save subtask: %w", err)
@@ -200,6 +202,7 @@ func subtasksForItem(db *bun.DB, itemID string) ([]domain.Subtask, error) {
 			ID:        row.ID,
 			Title:     row.Title,
 			Completed: row.Completed,
+			Priority:  domain.ItemPriority(row.Priority),
 		})
 	}
 	return subtasks, nil
