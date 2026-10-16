@@ -55,6 +55,7 @@ type Subtask struct {
 	ID        string
 	Title     string
 	Completed bool
+	Priority  ItemPriority
 }
 
 // IsOutstanding reports whether the item is outstanding.
@@ -223,6 +224,11 @@ func (i *Item) UncompleteSubtask(subtaskID string) (Event, error) {
 		ID:        i.ID,
 		SubtaskID: subtaskID,
 	}, 1), nil
+}
+
+// PrioritizeSubtask changes a subtask's priority on the item and raises a SubtaskPriorityChanged event.
+func (i *Item) PrioritizeSubtask(subtaskID string, priority ItemPriority) (Event, error) {
+	return Event{}, fmt.Errorf("not implemented")
 }
 
 // DeleteSubtask deletes a subtask on the item and raises a SubtaskDeletedOnItem event.

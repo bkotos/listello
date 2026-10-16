@@ -628,6 +628,21 @@ func (s *suiteState) theOwnerUncompletesTheSubtaskOnTheItem(ctx context.Context,
 	s.record(event)
 }
 
+func (s *suiteState) theOwnerChangesThePriorityOfTheSubtaskOnTheItemTo(ctx context.Context, subtaskTitle, title, priority string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	event, err := s.items[title].PrioritizeSubtask(subtask.ID, domain.ItemPriority(priority))
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theSubtaskOnTheItemShouldHavePriority(ctx context.Context, subtaskTitle, title, priority string) {
+	t := godog.T(ctx)
+	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	require.Equal(t, domain.ItemPriority(priority), subtask.Priority)
+}
+
 func (s *suiteState) theOwnerDeletesTheSubtaskOnTheItem(ctx context.Context, subtaskTitle, title string) {
 	t := godog.T(ctx)
 	require.Contains(t, s.items, title)
@@ -993,6 +1008,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the owner adds a subtask "([^"]*)" to the item "([^"]*)"$`, s.theOwnerAddsASubtaskToTheItem)
 	ctx.Step(`^the owner completes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerCompletesTheSubtaskOnTheItem)
 	ctx.Step(`^the owner uncompletes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerUncompletesTheSubtaskOnTheItem)
+	ctx.Step(`^the owner changes the priority of the subtask "([^"]*)" on the item "([^"]*)" to "([^"]*)"$`, s.theOwnerChangesThePriorityOfTheSubtaskOnTheItemTo)
+	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should have priority "([^"]*)"$`, s.theSubtaskOnTheItemShouldHavePriority)
 	ctx.Step(`^the owner deletes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerDeletesTheSubtaskOnTheItem)
 	ctx.Step(`^the item "([^"]*)" should have a subtask "([^"]*)"$`, s.theItemShouldHaveASubtask)
 	ctx.Step(`^the item "([^"]*)" should not have a subtask "([^"]*)"$`, s.theItemShouldNotHaveASubtask)
