@@ -649,13 +649,23 @@ func (s *suiteState) theItemShouldNotHaveASubtask(ctx context.Context, title, su
 }
 
 func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfSubtaskOnItem(ctx context.Context, eventName, subtaskTitle, title string) {
-	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	t := godog.T(ctx)
+	subtaskID := s.deletedSubtaskID
+	if s.items[title] != nil {
+		for _, subtask := range s.items[title].Subtasks {
+			if subtask.Title == subtaskTitle {
+				subtaskID = subtask.ID
+				break
+			}
+		}
+	}
+	require.NotEmptyf(t, subtaskID, "expected to know the ID of subtask %q on item %q", subtaskTitle, title)
 	require.Truef(
-		godog.T(ctx),
+		t,
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			return e.Name == domain.EventName(eventName) && eventSubtaskID(e) == subtask.ID
+			return e.Name == domain.EventName(eventName) && eventSubtaskID(e) == subtaskID
 		}),
-		"expected event %q with subtask ID %q; got %v", eventName, subtask.ID, eventSummaries(s.events),
+		"expected event %q with subtask ID %q; got %v", eventName, subtaskID, eventSummaries(s.events),
 	)
 }
 
@@ -842,7 +852,8 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataItemCommentedOn,
 		domain.EventMetadataSubtaskAddedToItem,
 		domain.EventMetadataSubtaskCompletedOnItem,
-		domain.EventMetadataSubtaskUncompleted:
+		domain.EventMetadataSubtaskUncompleted,
+		domain.EventMetadataSubtaskDeletedOnItem:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
 	default:
 		return ""
@@ -856,6 +867,8 @@ func eventSubtaskID(e domain.Event) string {
 	case domain.EventMetadataSubtaskCompletedOnItem:
 		return meta.SubtaskID
 	case domain.EventMetadataSubtaskUncompleted:
+		return meta.SubtaskID
+	case domain.EventMetadataSubtaskDeletedOnItem:
 		return meta.SubtaskID
 	default:
 		return ""
