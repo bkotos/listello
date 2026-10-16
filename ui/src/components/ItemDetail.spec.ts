@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe("ItemDetail", () => {
   beforeEach(() => {
-    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn(), onModifyTitle: vi.fn(), onComment: vi.fn(), onAddSubtask: vi.fn(), onCompleteSubtask: vi.fn() }));
+    render(createElement(ItemDetail, { item: baseItem, listName: "Work", onClose: vi.fn(), onModifyTitle: vi.fn(), onComment: vi.fn(), onAddSubtask: vi.fn(), onCompleteSubtask: vi.fn(), onUncompleteSubtask: vi.fn() }));
   });
 
   it("renders a right-hand detail aside", () => {
@@ -169,6 +169,7 @@ describe("ItemDetail subtasks", () => {
         onComment: vi.fn(),
         onAddSubtask: vi.fn(),
         onCompleteSubtask,
+        onUncompleteSubtask: vi.fn(),
       }),
     );
   });
