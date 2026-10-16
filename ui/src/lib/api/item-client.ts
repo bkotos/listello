@@ -93,3 +93,12 @@ export async function uncompleteSubtask(
     method: "POST",
   });
 }
+
+export async function deleteSubtask(
+  itemId: string,
+  subtaskId: string,
+): Promise<ItemDto> {
+  return request<ItemDto>(`/api/items/${itemId}/subtask/${subtaskId}`, {
+    method: "DELETE",
+  });
+}
