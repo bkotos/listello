@@ -1,4 +1,4 @@
-import type { AddSubtaskRequest, CommentItemRequest, DefineItemRequest, ItemDto, ModifyItemTitleRequest, MoveItemRequest, PrioritizeSubtaskRequest } from "api-types";
+import type { AddSubtaskRequest, CommentItemRequest, DefineItemRequest, ItemDto, LinkAsChildRequest, ModifyItemTitleRequest, MoveItemRequest, PrioritizeSubtaskRequest } from "api-types";
 import { request } from "./util";
 
 export async function getAllItems(
@@ -100,6 +100,16 @@ export async function deleteSubtask(
 ): Promise<ItemDto> {
   return request<ItemDto>(`/api/items/${itemId}/subtask/${subtaskId}`, {
     method: "DELETE",
+  });
+}
+
+export async function linkAsChild(
+  itemId: string,
+  body: LinkAsChildRequest,
+): Promise<ItemDto> {
+  return request<ItemDto>(`/api/items/${itemId}/link-as-child`, {
+    method: "POST",
+    body: JSON.stringify(body),
   });
 }
 

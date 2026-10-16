@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, modifyItemTitle, moveItem, prioritizeSubtask, uncompleteItem, uncompleteSubtask } from "./item-client";
+import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, linkAsChild, modifyItemTitle, moveItem, prioritizeSubtask, uncompleteItem, uncompleteSubtask } from "./item-client";
 import { request } from "./util";
 
 vi.mock(import("./util"), () => ({
@@ -335,6 +335,34 @@ describe("deleteSubtask", () => {
     // Assert
     expect(request).toHaveBeenCalledWith("/api/items/IT_1/subtask/ST_1", {
       method: "DELETE",
+    });
+    expect(result).toEqual(item);
+  });
+});
+
+describe("linkAsChild", () => {
+  it("posts a link-as-child action for an item to the API", async () => {
+    // Arrange
+    const item = {
+      ID: "IT_2",
+      ListID: "LS_1",
+      ParentID: "IT_1",
+      Title: "Book flights",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    vi.mocked(request).mockResolvedValue(item);
+
+    // Act
+    const result = await linkAsChild("IT_2", { parentID: "IT_1" });
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/items/IT_2/link-as-child", {
+      method: "POST",
+      body: JSON.stringify({ parentID: "IT_1" }),
     });
     expect(result).toEqual(item);
   });
