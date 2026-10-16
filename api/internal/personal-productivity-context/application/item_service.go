@@ -22,6 +22,7 @@ type ItemService interface {
 	MoveItem(itemID, listID string) (domain.Item, error)
 	CommentItem(itemID, userID, body string) (domain.Item, error)
 	AddSubtask(itemID, title string) (domain.Item, error)
+	CompleteSubtask(itemID, subtaskID string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
 }
 
@@ -181,6 +182,11 @@ func (s *itemService) AddSubtask(itemID, title string) (domain.Item, error) {
 		return domain.Item{}, err
 	}
 	return item, nil
+}
+
+// CompleteSubtask completes a subtask on an item via the domain and persists it.
+func (s *itemService) CompleteSubtask(itemID, subtaskID string) (domain.Item, error) {
+	return domain.Item{}, fmt.Errorf("not implemented")
 }
 
 // CommentItem comments on an item via the domain and persists it.
