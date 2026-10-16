@@ -78,6 +78,26 @@ Read the mockup source under `mockup/task-management-system-bulma/` as well. **D
 
 ---
 
+## Item
+
+LinkAsChild is Item↔Item via `ParentID`, not the Subtask child entity.
+
+### Link as Child → Item Linked as Child of Item
+
+Child stays an Item with `ParentID`. Many children per parent. One level of nesting (no grandchildren).
+
+- [x] Domain
+- [ ] Application service
+- [ ] Adapter repository
+- [ ] Bootstrap
+- [ ] API handler
+- [ ] CLI
+- [ ] API client
+- [ ] React Query hooks
+- [ ] UI
+
+---
+
 ## Subtask
 
 Child entity of Item in the domain model. No `Subtask` type exists yet. (`Item.ChangePriority` already raises `ItemPriorityChanged` on **items**; that is not this work.)
@@ -142,7 +162,7 @@ Subtask-entity priority, not item-level `ChangePriority` / `ItemPriorityChanged`
 - [x] CLI
 - [x] API client
 - [x] React Query hooks
-- [ ] UI
+- [ ] UI — PR #118 closed unmerged (does not match mockup); do not implement unless asked
 
 ---
 
