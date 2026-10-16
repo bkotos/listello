@@ -154,6 +154,7 @@ func saveComments(db *bun.DB, item domain.Item) error {
 }
 
 func saveSubtasks(db *bun.DB, item domain.Item) error {
+	ids := make([]string, 0, len(item.Subtasks))
 	for _, subtask := range item.Subtasks {
 		_, err := db.NewInsert().
 			Model(&subtaskRow{
@@ -171,6 +172,14 @@ func saveSubtasks(db *bun.DB, item domain.Item) error {
 		if err != nil {
 			return fmt.Errorf("save subtask: %w", err)
 		}
+		ids = append(ids, subtask.ID)
+	}
+	q := db.NewDelete().Model((*subtaskRow)(nil)).Where("item_id = ?", item.ID)
+	if len(ids) > 0 {
+		q = q.Where("id NOT IN (?)", bun.In(ids))
+	}
+	if _, err := q.Exec(context.Background()); err != nil {
+		return fmt.Errorf("save subtask: %w", err)
 	}
 	return nil
 }
