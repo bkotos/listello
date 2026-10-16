@@ -27,6 +27,7 @@ const (
 	EventSubtaskAddedToItem      EventName = "SubtaskAddedToItem"
 	EventSubtaskCompletedOnItem  EventName = "SubtaskCompletedOnItem"
 	EventSubtaskUncompleted      EventName = "SubtaskUncompleted"
+	EventSubtaskDeletedOnItem    EventName = "SubtaskDeletedOnItem"
 	EventSpaceCreated            EventName = "SpaceCreated"
 	EventUserCreated             EventName = "UserCreated"
 	EventInboxCreated            EventName = "InboxCreated"
@@ -170,6 +171,12 @@ type EventMetadataSubtaskCompletedOnItem struct {
 
 // EventMetadataSubtaskUncompleted is the payload for a SubtaskUncompleted event.
 type EventMetadataSubtaskUncompleted struct {
+	ID        string
+	SubtaskID string
+}
+
+// EventMetadataSubtaskDeletedOnItem is the payload for a SubtaskDeletedOnItem event.
+type EventMetadataSubtaskDeletedOnItem struct {
 	ID        string
 	SubtaskID string
 }

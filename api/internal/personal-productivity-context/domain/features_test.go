@@ -35,10 +35,11 @@ func init() {
 
 type suiteState struct {
 	placeholder  *domain.Placeholder
-	lists        map[string]domain.List
-	deletedLists map[string]domain.List
-	items        map[string]*domain.Item
-	deletedItems map[string]domain.Item
+	lists            map[string]domain.List
+	deletedLists     map[string]domain.List
+	items            map[string]*domain.Item
+	deletedItems     map[string]domain.Item
+	deletedSubtaskID string
 	spaces       map[string]domain.Space
 	users        map[string]domain.User
 	events       []domain.Event
@@ -51,6 +52,7 @@ func (s *suiteState) reset() {
 	s.deletedLists = make(map[string]domain.List)
 	s.items = make(map[string]*domain.Item)
 	s.deletedItems = make(map[string]domain.Item)
+	s.deletedSubtaskID = ""
 	s.spaces = make(map[string]domain.Space)
 	s.users = make(map[string]domain.User)
 	s.events = nil
@@ -626,14 +628,44 @@ func (s *suiteState) theOwnerUncompletesTheSubtaskOnTheItem(ctx context.Context,
 	s.record(event)
 }
 
-func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfSubtaskOnItem(ctx context.Context, eventName, subtaskTitle, title string) {
+func (s *suiteState) theOwnerDeletesTheSubtaskOnTheItem(ctx context.Context, subtaskTitle, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
 	subtask := s.subtaskOnItem(ctx, title, subtaskTitle)
+	s.deletedSubtaskID = subtask.ID
+	event, err := s.items[title].DeleteSubtask(subtask.ID)
+	require.NoError(t, err)
+	s.record(event)
+}
+
+func (s *suiteState) theItemShouldNotHaveASubtask(ctx context.Context, title, subtaskTitle string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	for _, subtask := range s.items[title].Subtasks {
+		if subtask.Title == subtaskTitle {
+			require.Failf(t, "subtask still present", "expected item %q not to have subtask %q; got %+v", title, subtaskTitle, s.items[title].Subtasks)
+		}
+	}
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfSubtaskOnItem(ctx context.Context, eventName, subtaskTitle, title string) {
+	t := godog.T(ctx)
+	subtaskID := s.deletedSubtaskID
+	if s.items[title] != nil {
+		for _, subtask := range s.items[title].Subtasks {
+			if subtask.Title == subtaskTitle {
+				subtaskID = subtask.ID
+				break
+			}
+		}
+	}
+	require.NotEmptyf(t, subtaskID, "expected to know the ID of subtask %q on item %q", subtaskTitle, title)
 	require.Truef(
-		godog.T(ctx),
+		t,
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			return e.Name == domain.EventName(eventName) && eventSubtaskID(e) == subtask.ID
+			return e.Name == domain.EventName(eventName) && eventSubtaskID(e) == subtaskID
 		}),
-		"expected event %q with subtask ID %q; got %v", eventName, subtask.ID, eventSummaries(s.events),
+		"expected event %q with subtask ID %q; got %v", eventName, subtaskID, eventSummaries(s.events),
 	)
 }
 
@@ -820,7 +852,8 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataItemCommentedOn,
 		domain.EventMetadataSubtaskAddedToItem,
 		domain.EventMetadataSubtaskCompletedOnItem,
-		domain.EventMetadataSubtaskUncompleted:
+		domain.EventMetadataSubtaskUncompleted,
+		domain.EventMetadataSubtaskDeletedOnItem:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
 	default:
 		return ""
@@ -834,6 +867,8 @@ func eventSubtaskID(e domain.Event) string {
 	case domain.EventMetadataSubtaskCompletedOnItem:
 		return meta.SubtaskID
 	case domain.EventMetadataSubtaskUncompleted:
+		return meta.SubtaskID
+	case domain.EventMetadataSubtaskDeletedOnItem:
 		return meta.SubtaskID
 	default:
 		return ""
@@ -958,7 +993,9 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the owner adds a subtask "([^"]*)" to the item "([^"]*)"$`, s.theOwnerAddsASubtaskToTheItem)
 	ctx.Step(`^the owner completes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerCompletesTheSubtaskOnTheItem)
 	ctx.Step(`^the owner uncompletes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerUncompletesTheSubtaskOnTheItem)
+	ctx.Step(`^the owner deletes the subtask "([^"]*)" on the item "([^"]*)"$`, s.theOwnerDeletesTheSubtaskOnTheItem)
 	ctx.Step(`^the item "([^"]*)" should have a subtask "([^"]*)"$`, s.theItemShouldHaveASubtask)
+	ctx.Step(`^the item "([^"]*)" should not have a subtask "([^"]*)"$`, s.theItemShouldNotHaveASubtask)
 	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should have an ID prefixed with "([^"]*)"$`, s.theSubtaskOnTheItemShouldHaveAnIDPrefixedWith)
 	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should not be completed$`, s.theSubtaskOnTheItemShouldNotBeCompleted)
 	ctx.Step(`^the subtask "([^"]*)" on the item "([^"]*)" should be completed$`, s.theSubtaskOnTheItemShouldBeCompleted)

@@ -225,6 +225,20 @@ func (i *Item) UncompleteSubtask(subtaskID string) (Event, error) {
 	}, 1), nil
 }
 
+// DeleteSubtask deletes a subtask on the item and raises a SubtaskDeletedOnItem event.
+func (i *Item) DeleteSubtask(subtaskID string) (Event, error) {
+	for n := range i.Subtasks {
+		if i.Subtasks[n].ID == subtaskID {
+			i.Subtasks = append(i.Subtasks[:n], i.Subtasks[n+1:]...)
+			break
+		}
+	}
+	return event.NewEvent(EventSubtaskDeletedOnItem, EventMetadataSubtaskDeletedOnItem{
+		ID:        i.ID,
+		SubtaskID: subtaskID,
+	}, 1), nil
+}
+
 // Comment adds a comment to the item and raises an ItemCommentedOn event.
 func (i *Item) Comment(user User, body string) (Event, error) {
 	comment := Comment{
