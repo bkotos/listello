@@ -19,14 +19,21 @@ export type ItemDetailProps = {
   onClose: () => void;
   onModifyTitle: (itemId: string, title: string) => void;
   onComment: (itemId: string, body: string) => void;
+  onAddSubtask: (itemId: string, title: string) => void;
 };
 
-export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment }: ItemDetailProps) {
+export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask }: ItemDetailProps) {
   const [commentBody, setCommentBody] = useState("");
+  const [subtaskTitle, setSubtaskTitle] = useState("");
 
   function submitComment() {
     onComment(item.ID, commentBody);
     setCommentBody("");
+  }
+
+  function submitSubtask() {
+    onAddSubtask(item.ID, subtaskTitle);
+    setSubtaskTitle("");
   }
 
   return (
@@ -188,6 +195,13 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment }
                   <input
                     className="input is-small is-shadowless"
                     placeholder="Add a subtask…"
+                    value={subtaskTitle}
+                    onChange={(e) => setSubtaskTitle(e.currentTarget.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        submitSubtask();
+                      }
+                    }}
                     style={{ border: "none", paddingLeft: 0, backgroundColor: "transparent" }}
                   />
                 </div>

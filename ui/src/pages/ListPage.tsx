@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ContentArea } from "../components/ContentArea";
 import { ItemDetail } from "../components/ItemDetail";
 import { ItemRow } from "../components/ItemRow";
-import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle, commentItem } from "../lib/api/item-client";
+import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle, commentItem, addSubtask } from "../lib/api/item-client";
 import { itemQueryKeys, useAllItemsQuery } from "../lib/api/item-queries";
 import { useListQuery } from "../lib/api/list-queries";
 import { useShellContext } from "../lib/useShellContext";
@@ -62,6 +62,13 @@ function ListPage() {
     }
   }
 
+  async function handleAddSubtask(itemId: string, title: string) {
+    await addSubtask(itemId, { title });
+    if (listId) {
+      await queryClient.invalidateQueries({ queryKey: itemQueryKeys.byList(listId) });
+    }
+  }
+
   return (
     <div className="is-flex" style={{ height: "100%", minWidth: 0 }}>
       <div className="is-flex is-flex-direction-column" style={{ flex: "1 1 0", minWidth: 0 }}>
@@ -105,6 +112,7 @@ function ListPage() {
           onClose={() => navigate(`/lists/${listId}`)}
           onModifyTitle={handleModifyTitle}
           onComment={handleComment}
+          onAddSubtask={handleAddSubtask}
         />
       ) : null}
     </div>

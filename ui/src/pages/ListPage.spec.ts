@@ -16,9 +16,10 @@ vi.mock("../lib/api/item-client", () => ({
   deleteItem: vi.fn(),
   modifyItemTitle: vi.fn(),
   commentItem: vi.fn(),
+  addSubtask: vi.fn(),
 }));
 
-import { commentItem, completeItem, defineItem, deleteItem, getAllItems, modifyItemTitle, uncompleteItem } from "../lib/api/item-client";
+import { addSubtask, commentItem, completeItem, defineItem, deleteItem, getAllItems, modifyItemTitle, uncompleteItem } from "../lib/api/item-client";
 import { getList } from "../lib/api/list-client";
 
 const sampleItems = [
@@ -842,6 +843,79 @@ describe("ListPage", () => {
     });
     const input = screen.getByPlaceholderText("Write a comment…");
     fireEvent.change(input, { target: { value: "Need 2%" } });
+
+    // Act
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    expect(input).toHaveValue("");
+  });
+
+  it("calls addSubtask when Enter is pressed in the subtask input", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(addSubtask).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Add a subtask…")).toBeInTheDocument();
+    });
+    const input = screen.getByPlaceholderText("Add a subtask…");
+    fireEvent.change(input, { target: { value: "Get 2%" } });
+
+    // Act
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    expect(addSubtask).toHaveBeenCalledWith("IT_1", { title: "Get 2%" });
+  });
+
+  it("reloads items after addSubtask is called", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(sampleItems)
+      .mockResolvedValueOnce(sampleItems);
+    vi.mocked(addSubtask).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Add a subtask…")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+    const input = screen.getByPlaceholderText("Add a subtask…");
+    fireEvent.change(input, { target: { value: "Get 2%" } });
+
+    // Act
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("clears the subtask input after Enter is pressed", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(addSubtask).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Add a subtask…")).toBeInTheDocument();
+    });
+    const input = screen.getByPlaceholderText("Add a subtask…");
+    fireEvent.change(input, { target: { value: "Get 2%" } });
 
     // Act
     fireEvent.keyDown(input, { key: "Enter" });
