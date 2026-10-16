@@ -189,7 +189,10 @@ describe("ItemDetail subtasks", () => {
 });
 
 describe("ItemDetail completed subtask", () => {
+  const onUncompleteSubtask = vi.fn();
+
   beforeEach(() => {
+    onUncompleteSubtask.mockReset();
     render(
       createElement(ItemDetail, {
         item: {
@@ -202,6 +205,7 @@ describe("ItemDetail completed subtask", () => {
         onComment: vi.fn(),
         onAddSubtask: vi.fn(),
         onCompleteSubtask: vi.fn(),
+        onUncompleteSubtask,
       }),
     );
   });
@@ -214,5 +218,10 @@ describe("ItemDetail completed subtask", () => {
 
   it("renders the completed subtask title with strikethrough", () => {
     expect(screen.getByText("Get 2%")).toHaveClass("is-size-6", "muted", "line-through");
+  });
+
+  it("calls onUncompleteSubtask when the toggle is clicked", () => {
+    fireEvent.click(screen.getByRole("button", { name: "Mark subtask incomplete" }));
+    expect(onUncompleteSubtask).toHaveBeenCalledWith("IT_1", "ST_1");
   });
 });

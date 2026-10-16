@@ -18,9 +18,10 @@ vi.mock("../lib/api/item-client", () => ({
   commentItem: vi.fn(),
   addSubtask: vi.fn(),
   completeSubtask: vi.fn(),
+  uncompleteSubtask: vi.fn(),
 }));
 
-import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, getAllItems, modifyItemTitle, uncompleteItem } from "../lib/api/item-client";
+import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, getAllItems, modifyItemTitle, uncompleteItem, uncompleteSubtask } from "../lib/api/item-client";
 import { getList } from "../lib/api/list-client";
 
 const sampleItems = [
@@ -983,6 +984,71 @@ describe("ListPage", () => {
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Mark subtask complete" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("calls uncompleteSubtask when Mark subtask incomplete is clicked", async () => {
+    // Arrange
+    const itemsWithCompletedSubtask = [
+      {
+        ...sampleItems[0],
+        Subtasks: [{ ID: "ST_1", Title: "Get 2%", Completed: true }],
+      },
+    ];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(itemsWithCompletedSubtask);
+    vi.mocked(uncompleteSubtask).mockResolvedValue(itemsWithCompletedSubtask[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Mark subtask incomplete" })).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Mark subtask incomplete" }));
+
+    // Assert
+    expect(uncompleteSubtask).toHaveBeenCalledWith("IT_1", "ST_1");
+  });
+
+  it("reloads items after uncompleteSubtask is called", async () => {
+    // Arrange
+    const itemsWithCompletedSubtask = [
+      {
+        ...sampleItems[0],
+        Subtasks: [{ ID: "ST_1", Title: "Get 2%", Completed: true }],
+      },
+    ];
+    const itemsAfterUncomplete = [
+      {
+        ...sampleItems[0],
+        Subtasks: [{ ID: "ST_1", Title: "Get 2%", Completed: false }],
+      },
+    ];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(itemsWithCompletedSubtask)
+      .mockResolvedValueOnce(itemsAfterUncomplete);
+    vi.mocked(uncompleteSubtask).mockResolvedValue(itemsAfterUncomplete[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Mark subtask incomplete" })).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Mark subtask incomplete" }));
 
     // Assert
     await waitFor(() => {
