@@ -410,4 +410,51 @@ describe("listello cli", () => {
       30_000,
     );
   });
+
+  describe("subtask delete", () => {
+    it(
+      "deletes a subtask from an item",
+      async () => {
+        // Arrange
+        const createResult = await runListello(dbPath, [
+          "list",
+          "create",
+          "Groceries",
+        ]);
+        const listId = parseCreatedListId(createResult.stdout);
+        const defineResult = await runListello(dbPath, [
+          "item",
+          "define",
+          listId,
+          "Buy milk",
+        ]);
+        const itemId = parseDefinedItemId(defineResult.stdout);
+        const addResult = await runListello(dbPath, [
+          "subtask",
+          "add",
+          itemId,
+          "Get 2%",
+        ]);
+        const subtaskId = parseAddedSubtaskId(addResult.stdout);
+
+        // Act
+        const result = await runListello(dbPath, [
+          "subtask",
+          "delete",
+          itemId,
+          subtaskId,
+        ]);
+
+        // Assert
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toMatch(
+          new RegExp(
+            `Deleted subtask "${subtaskId}" \\(${subtaskId}\\) from "Buy milk"`,
+          ),
+        );
+      },
+      30_000,
+    );
+  });
 });
