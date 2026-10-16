@@ -197,6 +197,20 @@ func (i *Item) AddSubtask(title string) (Event, error) {
 	}, 1), nil
 }
 
+// CompleteSubtask completes a subtask on the item and raises a SubtaskCompletedOnItem event.
+func (i *Item) CompleteSubtask(subtaskID string) (Event, error) {
+	for n := range i.Subtasks {
+		if i.Subtasks[n].ID == subtaskID {
+			i.Subtasks[n].Completed = true
+			break
+		}
+	}
+	return event.NewEvent(EventSubtaskCompletedOnItem, EventMetadataSubtaskCompletedOnItem{
+		ID:        i.ID,
+		SubtaskID: subtaskID,
+	}, 1), nil
+}
+
 // Comment adds a comment to the item and raises an ItemCommentedOn event.
 func (i *Item) Comment(user User, body string) (Event, error) {
 	comment := Comment{
