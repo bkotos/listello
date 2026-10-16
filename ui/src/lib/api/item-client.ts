@@ -84,3 +84,12 @@ export async function completeSubtask(
     method: "POST",
   });
 }
+
+export async function uncompleteSubtask(
+  itemId: string,
+  subtaskId: string,
+): Promise<ItemDto> {
+  return request<ItemDto>(`/api/items/${itemId}/subtask/${subtaskId}/uncomplete`, {
+    method: "POST",
+  });
+}
