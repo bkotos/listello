@@ -359,4 +359,55 @@ describe("listello cli", () => {
       30_000,
     );
   });
+
+  describe("subtask uncomplete", () => {
+    it(
+      "uncompletes a subtask on an item",
+      async () => {
+        // Arrange
+        const createResult = await runListello(dbPath, [
+          "list",
+          "create",
+          "Groceries",
+        ]);
+        const listId = parseCreatedListId(createResult.stdout);
+        const defineResult = await runListello(dbPath, [
+          "item",
+          "define",
+          listId,
+          "Buy milk",
+        ]);
+        const itemId = parseDefinedItemId(defineResult.stdout);
+        const addResult = await runListello(dbPath, [
+          "subtask",
+          "add",
+          itemId,
+          "Get 2%",
+        ]);
+        const subtaskId = parseAddedSubtaskId(addResult.stdout);
+        await runListello(dbPath, [
+          "subtask",
+          "complete",
+          itemId,
+          subtaskId,
+        ]);
+
+        // Act
+        const result = await runListello(dbPath, [
+          "subtask",
+          "uncomplete",
+          itemId,
+          subtaskId,
+        ]);
+
+        // Assert
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toMatch(
+          /Uncompleted subtask "Get 2%" \(ST_.+\) on "Buy milk"/,
+        );
+      },
+      30_000,
+    );
+  });
 });

@@ -12,7 +12,23 @@ func NewSubtaskUncomplete(container Container) *cobra.Command {
 		Short: "Uncomplete a subtask on an item",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return fmt.Errorf("not implemented")
+			itemID := args[0]
+			subtaskID := args[1]
+
+			item, err := container.ItemService().UncompleteSubtask(itemID, subtaskID)
+			if err != nil {
+				return err
+			}
+
+			title := subtaskID
+			for _, subtask := range item.Subtasks {
+				if subtask.ID == subtaskID {
+					title = subtask.Title
+					break
+				}
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "Uncompleted subtask %q (%s) on %q\n", title, subtaskID, item.Title)
+			return nil
 		},
 	}
 }
