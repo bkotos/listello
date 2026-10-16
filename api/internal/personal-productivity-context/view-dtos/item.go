@@ -32,6 +32,11 @@ type PrioritizeSubtaskRequest struct {
 	Priority string `json:"priority"`
 }
 
+// LinkAsChildRequest is the HTTP request body for linking an item as a child of another item.
+type LinkAsChildRequest struct {
+	ParentID string `json:"parentID"`
+}
+
 // SubtaskDto is the HTTP representation of a subtask on an item.
 type SubtaskDto struct {
 	ID        string `json:"ID"`
