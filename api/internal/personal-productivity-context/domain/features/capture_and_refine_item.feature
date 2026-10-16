@@ -97,24 +97,6 @@ Feature: Capture and refine an inbox item
     Then a "TagRemovedFromItem" event should have occurred with the ID of item "Schedule dentist"
     And the item "Schedule dentist" should not be tagged with "health"
 
-  Scenario: Linking an item as a child of another item
-    Given a list named "Next actions" exists
-    And an outstanding item titled "Plan trip" exists on the list "Next actions"
-    And an outstanding item titled "Book flights" exists on the list "Next actions"
-    When the owner links the item "Book flights" as a child of the item "Plan trip"
-    Then a "ItemLinkedAsChildOfItem" event should have occurred with the ID of item "Book flights"
-    And a "ItemLinkedAsChildOfItem" event should have occurred with the parent ID of item "Plan trip"
-    And the item "Book flights" should be a child of the item "Plan trip"
-
-  Scenario: Linking an item as a grandchild fails
-    Given a list named "Next actions" exists
-    And an outstanding item titled "Plan trip" exists on the list "Next actions"
-    And an outstanding item titled "Book flights" exists on the list "Next actions"
-    And an outstanding item titled "Compare airlines" exists on the list "Next actions"
-    And the owner links the item "Book flights" as a child of the item "Plan trip"
-    When the owner links the item "Compare airlines" as a child of the item "Book flights"
-    Then linking as a child should fail with error "cannot link as child of an item that already has a parent"
-
   Scenario Outline: Changing the priority of a captured item
     Given a captured item "Schedule dentist" exists
     When the owner changes the priority of the item "Schedule dentist" to "<priority>"

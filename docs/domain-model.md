@@ -33,7 +33,7 @@ erDiagram
     ITEM ||--o{ SUBTASK : has
     ITEM ||--o{ COMMENT : has
     ITEM }o--o{ TAG : "tagged with"
-    ITEM ||--o| ITEM : "linked as child of"
+    ITEM ||--o{ ITEM : "parent of"
     ITEM ||--o| DELEGATION : "delegated via"
     ITEM {
         string title
@@ -107,6 +107,8 @@ erDiagram
 ### Item
 **Entities:** Tag, Due Date (value objects on Item)
 
+LinkAsChild sets `ParentID` on the child. The child stays an Item (it is not converted to a Subtask). A parent may have many children. Nesting is one level: an item that already has a parent cannot itself be a parent.
+
 | Actor | Command | Event |
 |---|---|---|
 | User | Capture Inbox Item | Item Captured |
@@ -178,4 +180,3 @@ No commands — projections only:
 
 - **"Prioritize"** sits visually in the Subtask column but its command name is generic — confirm it's actually a subtask-priority operation and not an Item-level prioritization.
 - **"Defined item"** command name vs. **"Defined created"** event — likely meant to be "Item Defined" for consistency; flagging in case it's a typo on the sticky rather than an intentional naming choice.
-- **Item ↔ Item** self-reference (LinkAsChild) is modeled as one-to-one — confirm whether an item should be allowed multiple children.
