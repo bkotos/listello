@@ -34,6 +34,14 @@ export interface AddSubtaskRequest {
   title: string;
 }
 /**
+ * SubtaskDto is the HTTP representation of a subtask on an item.
+ */
+export interface SubtaskDto {
+  ID: string;
+  Title: string;
+  Completed: boolean;
+}
+/**
  * ItemDto is the HTTP representation of an item.
  */
 export interface ItemDto {
@@ -46,6 +54,7 @@ export interface ItemDto {
   Tags: string[];
   Priority: string;
   State: string;
+  Subtasks?: SubtaskDto[];
 }
 
 //////////

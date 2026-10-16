@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { ItemDto } from "api-types";
 import {
   Calendar,
+  Check,
   ChevronRight,
   CornerDownRight,
   Flag,
@@ -20,9 +21,10 @@ export type ItemDetailProps = {
   onModifyTitle: (itemId: string, title: string) => void;
   onComment: (itemId: string, body: string) => void;
   onAddSubtask: (itemId: string, title: string) => void;
+  onCompleteSubtask: (itemId: string, subtaskId: string) => void;
 };
 
-export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask }: ItemDetailProps) {
+export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask }: ItemDetailProps) {
   const [commentBody, setCommentBody] = useState("");
   const [subtaskTitle, setSubtaskTitle] = useState("");
 
@@ -190,6 +192,33 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, 
 
             <Section title="Subtasks">
               <div className="is-flex is-flex-direction-column" style={{ gap: "0.25rem" }}>
+                {(item.Subtasks ?? []).map((subtask) => (
+                  <div
+                    key={subtask.ID}
+                    className="hover-parent is-flex is-align-items-center px-1 py-1"
+                    style={{ gap: "0.625rem" }}
+                  >
+                    <button
+                      type="button"
+                      aria-label={subtask.Completed ? "Mark subtask incomplete" : "Mark subtask complete"}
+                      className={`check-toggle${subtask.Completed ? " is-checked" : ""}`}
+                      style={{ height: "1.125rem", width: "1.125rem", borderRadius: "0.25rem" }}
+                      onClick={() => {
+                        if (!subtask.Completed) {
+                          onCompleteSubtask(item.ID, subtask.ID);
+                        }
+                      }}
+                    >
+                      {subtask.Completed ? <Check size={10} strokeWidth={2} aria-hidden /> : null}
+                    </button>
+                    <span
+                      className={`is-size-6${subtask.Completed ? " muted line-through" : ""}`}
+                      style={{ flex: "1 1 0" }}
+                    >
+                      {subtask.Title}
+                    </span>
+                  </div>
+                ))}
                 <div className="is-flex is-align-items-center px-1 py-1 muted" style={{ gap: "0.5rem" }}>
                   <CornerDownRight size={16} style={{ flexShrink: 0 }} />
                   <input

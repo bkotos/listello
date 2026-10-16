@@ -103,11 +103,16 @@ func (r *SQLiteItemRepository) GetAll(listID string) ([]domain.Item, error) {
 	}
 	items := make([]domain.Item, 0, len(rows))
 	for _, row := range rows {
+		subtasks, err := subtasksForItem(db, row.ID)
+		if err != nil {
+			return nil, err
+		}
 		items = append(items, domain.Item{
-			ID:     row.ID,
-			ListID: row.ListID,
-			Title:  row.Title,
-			State:  domain.ItemState(row.State),
+			ID:       row.ID,
+			ListID:   row.ListID,
+			Title:    row.Title,
+			State:    domain.ItemState(row.State),
+			Subtasks: subtasks,
 		})
 	}
 	return items, nil

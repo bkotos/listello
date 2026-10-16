@@ -188,6 +188,32 @@ func TestSQLiteItemRepository_SaveAndGetByID_PersistsSubtasks(t *testing.T) {
 	assert.Equal(t, item.Subtasks[0], got.Subtasks[0])
 }
 
+func TestSQLiteItemRepository_GetAll_IncludesSubtasks(t *testing.T) {
+	// Arrange
+	workspace := openWorkspaceDB(t, "items.db")
+	listRepo := adapter.NewSQLiteListRepository(workspace)
+	itemRepo := adapter.NewSQLiteItemRepository(workspace)
+
+	list, _, err := domain.CreateList("Next actions")
+	require.NoError(t, err)
+	require.NoError(t, listRepo.Save(list))
+
+	item, _, err := domain.DefineItem(list, "Buy milk")
+	require.NoError(t, err)
+	_, err = item.AddSubtask("Get 2%")
+	require.NoError(t, err)
+	require.NoError(t, itemRepo.Save(item))
+
+	// Act
+	got, err := itemRepo.GetAll(list.ID)
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, got, 1)
+	require.Len(t, got[0].Subtasks, 1)
+	assert.Equal(t, item.Subtasks[0], got[0].Subtasks[0])
+}
+
 func TestSQLiteItemRepository_SaveAndGetByID_PersistsCompletedSubtask(t *testing.T) {
 	// Arrange
 	workspace := openWorkspaceDB(t, "items.db")
