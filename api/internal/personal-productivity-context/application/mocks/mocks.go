@@ -342,6 +342,72 @@ func (_c *MockItemService_CompleteItem_Call) RunAndReturn(run func(itemID string
 	return _c
 }
 
+// CompleteSubtask provides a mock function for the type MockItemService
+func (_mock *MockItemService) CompleteSubtask(itemID string, subtaskID string) (domain.Item, error) {
+	ret := _mock.Called(itemID, subtaskID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CompleteSubtask")
+	}
+
+	var r0 domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, string) (domain.Item, error)); ok {
+		return returnFunc(itemID, subtaskID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, string) domain.Item); ok {
+		r0 = returnFunc(itemID, subtaskID)
+	} else {
+		r0 = ret.Get(0).(domain.Item)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = returnFunc(itemID, subtaskID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemService_CompleteSubtask_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CompleteSubtask'
+type MockItemService_CompleteSubtask_Call struct {
+	*mock.Call
+}
+
+// CompleteSubtask is a helper method to define mock.On call
+//   - itemID string
+//   - subtaskID string
+func (_e *MockItemService_Expecter) CompleteSubtask(itemID any, subtaskID any) *MockItemService_CompleteSubtask_Call {
+	return &MockItemService_CompleteSubtask_Call{Call: _e.mock.On("CompleteSubtask", itemID, subtaskID)}
+}
+
+func (_c *MockItemService_CompleteSubtask_Call) Run(run func(itemID string, subtaskID string)) *MockItemService_CompleteSubtask_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_CompleteSubtask_Call) Return(item domain.Item, err error) *MockItemService_CompleteSubtask_Call {
+	_c.Call.Return(item, err)
+	return _c
+}
+
+func (_c *MockItemService_CompleteSubtask_Call) RunAndReturn(run func(itemID string, subtaskID string) (domain.Item, error)) *MockItemService_CompleteSubtask_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DefineItem provides a mock function for the type MockItemService
 func (_mock *MockItemService) DefineItem(listID string, title string) (domain.Item, error) {
 	ret := _mock.Called(listID, title)
