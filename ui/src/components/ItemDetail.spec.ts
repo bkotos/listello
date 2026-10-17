@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
-import type { ItemDto } from "api-types";
+import type { ItemCommentDto, ItemDto } from "api-types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ItemDetail } from "./ItemDetail";
 
@@ -239,5 +239,82 @@ describe("ItemDetail completed subtask", () => {
   it("calls onUncompleteSubtask when the toggle is clicked", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mark subtask incomplete" }));
     expect(onUncompleteSubtask).toHaveBeenCalledWith("IT_1", "ST_1");
+  });
+});
+
+describe("ItemDetail comments", () => {
+  const onDeleteComment = vi.fn();
+  const comments: ItemCommentDto[] = [
+    {
+      ID: "CM_1",
+      ItemID: "IT_1",
+      UserID: "US_1",
+      UserName: "Alex",
+      Body: "Need 2%",
+      CreatedAt: new Date().toISOString(),
+    },
+    {
+      ID: "CM_2",
+      ItemID: "IT_1",
+      UserID: "US_2",
+      UserName: "Sam",
+      Body: "Get oat milk",
+      CreatedAt: new Date().toISOString(),
+    },
+  ];
+
+  beforeEach(() => {
+    onDeleteComment.mockReset();
+    render(
+      createElement(ItemDetail, {
+        item: baseItem,
+        listName: "Work",
+        comments,
+        currentUserId: "US_1",
+        onClose: vi.fn(),
+        onModifyTitle: vi.fn(),
+        onComment: vi.fn(),
+        onAddSubtask: vi.fn(),
+        onCompleteSubtask: vi.fn(),
+        onUncompleteSubtask: vi.fn(),
+        onDeleteSubtask: vi.fn(),
+        onDeleteComment,
+      }),
+    );
+  });
+
+  it("renders the comment author name", () => {
+    expect(screen.getByText("Alex")).toHaveClass("is-size-7", "has-text-weight-medium");
+  });
+
+  it("renders the comment body", () => {
+    expect(screen.getByText("Need 2%")).toHaveClass("is-size-7", "muted");
+  });
+
+  it("renders the comment author initial", () => {
+    expect(screen.getByText("A")).toHaveClass(
+      "is-flex",
+      "is-align-items-center",
+      "is-justify-content-center",
+      "is-family-code",
+      "has-text-primary",
+      "has-text-weight-semibold",
+    );
+  });
+
+  it("renders a Delete comment button for the current user's comment", () => {
+    const remove = screen.getByRole("button", { name: "Delete comment" });
+    expect(remove).toHaveClass("icon-btn", "is-danger-hover", "hover-reveal");
+    expect(remove.querySelector("svg.lucide-trash-2")).toBeInTheDocument();
+  });
+
+  it("does not render a Delete comment button for another user's comment", () => {
+    expect(screen.getByText("Sam")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Delete comment" })).toHaveLength(1);
+  });
+
+  it("calls onDeleteComment when Delete comment is clicked", () => {
+    fireEvent.click(screen.getByRole("button", { name: "Delete comment" }));
+    expect(onDeleteComment).toHaveBeenCalledWith("IT_1", "CM_1");
   });
 });

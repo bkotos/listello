@@ -28,6 +28,9 @@ vi.mock("./lib/api/item-client", () => ({
   uncompleteItem: vi.fn(),
   deleteItem: vi.fn(),
   modifyItemTitle: vi.fn(),
+  getItemComments: vi.fn(),
+  commentItem: vi.fn(),
+  deleteComment: vi.fn(),
 }));
 
 import { getDefaultPersistenceLocation, getInstance } from "./lib/api/instance-client";

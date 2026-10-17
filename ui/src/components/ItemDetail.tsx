@@ -1,6 +1,6 @@
 import type { ClipboardEvent, KeyboardEvent, ReactNode } from "react";
 import { useState } from "react";
-import type { ItemDto } from "api-types";
+import type { ItemCommentDto, ItemDto } from "api-types";
 import {
   Calendar,
   Check,
@@ -17,6 +17,8 @@ import {
 export type ItemDetailProps = {
   item: ItemDto;
   listName: string;
+  comments?: ItemCommentDto[];
+  currentUserId?: string;
   onClose: () => void;
   onModifyTitle: (itemId: string, title: string) => void;
   onComment: (itemId: string, body: string) => void;
@@ -24,9 +26,10 @@ export type ItemDetailProps = {
   onCompleteSubtask: (itemId: string, subtaskId: string) => void;
   onUncompleteSubtask: (itemId: string, subtaskId: string) => void;
   onDeleteSubtask: (itemId: string, subtaskId: string) => void;
+  onDeleteComment?: (itemId: string, commentId: string) => void;
 };
 
-export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask, onUncompleteSubtask, onDeleteSubtask }: ItemDetailProps) {
+export function ItemDetail({ item, listName, comments = [], currentUserId = "", onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask, onUncompleteSubtask, onDeleteSubtask, onDeleteComment }: ItemDetailProps) {
   const [commentBody, setCommentBody] = useState("");
   const [subtaskTitle, setSubtaskTitle] = useState("");
 
@@ -252,6 +255,42 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, 
 
             <Section title="Comments">
               <div className="is-flex is-flex-direction-column" style={{ gap: "0.75rem" }}>
+                {comments.map((comment) => (
+                  <div key={comment.ID} className="hover-parent is-flex" style={{ gap: "0.625rem" }}>
+                    <div
+                      className="is-flex is-align-items-center is-justify-content-center is-family-code has-text-primary has-text-weight-semibold"
+                      style={{
+                        height: "1.75rem",
+                        width: "1.75rem",
+                        flexShrink: 0,
+                        borderRadius: "9999px",
+                        fontSize: "0.6875rem",
+                        backgroundColor:
+                          "hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l) / 0.15)",
+                      }}
+                    >
+                      {comment.UserName.slice(0, 1)}
+                    </div>
+                    <div style={{ minWidth: 0, flex: "1 1 0" }}>
+                      <div className="is-flex is-align-items-center" style={{ gap: "0.5rem" }}>
+                        <span className="is-size-7 has-text-weight-medium">{comment.UserName}</span>
+                        <span className="is-size-7 muted">{relativeTime(comment.CreatedAt)}</span>
+                        {comment.UserID === currentUserId ? (
+                          <button
+                            type="button"
+                            aria-label="Delete comment"
+                            onClick={() => onDeleteComment?.(item.ID, comment.ID)}
+                            className="icon-btn is-danger-hover hover-reveal"
+                            style={{ marginLeft: "auto", height: "1.5rem", width: "1.5rem" }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        ) : null}
+                      </div>
+                      <p className="is-size-7 muted">{comment.Body}</p>
+                    </div>
+                  </div>
+                ))}
                 <div className="field has-addons mb-0">
                   <div className="control is-expanded">
                     <input
@@ -285,6 +324,30 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, 
       </div>
     </aside>
   );
+}
+
+function relativeTime(createdAt: string): string {
+  const ts = Date.parse(createdAt);
+  if (Number.isNaN(ts)) {
+    return "";
+  }
+  const diff = Date.now() - ts;
+  const mins = Math.round(diff / 60000);
+  if (mins < 1) {
+    return "just now";
+  }
+  if (mins < 60) {
+    return `${mins}m ago`;
+  }
+  const hours = Math.round(mins / 60);
+  if (hours < 24) {
+    return `${hours}h ago`;
+  }
+  const days = Math.round(hours / 24);
+  if (days < 7) {
+    return `${days}d ago`;
+  }
+  return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function preventNewlines(event: KeyboardEvent<HTMLTextAreaElement>) {
