@@ -3,8 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ContentArea } from "../components/ContentArea";
 import { ItemDetail } from "../components/ItemDetail";
 import { ItemRow } from "../components/ItemRow";
-import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle, commentItem, addSubtask, completeSubtask, uncompleteSubtask, deleteSubtask, linkAsChild, getAllItems, getItem } from "../lib/api/item-client";
-import { itemQueryKeys, useAllItemsQuery } from "../lib/api/item-queries";
+import { useInstanceQuery } from "../lib/api/instance-queries";
+import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle, commentItem, deleteComment, addSubtask, completeSubtask, uncompleteSubtask, deleteSubtask, linkAsChild, getAllItems, getItem } from "../lib/api/item-client";
+import { itemQueryKeys, useAllItemsQuery, useItemCommentsQuery } from "../lib/api/item-queries";
 import { useAllListsQuery, useListQuery } from "../lib/api/list-queries";
 import { useShellContext } from "../lib/useShellContext";
 
@@ -16,6 +17,8 @@ function ListPage() {
   const { data: list } = useListQuery(listId);
   const { data: lists } = useAllListsQuery();
   const { data: items } = useAllItemsQuery(listId);
+  const { data: instance } = useInstanceQuery();
+  const { data: comments } = useItemCommentsQuery(itemId);
   const missingParentIds = Array.from(
     new Set(
       (items ?? [])
@@ -98,6 +101,12 @@ function ListPage() {
     if (listId) {
       await queryClient.invalidateQueries({ queryKey: itemQueryKeys.byList(listId) });
     }
+    await queryClient.invalidateQueries({ queryKey: itemQueryKeys.comments(commentedItemId) });
+  }
+
+  async function handleDeleteComment(commentedItemId: string, commentId: string) {
+    await deleteComment(commentedItemId, commentId);
+    await queryClient.invalidateQueries({ queryKey: itemQueryKeys.comments(commentedItemId) });
   }
 
   async function handleAddSubtask(itemId: string, title: string) {
@@ -183,6 +192,8 @@ function ListPage() {
           key={selectedItem.ID}
           item={selectedItem}
           listName={title}
+          comments={comments ?? []}
+          currentUserId={instance?.User.ID ?? ""}
           onClose={() => navigate(`/lists/${listId}`)}
           onModifyTitle={handleModifyTitle}
           onComment={handleComment}
@@ -190,6 +201,7 @@ function ListPage() {
           onCompleteSubtask={handleCompleteSubtask}
           onUncompleteSubtask={handleUncompleteSubtask}
           onDeleteSubtask={handleDeleteSubtask}
+          onDeleteComment={handleDeleteComment}
         />
       ) : null}
     </div>

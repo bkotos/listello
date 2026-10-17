@@ -9,6 +9,12 @@ vi.mock("../lib/api/list-client", () => ({
   getAllLists: vi.fn(),
 }));
 
+vi.mock("../lib/api/instance-client", () => ({
+  getInstance: vi.fn(),
+  createInstance: vi.fn(),
+  getDefaultPersistenceLocation: vi.fn(),
+}));
+
 vi.mock("../lib/api/item-client", () => ({
   getAllItems: vi.fn(),
   getItem: vi.fn(),
@@ -17,7 +23,9 @@ vi.mock("../lib/api/item-client", () => ({
   uncompleteItem: vi.fn(),
   deleteItem: vi.fn(),
   modifyItemTitle: vi.fn(),
+  getItemComments: vi.fn(),
   commentItem: vi.fn(),
+  deleteComment: vi.fn(),
   addSubtask: vi.fn(),
   completeSubtask: vi.fn(),
   uncompleteSubtask: vi.fn(),
@@ -25,8 +33,37 @@ vi.mock("../lib/api/item-client", () => ({
   linkAsChild: vi.fn(),
 }));
 
-import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, getItem, linkAsChild, modifyItemTitle, uncompleteItem, uncompleteSubtask } from "../lib/api/item-client";
+import { getInstance } from "../lib/api/instance-client";
+import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteComment, deleteItem, deleteSubtask, getAllItems, getItem, getItemComments, linkAsChild, modifyItemTitle, uncompleteItem, uncompleteSubtask } from "../lib/api/item-client";
 import { getAllLists, getList } from "../lib/api/list-client";
+
+const sampleInstance = {
+  HostingMode: "",
+  PersistenceLocation: "",
+  PersistenceState: "",
+  SetupState: "completed",
+  Space: { ID: "SP_1", Name: "Home" },
+  User: { ID: "US_1", Name: "Alex" },
+};
+
+const sampleComments = [
+  {
+    ID: "CM_1",
+    ItemID: "IT_1",
+    UserID: "US_1",
+    UserName: "Alex",
+    Body: "Need 2%",
+    CreatedAt: new Date().toISOString(),
+  },
+  {
+    ID: "CM_2",
+    ItemID: "IT_1",
+    UserID: "US_2",
+    UserName: "Sam",
+    Body: "Get oat milk",
+    CreatedAt: new Date().toISOString(),
+  },
+];
 
 const sampleItems = [
   {
@@ -61,6 +98,8 @@ afterEach(() => {
 describe("ListPage", () => {
   beforeEach(() => {
     vi.mocked(getAllLists).mockResolvedValue([{ ID: "LS_1", Name: "Work" }]);
+    vi.mocked(getInstance).mockResolvedValue(sampleInstance);
+    vi.mocked(getItemComments).mockResolvedValue([]);
   });
 
   it("renders the list title from the API", async () => {
@@ -1340,6 +1379,122 @@ describe("ListPage", () => {
     // Assert
     await waitFor(() => {
       expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("loads comments for the selected item from the API", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(getItemComments).mockResolvedValue(sampleComments);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+
+    // Assert
+    await waitFor(() => {
+      expect(getItemComments).toHaveBeenCalledWith(
+        "IT_1",
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
+    });
+  });
+
+  it("renders comments from the API", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(getItemComments).mockResolvedValue(sampleComments);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByText("Need 2%")).toBeInTheDocument();
+    });
+    expect(screen.getByText("Get oat milk")).toBeInTheDocument();
+  });
+
+  it("calls deleteComment when Delete comment is clicked", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(getItemComments).mockResolvedValue(sampleComments);
+    vi.mocked(deleteComment).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Delete comment" })).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Delete comment" }));
+
+    // Assert
+    expect(deleteComment).toHaveBeenCalledWith("IT_1", "CM_1");
+  });
+
+  it("reloads comments after deleteComment is called", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(getItemComments)
+      .mockResolvedValueOnce(sampleComments)
+      .mockResolvedValueOnce([sampleComments[1]]);
+    vi.mocked(deleteComment).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Delete comment" })).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getItemComments).toHaveBeenCalledTimes(1);
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Delete comment" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(getItemComments).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("reloads comments after commentItem is called", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(getItemComments)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(sampleComments.slice(0, 1));
+    vi.mocked(commentItem).mockResolvedValue(sampleItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId/items/:itemId",
+      initialEntry: "/lists/LS_1/items/IT_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Write a comment…")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getItemComments).toHaveBeenCalledTimes(1);
+    });
+    fireEvent.change(screen.getByPlaceholderText("Write a comment…"), {
+      target: { value: "Need 2%" },
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Send comment" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(getItemComments).toHaveBeenCalledTimes(2);
     });
   });
 });

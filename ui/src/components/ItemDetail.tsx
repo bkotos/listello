@@ -1,6 +1,6 @@
 import type { ClipboardEvent, KeyboardEvent, ReactNode } from "react";
 import { useState } from "react";
-import type { ItemDto } from "api-types";
+import type { ItemCommentDto, ItemDto } from "api-types";
 import {
   Calendar,
   Check,
@@ -13,10 +13,13 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { CommentRow } from "./CommentRow";
 
 export type ItemDetailProps = {
   item: ItemDto;
   listName: string;
+  comments?: ItemCommentDto[];
+  currentUserId?: string;
   onClose: () => void;
   onModifyTitle: (itemId: string, title: string) => void;
   onComment: (itemId: string, body: string) => void;
@@ -24,9 +27,10 @@ export type ItemDetailProps = {
   onCompleteSubtask: (itemId: string, subtaskId: string) => void;
   onUncompleteSubtask: (itemId: string, subtaskId: string) => void;
   onDeleteSubtask: (itemId: string, subtaskId: string) => void;
+  onDeleteComment?: (itemId: string, commentId: string) => void;
 };
 
-export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask, onUncompleteSubtask, onDeleteSubtask }: ItemDetailProps) {
+export function ItemDetail({ item, listName, comments = [], currentUserId = "", onClose, onModifyTitle, onComment, onAddSubtask, onCompleteSubtask, onUncompleteSubtask, onDeleteSubtask, onDeleteComment }: ItemDetailProps) {
   const [commentBody, setCommentBody] = useState("");
   const [subtaskTitle, setSubtaskTitle] = useState("");
 
@@ -252,6 +256,14 @@ export function ItemDetail({ item, listName, onClose, onModifyTitle, onComment, 
 
             <Section title="Comments">
               <div className="is-flex is-flex-direction-column" style={{ gap: "0.75rem" }}>
+                {comments.map((comment) => (
+                  <CommentRow
+                    key={comment.ID}
+                    comment={comment}
+                    currentUserId={currentUserId}
+                    onDelete={(commentId) => onDeleteComment?.(item.ID, commentId)}
+                  />
+                ))}
                 <div className="field has-addons mb-0">
                   <div className="control is-expanded">
                     <input
