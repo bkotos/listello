@@ -82,6 +82,28 @@ func TestItemService_DefineItem_PublishesEvent(t *testing.T) {
 	assert.NotEmpty(t, published.Timestamp)
 }
 
+func TestItemService_GetByID_ReturnsItemFromRepository(t *testing.T) {
+	// Arrange
+	const itemID = "IT_1"
+	expected := domain.Item{ID: itemID, ListID: "LS_2", Title: "Plan trip"}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
+
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(expected, nil)
+
+	// Act
+	received, err := svc.GetByID(itemID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Equal(t, expected, received)
+}
+
 func TestItemService_GetAll_ReturnsItemsFromRepository(t *testing.T) {
 	// Arrange
 	const listID = "LS_1"
