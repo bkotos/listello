@@ -85,3 +85,11 @@ export function parseAddedSubtaskId(output: string): string {
   }
   return match[1];
 }
+
+export function parseCommentedId(output: string): string {
+  const match = output.match(/Commented on ".+" \((CM_[^)]+)\)/);
+  if (!match) {
+    throw new Error(`could not parse comment id from output: ${output}`);
+  }
+  return match[1];
+}

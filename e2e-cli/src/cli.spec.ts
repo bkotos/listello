@@ -6,6 +6,7 @@ import {
   dbPathFor,
   isolatedEnv,
   parseAddedSubtaskId,
+  parseCommentedId,
   parseCreatedListId,
   parseDefinedItemId,
   removeWorkdir,
@@ -272,6 +273,81 @@ describe("listello cli", () => {
         expect(result.exitCode).toBe(0);
         expect(result.stderr).toBe("");
         expect(result.stdout).toMatch(/Commented on "Buy milk" \(CM_/);
+      },
+      30_000,
+    );
+  });
+
+  describe("comment delete", () => {
+    it(
+      "deletes a comment on an item",
+      async () => {
+        // Arrange
+        const env = isolatedEnv(workdir);
+        const createResult = await runListello(
+          dbPath,
+          ["list", "create", "Groceries"],
+          env,
+        );
+        const listId = parseCreatedListId(createResult.stdout);
+        const defineResult = await runListello(
+          dbPath,
+          ["item", "define", listId, "Buy milk"],
+          env,
+        );
+        const itemId = parseDefinedItemId(defineResult.stdout);
+        await seedPairedUser(dbPath, env);
+        const addResult = await runListello(
+          dbPath,
+          ["comment", "add", itemId, "Need 2%"],
+          env,
+        );
+        const commentId = parseCommentedId(addResult.stdout);
+
+        // Act
+        const result = await runListello(
+          dbPath,
+          ["comment", "delete", itemId, commentId],
+          env,
+        );
+
+        // Assert
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toBe(`Deleted comment ${commentId} from "Buy milk"`);
+      },
+      30_000,
+    );
+
+    it(
+      "rejects deleting an unknown comment",
+      async () => {
+        // Arrange
+        const env = isolatedEnv(workdir);
+        const createResult = await runListello(
+          dbPath,
+          ["list", "create", "Groceries"],
+          env,
+        );
+        const listId = parseCreatedListId(createResult.stdout);
+        const defineResult = await runListello(
+          dbPath,
+          ["item", "define", listId, "Buy milk"],
+          env,
+        );
+        const itemId = parseDefinedItemId(defineResult.stdout);
+        await seedPairedUser(dbPath, env);
+
+        // Act
+        const result = await runListello(
+          dbPath,
+          ["comment", "delete", itemId, "CM_unknown"],
+          env,
+        );
+
+        // Assert
+        expect(result.exitCode).not.toBe(0);
+        expect(result.stderr).toContain("comment not found");
       },
       30_000,
     );
