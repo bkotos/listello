@@ -13,6 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { CommentRow } from "./CommentRow";
 
 export type ItemDetailProps = {
   item: ItemDto;
@@ -256,40 +257,12 @@ export function ItemDetail({ item, listName, comments = [], currentUserId = "", 
             <Section title="Comments">
               <div className="is-flex is-flex-direction-column" style={{ gap: "0.75rem" }}>
                 {comments.map((comment) => (
-                  <div key={comment.ID} className="hover-parent is-flex" style={{ gap: "0.625rem" }}>
-                    <div
-                      className="is-flex is-align-items-center is-justify-content-center is-family-code has-text-primary has-text-weight-semibold"
-                      style={{
-                        height: "1.75rem",
-                        width: "1.75rem",
-                        flexShrink: 0,
-                        borderRadius: "9999px",
-                        fontSize: "0.6875rem",
-                        backgroundColor:
-                          "hsl(var(--bulma-primary-h) var(--bulma-primary-s) var(--bulma-primary-l) / 0.15)",
-                      }}
-                    >
-                      {comment.UserName.slice(0, 1)}
-                    </div>
-                    <div style={{ minWidth: 0, flex: "1 1 0" }}>
-                      <div className="is-flex is-align-items-center" style={{ gap: "0.5rem" }}>
-                        <span className="is-size-7 has-text-weight-medium">{comment.UserName}</span>
-                        <span className="is-size-7 muted">{relativeTime(comment.CreatedAt)}</span>
-                        {comment.UserID === currentUserId ? (
-                          <button
-                            type="button"
-                            aria-label="Delete comment"
-                            onClick={() => onDeleteComment?.(item.ID, comment.ID)}
-                            className="icon-btn is-danger-hover hover-reveal"
-                            style={{ marginLeft: "auto", height: "1.5rem", width: "1.5rem" }}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        ) : null}
-                      </div>
-                      <p className="is-size-7 muted">{comment.Body}</p>
-                    </div>
-                  </div>
+                  <CommentRow
+                    key={comment.ID}
+                    comment={comment}
+                    currentUserId={currentUserId}
+                    onDelete={(commentId) => onDeleteComment?.(item.ID, commentId)}
+                  />
                 ))}
                 <div className="field has-addons mb-0">
                   <div className="control is-expanded">
@@ -324,30 +297,6 @@ export function ItemDetail({ item, listName, comments = [], currentUserId = "", 
       </div>
     </aside>
   );
-}
-
-function relativeTime(createdAt: string): string {
-  const ts = Date.parse(createdAt);
-  if (Number.isNaN(ts)) {
-    return "";
-  }
-  const diff = Date.now() - ts;
-  const mins = Math.round(diff / 60000);
-  if (mins < 1) {
-    return "just now";
-  }
-  if (mins < 60) {
-    return `${mins}m ago`;
-  }
-  const hours = Math.round(mins / 60);
-  if (hours < 24) {
-    return `${hours}h ago`;
-  }
-  const days = Math.round(hours / 24);
-  if (days < 7) {
-    return `${days}d ago`;
-  }
-  return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function preventNewlines(event: KeyboardEvent<HTMLTextAreaElement>) {
