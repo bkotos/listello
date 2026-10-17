@@ -999,6 +999,107 @@ func TestItemService_CommentItem_PublishesEvent(t *testing.T) {
 	assert.NotEmpty(t, published.Timestamp)
 }
 
+func TestItemService_DeleteComment_PersistsItem(t *testing.T) {
+	// Arrange
+	const (
+		itemID    = "IT_1"
+		userID    = "US_1"
+		commentID = "CM_1"
+	)
+	item := domain.Item{
+		ID:     itemID,
+		ListID: "LS_1",
+		Title:  "Buy milk",
+		State:  domain.ItemOutstanding,
+		Comments: []domain.Comment{
+			{ID: commentID, UserID: userID, Body: "Need 2%"},
+		},
+	}
+	user := domain.User{ID: userID, Name: "Alex"}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
+
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	userRepo.EXPECT().
+		GetByID(userID).
+		Return(user, nil)
+	itemRepo.EXPECT().
+		Save(mock.MatchedBy(func(saved domain.Item) bool {
+			return saved.ID == itemID && len(saved.Comments) == 0
+		})).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.AnythingOfType("event.Event")).
+		Return(nil)
+
+	// Act
+	result, err := svc.DeleteComment(itemID, userID, commentID)
+
+	// Assert
+	require.NoError(t, err)
+	assert.Empty(t, result.Comments)
+}
+
+func TestItemService_DeleteComment_PublishesEvent(t *testing.T) {
+	// Arrange
+	const (
+		itemID    = "IT_1"
+		userID    = "US_1"
+		commentID = "CM_1"
+	)
+	item := domain.Item{
+		ID:     itemID,
+		ListID: "LS_1",
+		Title:  "Buy milk",
+		State:  domain.ItemOutstanding,
+		Comments: []domain.Comment{
+			{ID: commentID, UserID: userID, Body: "Need 2%"},
+		},
+	}
+	user := domain.User{ID: userID, Name: "Alex"}
+	listRepo := NewMockListRepository(t)
+	itemRepo := NewMockItemRepository(t)
+	userRepo := NewMockUserRepository(t)
+	publisher := NewMockEventPublisher(t)
+	svc := application.NewItemService(listRepo, itemRepo, userRepo, publisher)
+
+	var published domain.Event
+	itemRepo.EXPECT().
+		GetByID(itemID).
+		Return(item, nil)
+	userRepo.EXPECT().
+		GetByID(userID).
+		Return(user, nil)
+	itemRepo.EXPECT().
+		Save(mock.AnythingOfType("domain.Item")).
+		Return(nil)
+	publisher.EXPECT().
+		Publish(mock.MatchedBy(func(event domain.Event) bool {
+			published = event
+			metadata, ok := event.Metadata.(domain.EventMetadataItemCommentDeleted)
+			return event.Name == domain.EventItemCommentDeleted && ok && metadata.ID == itemID && metadata.CommentID == commentID && metadata.DeletedBy == userID && metadata.DeletedAt != ""
+		})).
+		Return(nil)
+
+	// Act
+	_, err := svc.DeleteComment(itemID, userID, commentID)
+
+	// Assert
+	require.NoError(t, err)
+	metadata, ok := published.Metadata.(domain.EventMetadataItemCommentDeleted)
+	require.True(t, ok)
+	assert.Equal(t, itemID, metadata.ID)
+	assert.Equal(t, commentID, metadata.CommentID)
+	assert.Equal(t, userID, metadata.DeletedBy)
+	assert.NotEmpty(t, metadata.DeletedAt)
+	assert.NotEmpty(t, published.Timestamp)
+}
+
 func TestItemService_LinkAsChild_PersistsItem(t *testing.T) {
 	// Arrange
 	const (

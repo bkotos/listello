@@ -474,6 +474,78 @@ func (_c *MockItemService_DefineItem_Call) RunAndReturn(run func(listID string, 
 	return _c
 }
 
+// DeleteComment provides a mock function for the type MockItemService
+func (_mock *MockItemService) DeleteComment(itemID string, userID string, commentID string) (domain.Item, error) {
+	ret := _mock.Called(itemID, userID, commentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteComment")
+	}
+
+	var r0 domain.Item
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, string, string) (domain.Item, error)); ok {
+		return returnFunc(itemID, userID, commentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, string, string) domain.Item); ok {
+		r0 = returnFunc(itemID, userID, commentID)
+	} else {
+		r0 = ret.Get(0).(domain.Item)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, string, string) error); ok {
+		r1 = returnFunc(itemID, userID, commentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockItemService_DeleteComment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteComment'
+type MockItemService_DeleteComment_Call struct {
+	*mock.Call
+}
+
+// DeleteComment is a helper method to define mock.On call
+//   - itemID string
+//   - userID string
+//   - commentID string
+func (_e *MockItemService_Expecter) DeleteComment(itemID any, userID any, commentID any) *MockItemService_DeleteComment_Call {
+	return &MockItemService_DeleteComment_Call{Call: _e.mock.On("DeleteComment", itemID, userID, commentID)}
+}
+
+func (_c *MockItemService_DeleteComment_Call) Run(run func(itemID string, userID string, commentID string)) *MockItemService_DeleteComment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockItemService_DeleteComment_Call) Return(item domain.Item, err error) *MockItemService_DeleteComment_Call {
+	_c.Call.Return(item, err)
+	return _c
+}
+
+func (_c *MockItemService_DeleteComment_Call) RunAndReturn(run func(itemID string, userID string, commentID string) (domain.Item, error)) *MockItemService_DeleteComment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteItem provides a mock function for the type MockItemService
 func (_mock *MockItemService) DeleteItem(itemID string) error {
 	ret := _mock.Called(itemID)
