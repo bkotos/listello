@@ -189,7 +189,7 @@ Author-only: `Item.DeleteComment(user, commentID)`. Reject unless `user.ID == co
 - [x] Domain
 - [x] Application service
 - [x] Adapter repository
-- [ ] Bootstrap
+- [x] Bootstrap
 - [ ] API handler
 - [ ] CLI
 - [ ] API client
