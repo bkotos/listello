@@ -33,6 +33,7 @@ func newAPIServer(
 	mux.HandleFunc("PATCH /api/items/{id}/title", handlers.ModifyItemTitle(itemService))
 	mux.HandleFunc("POST /api/items/{id}/move", handlers.MoveItem(itemService))
 	mux.HandleFunc("POST /api/items/{id}/comment", handlers.CommentItem(itemService, instanceService))
+	mux.HandleFunc("DELETE /api/items/{id}/comment/{commentId}", handlers.DeleteComment(itemService, instanceService))
 	mux.HandleFunc("POST /api/items/{id}/subtask", handlers.AddSubtask(itemService))
 	mux.HandleFunc("POST /api/items/{id}/subtask/{subtaskId}/complete", handlers.CompleteSubtask(itemService))
 	mux.HandleFunc("POST /api/items/{id}/subtask/{subtaskId}/uncomplete", handlers.UncompleteSubtask(itemService))
