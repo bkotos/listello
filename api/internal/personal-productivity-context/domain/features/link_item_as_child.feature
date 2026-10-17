@@ -29,6 +29,16 @@ Feature: Link an item as a child of another item
     And the item "Plan trip" should not have a subtask "Book flights"
     And the item "Plan trip" should not have a subtask "Reserve hotel"
 
+  Scenario: Linking an item as a child of an item on another list
+    Given a list named "Work" exists
+    And a list named "Personal" exists
+    And an outstanding item titled "Plan trip" exists on the list "Personal"
+    And an outstanding item titled "Book flights" exists on the list "Work"
+    When the owner links the item "Book flights" as a child of the item "Plan trip"
+    Then the item "Book flights" should be a child of the item "Plan trip"
+    And the item "Book flights" should have an ID prefixed with "IT_"
+    And the item "Plan trip" should not have a subtask "Book flights"
+
   Scenario: Linking an item as a grandchild fails
     Given a list named "Next actions" exists
     And an outstanding item titled "Plan trip" exists on the list "Next actions"

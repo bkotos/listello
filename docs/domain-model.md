@@ -107,7 +107,7 @@ erDiagram
 ### Item
 **Entities:** Tag, Due Date (value objects on Item)
 
-LinkAsChild sets `ParentID` on the child. The child stays an Item (it is not converted to a Subtask). A parent may have many children. Nesting is one level: an item that already has a parent cannot itself be a parent.
+LinkAsChild sets `ParentID` on the child. The child stays an Item (it is not converted to a Subtask). A parent may have many children. Nesting is one level: an item that already has a parent cannot itself be a parent. The parent may be on a different list than the child.
 
 | Actor | Command | Event |
 |---|---|---|
