@@ -184,7 +184,7 @@ Child entity of Item. No `Comment` type exists yet.
 
 ### Delete Comment → Item Comment Deleted
 
-- [ ] Domain
+- [x] Domain
 - [ ] Application service
 - [ ] Adapter repository
 - [ ] Bootstrap

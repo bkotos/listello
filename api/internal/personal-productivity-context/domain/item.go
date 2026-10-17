@@ -255,6 +255,20 @@ func (i *Item) DeleteSubtask(subtaskID string) (Event, error) {
 	}, 1), nil
 }
 
+// DeleteComment deletes a comment on the item and raises an ItemCommentDeleted event.
+func (i *Item) DeleteComment(commentID string) (Event, error) {
+	for n := range i.Comments {
+		if i.Comments[n].ID == commentID {
+			i.Comments = append(i.Comments[:n], i.Comments[n+1:]...)
+			break
+		}
+	}
+	return event.NewEvent(EventItemCommentDeleted, EventMetadataItemCommentDeleted{
+		ID:        i.ID,
+		CommentID: commentID,
+	}, 1), nil
+}
+
 // Comment adds a comment to the item and raises an ItemCommentedOn event.
 func (i *Item) Comment(user User, body string) (Event, error) {
 	comment := Comment{
