@@ -472,26 +472,6 @@ describe("ItemRow", () => {
     });
   });
 
-  describe("when the item has a parent", () => {
-    it("indents the row", () => {
-      // Arrange
-      render(
-        createElement(ItemRow, {
-          item: { ...baseItem, ParentID: "IT_parent", Title: "Book flights" },
-          selected: false,
-          onSelect: vi.fn(),
-          onComplete: vi.fn(),
-          onUncomplete: vi.fn(),
-          onDelete: vi.fn(),
-          onModifyTitle: vi.fn(),
-        }),
-      );
-
-      // Assert
-      expect(screen.getByText("Book flights").closest(".task-row")).toHaveClass("is-child");
-    });
-  });
-
   describe("when Rename is clicked", () => {
     beforeEach(() => {
       render(

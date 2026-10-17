@@ -45,7 +45,6 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
       <RenamingItemRow
         title={title}
         selected={selected}
-        indented={Boolean(item.ParentID)}
         onSelect={() => onSelect(item.ID)}
         completed={completed}
         onToggle={handleToggle}
@@ -60,7 +59,7 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
   }
 
   return (
-    <ItemRowShell selected={selected} indented={Boolean(item.ParentID)} onSelect={() => onSelect(item.ID)}>
+    <ItemRowShell selected={selected} onSelect={() => onSelect(item.ID)}>
       <CompleteToggle completed={completed} onToggle={handleToggle} />
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
@@ -87,16 +86,15 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
 type ItemRowShellProps = {
   children: ReactNode;
   selected: boolean;
-  indented?: boolean;
   onSelect: () => void;
 };
 
-function ItemRowShell({ children, selected, indented, onSelect }: ItemRowShellProps) {
+function ItemRowShell({ children, selected, onSelect }: ItemRowShellProps) {
   return (
     <div
       role="button"
       tabIndex={0}
-      className={`task-row hover-parent is-flex p-3${selected ? " is-active" : ""}${indented ? " is-child" : ""}`}
+      className={`task-row hover-parent is-flex p-3${selected ? " is-active" : ""}`}
       style={{ gap: "0.75rem", alignItems: "flex-start" }}
       onClick={onSelect}
     >
@@ -130,7 +128,6 @@ function CompleteToggle({ completed, onToggle }: CompleteToggleProps) {
 type RenamingItemRowProps = {
   title: string;
   selected: boolean;
-  indented?: boolean;
   onSelect: () => void;
   completed: boolean;
   onToggle: () => void;
@@ -138,11 +135,11 @@ type RenamingItemRowProps = {
   onCancel: () => void;
 };
 
-function RenamingItemRow({ title, selected, indented, onSelect, completed, onToggle, onCommit, onCancel }: RenamingItemRowProps) {
+function RenamingItemRow({ title, selected, onSelect, completed, onToggle, onCommit, onCancel }: RenamingItemRowProps) {
   const [draft, setDraft] = useState(title);
 
   return (
-    <ItemRowShell selected={selected} indented={indented} onSelect={onSelect}>
+    <ItemRowShell selected={selected} onSelect={onSelect}>
       <CompleteToggle completed={completed} onToggle={onToggle} />
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
         <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>

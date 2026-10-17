@@ -443,6 +443,11 @@ describe("ListPage", () => {
     await waitFor(() => {
       expect(getAllItems).toHaveBeenCalledTimes(2);
     });
+    const first = screen.getByText("Buy windshield wipers for truck");
+    const second = screen.getByText("Draft weekly status update");
+    expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
   });
 
   it("calls deleteItem when Delete is clicked in Task options", async () => {
