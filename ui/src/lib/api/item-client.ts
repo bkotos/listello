@@ -1,4 +1,4 @@
-import type { AddSubtaskRequest, CommentItemRequest, DefineItemRequest, ItemDto, LinkAsChildRequest, ModifyItemTitleRequest, MoveItemRequest, PrioritizeSubtaskRequest } from "api-types";
+import type { AddSubtaskRequest, CommentItemRequest, DefineItemRequest, ItemCommentDto, ItemDto, LinkAsChildRequest, ModifyItemTitleRequest, MoveItemRequest, PrioritizeSubtaskRequest } from "api-types";
 import { request } from "./util";
 
 export async function getItem(
@@ -63,6 +63,13 @@ export async function moveItem(
   });
 }
 
+export async function getItemComments(
+  itemId: string,
+  init?: RequestInit,
+): Promise<ItemCommentDto[]> {
+  return request<ItemCommentDto[]>(`/api/items/${itemId}/comments`, init);
+}
+
 export async function commentItem(
   itemId: string,
   body: CommentItemRequest,
@@ -70,6 +77,15 @@ export async function commentItem(
   return request<ItemDto>(`/api/items/${itemId}/comment`, {
     method: "POST",
     body: JSON.stringify(body),
+  });
+}
+
+export async function deleteComment(
+  itemId: string,
+  commentId: string,
+): Promise<ItemDto> {
+  return request<ItemDto>(`/api/items/${itemId}/comment/${commentId}`, {
+    method: "DELETE",
   });
 }
 
