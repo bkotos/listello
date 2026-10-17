@@ -10,5 +10,6 @@ func NewComment(container Container) *cobra.Command {
 		Short: "Manage comments",
 	}
 	cmd.AddCommand(NewCommentAdd(container))
+	cmd.AddCommand(NewCommentDelete(container))
 	return cmd
 }
