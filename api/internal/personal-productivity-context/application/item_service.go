@@ -21,6 +21,7 @@ type ItemService interface {
 	ModifyItemTitle(itemID, title string) (domain.Item, error)
 	MoveItem(itemID, listID string) (domain.Item, error)
 	CommentItem(itemID, userID, body string) (domain.Item, error)
+	DeleteComment(itemID, userID, commentID string) (domain.Item, error)
 	AddSubtask(itemID, title string) (domain.Item, error)
 	CompleteSubtask(itemID, subtaskID string) (domain.Item, error)
 	UncompleteSubtask(itemID, subtaskID string) (domain.Item, error)
@@ -304,6 +305,29 @@ func (s *itemService) CommentItem(itemID, userID, body string) (domain.Item, err
 		return domain.Item{}, err
 	}
 	event, err := (&item).Comment(user, body)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.itemRepository.Save(item); err != nil {
+		return domain.Item{}, err
+	}
+	if err := s.eventPublisher.Publish(event); err != nil {
+		return domain.Item{}, err
+	}
+	return item, nil
+}
+
+// DeleteComment deletes a comment on an item via the domain and persists it.
+func (s *itemService) DeleteComment(itemID, userID, commentID string) (domain.Item, error) {
+	item, err := s.itemRepository.GetByID(itemID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return domain.Item{}, err
+	}
+	event, err := (&item).DeleteComment(user, commentID)
 	if err != nil {
 		return domain.Item{}, err
 	}
