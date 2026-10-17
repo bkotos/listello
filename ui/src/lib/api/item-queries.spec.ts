@@ -4,10 +4,11 @@ import { createQueryWrapper } from "../../test/renderWithQueryClient";
 
 vi.mock("./item-client", () => ({
   getAllItems: vi.fn(),
+  getItem: vi.fn(),
 }));
 
-import { getAllItems } from "./item-client";
-import { useAllItemsQuery } from "./item-queries";
+import { getAllItems, getItem } from "./item-client";
+import { useAllItemsQuery, useItemQuery } from "./item-queries";
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -42,6 +43,37 @@ describe("useAllItemsQuery", () => {
     });
     expect(getAllItems).toHaveBeenCalledWith(
       "LS_1",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+});
+
+describe("useItemQuery", () => {
+  it("loads an item by id from the client", async () => {
+    const expected = {
+      ID: "IT_1",
+      ListID: "LS_2",
+      ParentID: "",
+      Title: "Plan trip",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    vi.mocked(getItem).mockResolvedValue(expected);
+
+    const { QueryWrapper } = createQueryWrapper();
+    const { result } = renderHook(() => useItemQuery("IT_1"), {
+      wrapper: QueryWrapper,
+    });
+
+    // Assert
+    await waitFor(() => {
+      expect(result.current.data).toEqual(expected);
+    });
+    expect(getItem).toHaveBeenCalledWith(
+      "IT_1",
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });
