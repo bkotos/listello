@@ -73,6 +73,15 @@ export async function commentItem(
   });
 }
 
+export async function deleteComment(
+  itemId: string,
+  commentId: string,
+): Promise<ItemDto> {
+  return request<ItemDto>(`/api/items/${itemId}/comment/${commentId}`, {
+    method: "DELETE",
+  });
+}
+
 export async function addSubtask(
   itemId: string,
   body: AddSubtaskRequest,
