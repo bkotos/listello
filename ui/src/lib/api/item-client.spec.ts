@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteComment, deleteItem, deleteSubtask, getAllItems, getItem, linkAsChild, modifyItemTitle, moveItem, prioritizeSubtask, uncompleteItem, uncompleteSubtask } from "./item-client";
+import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteComment, deleteItem, deleteSubtask, getAllItems, getItem, getItemComments, linkAsChild, modifyItemTitle, moveItem, prioritizeSubtask, uncompleteItem, uncompleteSubtask } from "./item-client";
 import { request } from "./util";
 
 vi.mock(import("./util"), () => ({
@@ -281,6 +281,31 @@ describe("deleteComment", () => {
       method: "DELETE",
     });
     expect(result).toEqual(item);
+  });
+});
+
+describe("getItemComments", () => {
+  it("requests comments for an item from the API", async () => {
+    // Arrange
+    const expected = [
+      {
+        ID: "CM_1",
+        ItemID: "IT_1",
+        UserID: "US_1",
+        UserName: "Alex",
+        Body: "Need 2%",
+        CreatedAt: "2026-10-17T00:00:00Z",
+      },
+    ];
+    const init = { signal: new AbortController().signal };
+    vi.mocked(request).mockResolvedValue(expected);
+
+    // Act
+    const result = await getItemComments("IT_1", init);
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/items/IT_1/comments", init);
+    expect(result).toEqual(expected);
   });
 });
 
