@@ -5,10 +5,11 @@ import { createQueryWrapper } from "../../test/renderWithQueryClient";
 vi.mock("./item-client", () => ({
   getAllItems: vi.fn(),
   getItem: vi.fn(),
+  getItemComments: vi.fn(),
 }));
 
-import { getAllItems, getItem } from "./item-client";
-import { useAllItemsQuery, useItemQuery } from "./item-queries";
+import { getAllItems, getItem, getItemComments } from "./item-client";
+import { useAllItemsQuery, useItemCommentsQuery, useItemQuery } from "./item-queries";
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -73,6 +74,35 @@ describe("useItemQuery", () => {
       expect(result.current.data).toEqual(expected);
     });
     expect(getItem).toHaveBeenCalledWith(
+      "IT_1",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+});
+
+describe("useItemCommentsQuery", () => {
+  it("loads comments for an item from the client", async () => {
+    const expected = [
+      {
+        ID: "CM_1",
+        ItemID: "IT_1",
+        UserID: "US_1",
+        UserName: "Alex",
+        Body: "Need 2%",
+        CreatedAt: "2026-10-17T00:00:00Z",
+      },
+    ];
+    vi.mocked(getItemComments).mockResolvedValue(expected);
+
+    const { QueryWrapper } = createQueryWrapper();
+    const { result } = renderHook(() => useItemCommentsQuery("IT_1"), {
+      wrapper: QueryWrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual(expected);
+    });
+    expect(getItemComments).toHaveBeenCalledWith(
       "IT_1",
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
