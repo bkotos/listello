@@ -136,6 +136,7 @@ func (r *SQLiteItemRepository) Delete(id string) error {
 }
 
 func saveComments(db *bun.DB, item domain.Item) error {
+	ids := make([]string, 0, len(item.Comments))
 	for _, comment := range item.Comments {
 		_, err := db.NewInsert().
 			Model(&commentRow{
@@ -153,6 +154,14 @@ func saveComments(db *bun.DB, item domain.Item) error {
 		if err != nil {
 			return fmt.Errorf("save comment: %w", err)
 		}
+		ids = append(ids, comment.ID)
+	}
+	q := db.NewDelete().Model((*commentRow)(nil)).Where("item_id = ?", item.ID)
+	if len(ids) > 0 {
+		q = q.Where("id NOT IN (?)", bun.In(ids))
+	}
+	if _, err := q.Exec(context.Background()); err != nil {
+		return fmt.Errorf("save comment: %w", err)
 	}
 	return nil
 }
