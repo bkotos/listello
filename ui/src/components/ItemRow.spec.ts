@@ -472,6 +472,42 @@ describe("ItemRow", () => {
     });
   });
 
+  describe("when the item has a parent title", () => {
+    const onSelect = vi.fn();
+
+    beforeEach(() => {
+      onSelect.mockClear();
+      render(
+        createElement(ItemRow, {
+          item: { ...baseItem, ParentID: "IT_parent", Title: "Book flights" },
+          parentTitle: "Plan trip",
+          selected: false,
+          onSelect,
+          onComplete: vi.fn(),
+          onUncomplete: vi.fn(),
+          onDelete: vi.fn(),
+          onModifyTitle: vi.fn(),
+        }),
+      );
+    });
+
+    it("renders a rounded tag with the parent title", () => {
+      // Assert
+      const tag = screen.getByRole("button", { name: "Parent: Plan trip" });
+      expect(tag).toHaveClass("tag", "is-rounded");
+      expect(tag).toHaveTextContent("Plan trip");
+    });
+
+    it("calls onSelect with the parent id when the parent tag is clicked", () => {
+      // Act
+      fireEvent.click(screen.getByRole("button", { name: "Parent: Plan trip" }));
+
+      // Assert
+      expect(onSelect).toHaveBeenCalledTimes(1);
+      expect(onSelect).toHaveBeenCalledWith("IT_parent");
+    });
+  });
+
   describe("when Rename is clicked", () => {
     beforeEach(() => {
       render(

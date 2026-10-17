@@ -22,6 +22,7 @@ vi.mock("./lib/api/list-client", () => ({
 
 vi.mock("./lib/api/item-client", () => ({
   getAllItems: vi.fn(),
+  getItem: vi.fn(),
   defineItem: vi.fn(),
   completeItem: vi.fn(),
   uncompleteItem: vi.fn(),

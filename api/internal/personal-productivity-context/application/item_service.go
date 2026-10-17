@@ -27,6 +27,7 @@ type ItemService interface {
 	DeleteSubtask(itemID, subtaskID string) (domain.Item, error)
 	PrioritizeSubtask(itemID, subtaskID string, priority domain.ItemPriority) (domain.Item, error)
 	LinkAsChild(itemID, parentID string) (domain.Item, error)
+	GetByID(id string) (domain.Item, error)
 	GetAll(listID string) ([]domain.Item, error)
 }
 
@@ -104,6 +105,11 @@ func (s *itemService) UncompleteItem(itemID string) (domain.Item, error) {
 		return domain.Item{}, err
 	}
 	return item, nil
+}
+
+// GetByID returns the item with the given ID from persistence.
+func (s *itemService) GetByID(id string) (domain.Item, error) {
+	return s.itemRepository.GetByID(id)
 }
 
 // GetAll returns all items for the given list from persistence.

@@ -12,13 +12,14 @@ export type ItemRowProps = {
   onModifyTitle: (itemId: string, title: string) => void;
   onLinkAsChild?: (itemId: string, parentId: string) => void;
   linkableParents?: { ID: string; Title: string }[];
+  parentTitle?: string;
 };
 
 function isComplete(item: ItemDto): boolean {
   return item.State === "complete";
 }
 
-export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, onDelete, onModifyTitle, onLinkAsChild, linkableParents }: ItemRowProps) {
+export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, onDelete, onModifyTitle, onLinkAsChild, linkableParents, parentTitle }: ItemRowProps) {
   const [optimisticallyComplete, setOptimisticallyComplete] = useState(false);
   const [optimisticallyDeleted, setOptimisticallyDeleted] = useState(false);
   const [optimisticTitle, setOptimisticTitle] = useState<string | null>(null);
@@ -62,10 +63,23 @@ export function ItemRow({ item, selected, onSelect, onComplete, onUncomplete, on
     <ItemRowShell selected={selected} onSelect={() => onSelect(item.ID)}>
       <CompleteToggle completed={completed} onToggle={handleToggle} />
       <div style={{ minWidth: 0, flex: "1 1 0" }}>
-        <div className="is-flex" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
+        <div className="is-flex is-flex-wrap-wrap is-align-items-center" style={{ gap: "0.5rem" }}>
           <p className={`is-size-6 mb-0${completed ? " muted line-through" : ""}`}>
             {title}
           </p>
+          {parentTitle ? (
+            <button
+              type="button"
+              className="tag is-rounded"
+              aria-label={`Parent: ${parentTitle}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelect(item.ParentID);
+              }}
+            >
+              {parentTitle}
+            </button>
+          ) : null}
         </div>
         <HoverActions />
       </div>
