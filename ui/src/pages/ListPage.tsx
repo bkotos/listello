@@ -1,11 +1,11 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { ContentArea } from "../components/ContentArea";
 import { ItemDetail } from "../components/ItemDetail";
 import { ItemRow } from "../components/ItemRow";
-import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle, commentItem, addSubtask, completeSubtask, uncompleteSubtask, deleteSubtask, linkAsChild } from "../lib/api/item-client";
+import { defineItem, completeItem, uncompleteItem, deleteItem, modifyItemTitle, commentItem, addSubtask, completeSubtask, uncompleteSubtask, deleteSubtask, linkAsChild, getAllItems, getItem } from "../lib/api/item-client";
 import { itemQueryKeys, useAllItemsQuery } from "../lib/api/item-queries";
-import { useListQuery } from "../lib/api/list-queries";
+import { useAllListsQuery, useListQuery } from "../lib/api/list-queries";
 import { useShellContext } from "../lib/useShellContext";
 
 function ListPage() {
@@ -14,9 +14,47 @@ function ListPage() {
   const queryClient = useQueryClient();
   const { openSidebar } = useShellContext();
   const { data: list } = useListQuery(listId);
+  const { data: lists } = useAllListsQuery();
   const { data: items } = useAllItemsQuery(listId);
+  const missingParentIds = Array.from(
+    new Set(
+      (items ?? [])
+        .map((item) => item.ParentID)
+        .filter(
+          (parentId) =>
+            Boolean(parentId) && !(items ?? []).some((candidate) => candidate.ID === parentId),
+        ),
+    ),
+  );
+  const parentQueries = useQueries({
+    queries: missingParentIds.map((id) => ({
+      queryKey: itemQueryKeys.detail(id),
+      queryFn: ({ signal }: { signal: AbortSignal }) => getItem(id, { signal }),
+    })),
+  });
+  const otherListQueries = useQueries({
+    queries: (lists ?? [])
+      .filter((candidate) => candidate.ID !== listId)
+      .map((candidate) => ({
+        queryKey: itemQueryKeys.byList(candidate.ID),
+        queryFn: ({ signal }: { signal: AbortSignal }) => getAllItems(candidate.ID, { signal }),
+      })),
+  });
+  const fetchedParents = parentQueries.flatMap((query) => (query.data ? [query.data] : []));
+  const otherListItems = otherListQueries.flatMap((query) => query.data ?? []);
   const title = list?.Name ?? "List";
   const selectedItem = items?.find((item) => item.ID === itemId) ?? null;
+
+  function itemById(id: string | undefined) {
+    if (!id) {
+      return undefined;
+    }
+    return (
+      (items ?? []).find((item) => item.ID === id) ??
+      fetchedParents.find((item) => item.ID === id) ??
+      otherListItems.find((item) => item.ID === id)
+    );
+  }
 
   async function handleCaptureSubmit(itemTitle: string) {
     if (!listId) {
@@ -118,14 +156,17 @@ function ListPage() {
                     key={item.ID}
                     item={item}
                     selected={item.ID === itemId}
-                    onSelect={(selectedId) => navigate(`/lists/${listId}/items/${selectedId}`)}
+                    onSelect={(selectedId) => {
+                      const target = itemById(selectedId);
+                      navigate(`/lists/${target?.ListID ?? listId}/items/${selectedId}`);
+                    }}
                     onComplete={handleComplete}
                     onUncomplete={handleUncomplete}
                     onDelete={handleDelete}
                     onModifyTitle={handleModifyTitle}
                     onLinkAsChild={handleLinkAsChild}
-                    parentTitle={items.find((candidate) => candidate.ID === item.ParentID)?.Title}
-                    linkableParents={items
+                    parentTitle={itemById(item.ParentID)?.Title}
+                    linkableParents={[...(items ?? []), ...otherListItems]
                       .filter((candidate) => candidate.ID !== item.ID && !candidate.ParentID)
                       .map((candidate) => ({ ID: candidate.ID, Title: candidate.Title }))}
                   />

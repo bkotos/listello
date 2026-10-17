@@ -6,10 +6,12 @@ import ListPage from "./ListPage";
 
 vi.mock("../lib/api/list-client", () => ({
   getList: vi.fn(),
+  getAllLists: vi.fn(),
 }));
 
 vi.mock("../lib/api/item-client", () => ({
   getAllItems: vi.fn(),
+  getItem: vi.fn(),
   defineItem: vi.fn(),
   completeItem: vi.fn(),
   uncompleteItem: vi.fn(),
@@ -23,8 +25,8 @@ vi.mock("../lib/api/item-client", () => ({
   linkAsChild: vi.fn(),
 }));
 
-import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, linkAsChild, modifyItemTitle, uncompleteItem, uncompleteSubtask } from "../lib/api/item-client";
-import { getList } from "../lib/api/list-client";
+import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, getItem, linkAsChild, modifyItemTitle, uncompleteItem, uncompleteSubtask } from "../lib/api/item-client";
+import { getAllLists, getList } from "../lib/api/list-client";
 
 const sampleItems = [
   {
@@ -57,6 +59,10 @@ afterEach(() => {
 });
 
 describe("ListPage", () => {
+  beforeEach(() => {
+    vi.mocked(getAllLists).mockResolvedValue([{ ID: "LS_1", Name: "Work" }]);
+  });
+
   it("renders the list title from the API", async () => {
     // Arrange
     vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
@@ -494,6 +500,114 @@ describe("ListPage", () => {
     expect(screen.getByText("Buy windshield wipers for truck").closest(".task-row")).not.toHaveClass("is-active");
     const parentTitle = screen.getAllByText("Draft weekly status update").find((el) => el.tagName === "P");
     expect(parentTitle?.closest(".task-row")).toHaveClass("is-active");
+  });
+
+  it("fetches the parent by id when it is not in the current list", async () => {
+    // Arrange
+    const parent = {
+      ID: "IT_parent",
+      ListID: "LS_2",
+      ParentID: "",
+      Title: "Plan vacation",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue([
+      { ...sampleItems[0], ParentID: parent.ID },
+    ]);
+    vi.mocked(getItem).mockResolvedValue(parent);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Parent: Plan vacation" })).toBeInTheDocument();
+    });
+    expect(getItem).toHaveBeenCalledWith(
+      "IT_parent",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
+  it("navigates to the parent on another list when the parent tag is clicked", async () => {
+    // Arrange
+    const parent = {
+      ID: "IT_parent",
+      ListID: "LS_2",
+      ParentID: "",
+      Title: "Plan vacation",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue([
+      { ...sampleItems[0], ParentID: parent.ID },
+    ]);
+    vi.mocked(getItem).mockResolvedValue(parent);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Parent: Plan vacation" })).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Parent: Plan vacation" }));
+
+    // Assert
+    expect(screen.getByTestId("location-pathname")).toHaveTextContent("/lists/LS_2/items/IT_parent");
+  });
+
+  it("offers items from other lists in the Link as child parent picker", async () => {
+    // Arrange
+    const otherListItem = {
+      ID: "IT_personal",
+      ListID: "LS_2",
+      ParentID: "",
+      Title: "Plan vacation",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllLists).mockResolvedValue([
+      { ID: "LS_1", Name: "Work" },
+      { ID: "LS_2", Name: "Personal" },
+    ]);
+    vi.mocked(getAllItems).mockImplementation(async (listId: string) => {
+      if (listId === "LS_2") {
+        return [otherListItem];
+      }
+      return sampleItems;
+    });
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getAllByRole("button", { name: "Task options" })[0]);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Link as child" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByRole("menuitem", { name: "Plan vacation" })).toBeInTheDocument();
+    });
   });
 
   it("calls deleteItem when Delete is clicked in Task options", async () => {
