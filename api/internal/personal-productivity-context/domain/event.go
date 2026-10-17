@@ -163,6 +163,8 @@ type EventMetadataItemCommentedOn struct {
 type EventMetadataItemCommentDeleted struct {
 	ID        string
 	CommentID string
+	DeletedBy string
+	DeletedAt string
 }
 
 // EventMetadataSubtaskAddedToItem is the payload for a SubtaskAddedToItem event.
