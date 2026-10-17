@@ -444,10 +444,56 @@ describe("ListPage", () => {
       expect(getAllItems).toHaveBeenCalledTimes(2);
     });
     const first = screen.getByText("Buy windshield wipers for truck");
-    const second = screen.getByText("Draft weekly status update");
-    expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+    const second = screen.getAllByText("Draft weekly status update").find((el) => el.tagName === "P");
+    expect(second).toBeDefined();
+    expect(first.compareDocumentPosition(second!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
+  });
+
+  it("renders a parent title tag on a child item", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue([
+      { ...sampleItems[0], ParentID: sampleItems[1].ID },
+      sampleItems[1],
+    ]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+
+    // Assert
+    const tag = screen.getByRole("button", { name: "Parent: Draft weekly status update" });
+    expect(tag).toHaveClass("tag", "is-rounded");
+  });
+
+  it("navigates to the parent item when the parent tag is clicked", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue([
+      { ...sampleItems[0], ParentID: sampleItems[1].ID },
+      sampleItems[1],
+    ]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Parent: Draft weekly status update" }));
+
+    // Assert
+    expect(screen.getByTestId("location-pathname")).toHaveTextContent("/lists/LS_1/items/IT_2");
+    expect(screen.getByText("Buy windshield wipers for truck").closest(".task-row")).not.toHaveClass("is-active");
+    const parentTitle = screen.getAllByText("Draft weekly status update").find((el) => el.tagName === "P");
+    expect(parentTitle?.closest(".task-row")).toHaveClass("is-active");
   });
 
   it("calls deleteItem when Delete is clicked in Task options", async () => {

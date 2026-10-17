@@ -124,6 +124,7 @@ function ListPage() {
                     onDelete={handleDelete}
                     onModifyTitle={handleModifyTitle}
                     onLinkAsChild={handleLinkAsChild}
+                    parentTitle={items.find((candidate) => candidate.ID === item.ParentID)?.Title}
                     linkableParents={items
                       .filter((candidate) => candidate.ID !== item.ID && !candidate.ParentID)
                       .map((candidate) => ({ ID: candidate.ID, Title: candidate.Title }))}
