@@ -20,9 +20,10 @@ vi.mock("../lib/api/item-client", () => ({
   completeSubtask: vi.fn(),
   uncompleteSubtask: vi.fn(),
   deleteSubtask: vi.fn(),
+  linkAsChild: vi.fn(),
 }));
 
-import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, modifyItemTitle, uncompleteItem, uncompleteSubtask } from "../lib/api/item-client";
+import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, linkAsChild, modifyItemTitle, uncompleteItem, uncompleteSubtask } from "../lib/api/item-client";
 import { getList } from "../lib/api/list-client";
 
 const sampleItems = [
@@ -387,6 +388,66 @@ describe("ListPage", () => {
     const title = screen.getByText("Buy windshield wipers for truck");
     expect(title).not.toHaveClass("muted");
     expect(title).not.toHaveClass("line-through");
+  });
+
+  it("calls linkAsChild when a parent is chosen in Task options", async () => {
+    // Arrange
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems).mockResolvedValue(sampleItems);
+    vi.mocked(linkAsChild).mockResolvedValue({ ...sampleItems[0], ParentID: "IT_2" });
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+
+    // Act
+    fireEvent.click(screen.getAllByRole("button", { name: "Task options" })[0]);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Link as child" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Draft weekly status update" }));
+
+    // Assert
+    expect(linkAsChild).toHaveBeenCalledWith("IT_1", { parentID: "IT_2" });
+  });
+
+  it("reloads items after linkAsChild is called", async () => {
+    // Arrange
+    const linkedItems = [
+      { ...sampleItems[0], ParentID: "IT_2" },
+      sampleItems[1],
+    ];
+    vi.mocked(getList).mockResolvedValue({ ID: "LS_1", Name: "Work" });
+    vi.mocked(getAllItems)
+      .mockResolvedValueOnce(sampleItems)
+      .mockResolvedValueOnce(linkedItems);
+    vi.mocked(linkAsChild).mockResolvedValue(linkedItems[0]);
+    renderPageWithShellContext(createElement(ListPage), {
+      path: "lists/:listId",
+      initialEntry: "/lists/LS_1",
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Buy windshield wipers for truck")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(1);
+    });
+
+    // Act
+    fireEvent.click(screen.getAllByRole("button", { name: "Task options" })[0]);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Link as child" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Draft weekly status update" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(getAllItems).toHaveBeenCalledTimes(2);
+    });
+    const first = screen.getByText("Buy windshield wipers for truck");
+    const second = screen.getByText("Draft weekly status update");
+    expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
   });
 
   it("calls deleteItem when Delete is clicked in Task options", async () => {
