@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, linkAsChild, modifyItemTitle, moveItem, prioritizeSubtask, uncompleteItem, uncompleteSubtask } from "./item-client";
+import { addSubtask, commentItem, completeItem, completeSubtask, defineItem, deleteItem, deleteSubtask, getAllItems, getItem, linkAsChild, modifyItemTitle, moveItem, prioritizeSubtask, uncompleteItem, uncompleteSubtask } from "./item-client";
 import { request } from "./util";
 
 vi.mock(import("./util"), () => ({
@@ -35,6 +35,32 @@ describe("defineItem", () => {
       body: JSON.stringify({ title: "Buy milk" }),
     });
     expect(result).toEqual(item);
+  });
+});
+
+describe("getItem", () => {
+  it("requests an item by id from the API", async () => {
+    // Arrange
+    const expected = {
+      ID: "IT_1",
+      ListID: "LS_2",
+      ParentID: "",
+      Title: "Plan trip",
+      Description: "",
+      DueDate: "",
+      Tags: [],
+      Priority: "",
+      State: "outstanding",
+    };
+    const init = { signal: new AbortController().signal };
+    vi.mocked(request).mockResolvedValue(expected);
+
+    // Act
+    const result = await getItem("IT_1", init);
+
+    // Assert
+    expect(request).toHaveBeenCalledWith("/api/items/IT_1", init);
+    expect(result).toEqual(expected);
   });
 });
 

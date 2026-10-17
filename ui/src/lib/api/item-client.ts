@@ -1,6 +1,13 @@
 import type { AddSubtaskRequest, CommentItemRequest, DefineItemRequest, ItemDto, LinkAsChildRequest, ModifyItemTitleRequest, MoveItemRequest, PrioritizeSubtaskRequest } from "api-types";
 import { request } from "./util";
 
+export async function getItem(
+  id: string,
+  init?: RequestInit,
+): Promise<ItemDto> {
+  return request<ItemDto>(`/api/items/${id}`, init);
+}
+
 export async function getAllItems(
   listId: string,
   init?: RequestInit,
