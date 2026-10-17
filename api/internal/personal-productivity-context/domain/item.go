@@ -255,6 +255,27 @@ func (i *Item) DeleteSubtask(subtaskID string) (Event, error) {
 	}, 1), nil
 }
 
+// DeleteComment deletes a comment on the item and raises an ItemCommentDeleted event.
+// Only the comment author may delete it; otherwise the comment is left in place and no event is raised.
+func (i *Item) DeleteComment(user User, commentID string) (Event, error) {
+	for n := range i.Comments {
+		if i.Comments[n].ID != commentID {
+			continue
+		}
+		if i.Comments[n].UserID != user.ID {
+			return Event{}, fmt.Errorf("only the comment author can delete the comment")
+		}
+		i.Comments = append(i.Comments[:n], i.Comments[n+1:]...)
+		return event.NewEvent(EventItemCommentDeleted, EventMetadataItemCommentDeleted{
+			ID:        i.ID,
+			CommentID: commentID,
+			DeletedBy: user.ID,
+			DeletedAt: time.Now().UTC().Format(time.RFC3339Nano),
+		}, 1), nil
+	}
+	return Event{}, fmt.Errorf("comment not found")
+}
+
 // Comment adds a comment to the item and raises an ItemCommentedOn event.
 func (i *Item) Comment(user User, body string) (Event, error) {
 	comment := Comment{

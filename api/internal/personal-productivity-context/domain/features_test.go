@@ -40,6 +40,7 @@ type suiteState struct {
 	items            map[string]*domain.Item
 	deletedItems     map[string]domain.Item
 	deletedSubtaskID string
+	deletedCommentID string
 	spaces           map[string]domain.Space
 	users            map[string]domain.User
 	events           []domain.Event
@@ -53,6 +54,7 @@ func (s *suiteState) reset() {
 	s.items = make(map[string]*domain.Item)
 	s.deletedItems = make(map[string]domain.Item)
 	s.deletedSubtaskID = ""
+	s.deletedCommentID = ""
 	s.spaces = make(map[string]domain.Space)
 	s.users = make(map[string]domain.User)
 	s.events = nil
@@ -88,6 +90,16 @@ func (s *suiteState) aEventShouldHaveOccurred(ctx context.Context, eventName str
 			return e.Name == domain.EventName(eventName)
 		}),
 		"expected event %q to have occurred; got %v", eventName, eventNames(s.events),
+	)
+}
+
+func (s *suiteState) aEventShouldNotHaveOccurred(ctx context.Context, eventName string) {
+	require.Falsef(
+		godog.T(ctx),
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			return e.Name == domain.EventName(eventName)
+		}),
+		"did not expect event %q; got %v", eventName, eventNames(s.events),
 	)
 }
 
@@ -730,15 +742,87 @@ func (s *suiteState) theCommentOnTheItemShouldBeRecordedAsAnISODateTimeString(ct
 	require.Regexp(t, `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$`, comment.CreatedAt)
 }
 
-func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfCommentOnItem(ctx context.Context, eventName, body, title string) {
+func (s *suiteState) theUserDeletesTheCommentOnTheItem(ctx context.Context, userName, body, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.users, userName)
+	require.Contains(t, s.items, title)
 	comment := s.commentOnItem(ctx, title, body)
+	s.deletedCommentID = comment.ID
+	event, err := s.items[title].DeleteComment(s.users[userName], comment.ID)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.record(event)
+}
+
+func (s *suiteState) theUserDeletesACommentWithIDOnTheItem(ctx context.Context, userName, commentID, title string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.users, userName)
+	require.Contains(t, s.items, title)
+	event, err := s.items[title].DeleteComment(s.users[userName], commentID)
+	s.lastErr = err
+	if err != nil {
+		return
+	}
+	s.record(event)
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithTheDeleter(ctx context.Context, eventName, userName string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.users, userName)
+	userID := s.users[userName].ID
 	require.Truef(
-		godog.T(ctx),
+		t,
 		slices.ContainsFunc(s.events, func(e domain.Event) bool {
-			meta, ok := e.Metadata.(domain.EventMetadataItemCommentedOn)
-			return e.Name == domain.EventName(eventName) && ok && meta.CommentID == comment.ID
+			meta, ok := e.Metadata.(domain.EventMetadataItemCommentDeleted)
+			return e.Name == domain.EventName(eventName) && ok && meta.DeletedBy == userID
 		}),
-		"expected event %q with comment ID %q; got %v", eventName, comment.ID, eventSummaries(s.events),
+		"expected event %q with deleter %q; got %v", eventName, userID, eventSummaries(s.events),
+	)
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithADeletedAtISODateTime(ctx context.Context, eventName string) {
+	t := godog.T(ctx)
+	idx := slices.IndexFunc(s.events, func(e domain.Event) bool {
+		_, ok := e.Metadata.(domain.EventMetadataItemCommentDeleted)
+		return e.Name == domain.EventName(eventName) && ok
+	})
+	require.GreaterOrEqualf(t, idx, 0, "expected event %q; got %v", eventName, eventSummaries(s.events))
+	meta := s.events[idx].Metadata.(domain.EventMetadataItemCommentDeleted)
+	_, err := time.Parse(time.RFC3339Nano, meta.DeletedAt)
+	require.NoError(t, err)
+	require.Regexp(t, `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$`, meta.DeletedAt)
+}
+
+func (s *suiteState) theItemShouldNotHaveAComment(ctx context.Context, title, body string) {
+	t := godog.T(ctx)
+	require.Contains(t, s.items, title)
+	for _, comment := range s.items[title].Comments {
+		if comment.Body == body {
+			require.Failf(t, "comment still present", "expected item %q not to have comment %q; got %+v", title, body, s.items[title].Comments)
+		}
+	}
+}
+
+func (s *suiteState) aEventShouldHaveOccurredWithTheIDOfCommentOnItem(ctx context.Context, eventName, body, title string) {
+	t := godog.T(ctx)
+	commentID := s.deletedCommentID
+	if s.items[title] != nil {
+		for _, comment := range s.items[title].Comments {
+			if comment.Body == body {
+				commentID = comment.ID
+				break
+			}
+		}
+	}
+	require.NotEmptyf(t, commentID, "expected to know the ID of comment %q on item %q", body, title)
+	require.Truef(
+		t,
+		slices.ContainsFunc(s.events, func(e domain.Event) bool {
+			return e.Name == domain.EventName(eventName) && eventCommentID(e) == commentID
+		}),
+		"expected event %q with comment ID %q; got %v", eventName, commentID, eventSummaries(s.events),
 	)
 }
 
@@ -876,12 +960,24 @@ func eventEntityID(e domain.Event) string {
 		domain.EventMetadataItemMovedToOtherList,
 		domain.EventMetadataItemLinkedAsChildOfItem,
 		domain.EventMetadataItemCommentedOn,
+		domain.EventMetadataItemCommentDeleted,
 		domain.EventMetadataSubtaskAddedToItem,
 		domain.EventMetadataSubtaskCompletedOnItem,
 		domain.EventMetadataSubtaskUncompleted,
 		domain.EventMetadataSubtaskDeletedOnItem,
 		domain.EventMetadataSubtaskPriorityChanged:
 		return reflect.ValueOf(e.Metadata).FieldByName("ID").String()
+	default:
+		return ""
+	}
+}
+
+func eventCommentID(e domain.Event) string {
+	switch meta := e.Metadata.(type) {
+	case domain.EventMetadataItemCommentedOn:
+		return meta.CommentID
+	case domain.EventMetadataItemCommentDeleted:
+		return meta.CommentID
 	default:
 		return ""
 	}
@@ -954,6 +1050,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the placeholder should exist$`, s.thePlaceholderShouldExist)
 	ctx.Step(`^the user creates a list named "([^"]*)"$`, s.theUserCreatesAListNamed)
 	ctx.Step(`^a "([^"]*)" event should have occurred$`, s.aEventShouldHaveOccurred)
+	ctx.Step(`^a "([^"]*)" event should not have occurred$`, s.aEventShouldNotHaveOccurred)
 	ctx.Step(`^the list "([^"]*)" should exist$`, s.theListShouldExist)
 	ctx.Step(`^the list "([^"]*)" should not exist$`, s.theListShouldNotExist)
 	ctx.Step(`^the user deletes the list "([^"]*)"$`, s.theUserDeletesTheList)
@@ -1037,6 +1134,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should be by the user "([^"]*)"$`, s.theCommentOnTheItemShouldBeByTheUser)
 	ctx.Step(`^the comment "([^"]*)" on the item "([^"]*)" should be recorded as an ISO date time string$`, s.theCommentOnTheItemShouldBeRecordedAsAnISODateTimeString)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the ID of comment "([^"]*)" on the item "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheIDOfCommentOnItem)
+	ctx.Step(`^the user "([^"]*)" deletes the comment "([^"]*)" on the item "([^"]*)"$`, s.theUserDeletesTheCommentOnTheItem)
+	ctx.Step(`^the user "([^"]*)" deletes a comment with ID "([^"]*)" on the item "([^"]*)"$`, s.theUserDeletesACommentWithIDOnTheItem)
+	ctx.Step(`^deleting the comment should fail with error "([^"]*)"$`, s.theOperationShouldFailWithError)
+	ctx.Step(`^a "([^"]*)" event should have occurred with the deleter "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheDeleter)
+	ctx.Step(`^a "([^"]*)" event should have occurred with a deleted-at ISO date time$`, s.aEventShouldHaveOccurredWithADeletedAtISODateTime)
+	ctx.Step(`^the item "([^"]*)" should not have a comment "([^"]*)"$`, s.theItemShouldNotHaveAComment)
 	ctx.Step(`^a "([^"]*)" event should have occurred with the user "([^"]*)"$`, s.aEventShouldHaveOccurredWithTheUser)
 	ctx.Step(`^a "([^"]*)" event should have occurred with description "([^"]*)"$`, s.aEventShouldHaveOccurredWithDescription)
 	ctx.Step(`^a "([^"]*)" event should have occurred with due date "([^"]*)"$`, s.aEventShouldHaveOccurredWithDueDate)

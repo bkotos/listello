@@ -184,7 +184,9 @@ Child entity of Item. No `Comment` type exists yet.
 
 ### Delete Comment → Item Comment Deleted
 
-- [ ] Domain
+Author-only: `Item.DeleteComment(user, commentID)`. Reject unless `user.ID == comment.UserID` (comment stays, no event). Unknown comment ID is rejected (`comment not found`). Event `{ID, CommentID, DeletedBy, DeletedAt}`. Later layers must carry this: application service takes the acting user; API handler and CLI pass the current user (403 non-author, 404 missing comment); UI shows delete only on the current user's own comments.
+
+- [x] Domain
 - [ ] Application service
 - [ ] Adapter repository
 - [ ] Bootstrap

@@ -139,10 +139,12 @@ LinkAsChild sets `ParentID` on the child. The child stays an Item (it is not con
 ### Comment
 **Entities:** Comment (child entity of Item)
 
+Only the comment author may delete a comment. Delete Comment records who deleted it and when (`DeletedBy`, `DeletedAt` as an ISO-8601 UTC timestamp, same convention as comment `CreatedAt`). A non-author is rejected and the comment stays; an unknown comment ID is rejected. Later layers: the application service takes the acting user; the API handler and CLI pass the current user (HTTP 403 for a non-author, 404 for a missing comment); the UI shows delete only on the current user's own comments.
+
 | Actor | Command | Event |
 |---|---|---|
 | User | Comment | Item Commented On |
-| User | Delete Comment | Item Comment Deleted |
+| User (author) | Delete Comment | Item Comment Deleted |
 
 ### Delegation Policy
 **Entities:** none additional
